@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block css %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/eudaimonia.css' %}">
+{% endblock css %}
+
+{% block javascript %}
+{{ block.super }}
+<script defer src="{% static 'js/eudaimonia.js' %}"></script>
+{% endblock javascript %}
+
+{% block navbar %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="{% url 'core:dashboard' %}">
+      <img src="{% static 'images/eudaimonia-logo.png' %}" alt="EudaimoniaGo" height="30">
+      EudaimoniaGo
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#gameNavbar" aria-controls="gameNavbar" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    
+    <div class="collapse navbar-collapse" id="gameNavbar">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.namespace == 'core' and request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'core:dashboard' %}">Dashboard</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.namespace == 'core' and request.resolver_match.url_name == 'map' %}active{% endif %}" href="{% url 'core:map' %}">Map</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.namespace == 'experiences' and request.resolver_match.url_name == 'experience_list' %}active{% endif %}" href="{% url 'experiences:experience_list' %}">Experiences</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.namespace == 'powers' and request.resolver_match.url_name == 'power_list' %}active{% endif %}" href="{% url 'powers:power_list' %}">Powers</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Zones</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Innovations</a>
+        </li>
+      </ul>
+      
+      <div class="d-flex align-items-center">
+        {% if request.user.is_authenticated %}
+          <span class="badge bg-light text-dark me-2">Rank: {{ request.user.profile.rank }}</span>
+          <span class="badge bg-success me-3">XP: {{ request.user.profile.experience_points }}</span>
+          <div class="dropdown">
+            <button class="btn btn-outline-light dropdown-toggle" type="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+              {{ request.user.username }}
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+              <li><a class="dropdown-item" href="{% url 'core:player_profile' %}">My Profile</a></li>
+              <li><a class="dropdown-item" href="{% url 'users:detail' request.user.username %}">Account Settings</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="{% url 'account_logout' %}">Sign Out</a></li>
+            </ul>
+          </div>
+        {% else %}
+          <a href="{% url 'account_login' %}" class="btn btn-outline-light me-2">Sign In</a>
+          <a href="{% url 'account_signup' %}" class="btn btn-light">Sign Up</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>
+{% endblock navbar %}
+
+{% block body %}
+  {# We override the entire body block so we don't need the navbar_display block #}
+  <div class="game-container">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-dismissible {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+    
+    {% block content %}
+      <p>Game content will go here.</p>
+    {% endblock content %}
+  </div>
+{% endblock body %}
+
+{% block modal %}
+  <!-- Global game modals can go here -->
+{% endblock modal %}

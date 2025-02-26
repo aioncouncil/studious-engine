@@ -1,0 +1,106 @@
+{% extends "game_base.html" %}
+{% load static %}
+
+{% block title %}{{ power.name }} - Powers - EudaimoniaGo{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'powers:power_list' %}">Powers</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ power.name }}</li>
+    </ol>
+  </nav>
+
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h2 class="mb-0">{{ power.name }}</h2>
+          <span class="badge bg-primary">{{ power.get_power_type_display }}</span>
+        </div>
+        <div class="card-body">
+          <p class="lead">{{ power.description }}</p>
+          
+          <h4 class="mt-4">Current Level: {{ player_progress.level }}</h4>
+          <div class="progress mb-3">
+            <div class="progress-bar bg-success" role="progressbar" style="width: {{ player_progress.progress }}%" 
+                 aria-valuenow="{{ player_progress.progress }}" aria-valuemin="0" aria-valuemax="100">
+              {{ player_progress.progress }}% to Level {{ player_progress.level|add:"1" }}
+            </div>
+          </div>
+          
+          <div class="d-flex mt-4">
+            <a href="{% url 'powers:power_upgrade' power.id %}" class="btn btn-primary me-2">Upgrade Power</a>
+            <a href="{% url 'powers:power_use' power.id %}" class="btn btn-success">Use Power</a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <h3 class="mb-0">Related Experiences</h3>
+        </div>
+        <div class="card-body">
+          <div class="list-group">
+            {% for experience in related_experiences %}
+              <a href="#" class="list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between">
+                  <h5 class="mb-1">{{ experience.name }}</h5>
+                  <span class="badge bg-info">{{ experience.matrix_position }}</span>
+                </div>
+                <p class="mb-1">{{ experience.description }}</p>
+              </a>
+            {% empty %}
+              <p class="text-muted">No related experiences found for this power.</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-4">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h3 class="mb-0">Power Stats</h3>
+        </div>
+        <div class="card-body">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              Current Level
+              <span class="badge bg-primary rounded-pill">{{ player_progress.level }}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              Progress to Next Level
+              <span class="badge bg-success rounded-pill">{{ player_progress.progress }}%</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              Last Used
+              <span class="badge bg-secondary rounded-pill">{{ player_progress.last_used }}</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <h3 class="mb-0">Benefits</h3>
+        </div>
+        <div class="card-body">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">Enhances your abilities in {{ power.get_power_type_display }} areas</li>
+            <li class="list-group-item">Provides bonus effects when used in relevant zones</li>
+            <li class="list-group-item">Unlocks special interactions with related experiences</li>
+            {% if power.level > 1 %}
+              <li class="list-group-item text-success">Level {{ power.level }} bonus: Increased effectiveness</li>
+            {% endif %}
+            {% if power.level > 2 %}
+              <li class="list-group-item text-success">Level {{ power.level }} bonus: Reduced cooldown</li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} 

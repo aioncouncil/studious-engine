@@ -1,0 +1,114 @@
+{% extends "game_base.html" %}
+{% load static %}
+
+{% block title %}Campus Innovations - EudaimoniaGo{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h1 class="display-4">Campus Innovations</h1>
+      <p class="lead">Explore and contribute to ongoing campus innovation projects.</p>
+    </div>
+    <div class="col-md-4 d-flex align-items-center justify-content-md-end">
+      <div class="dropdown">
+        <button class="btn btn-primary dropdown-toggle" type="button" id="stageFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+          Filter by Stage
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="stageFilterDropdown">
+          <li><a class="dropdown-item" href="#" data-filter="all">All Stages</a></li>
+          <li><a class="dropdown-item" href="#" data-filter="ideation">Ideation</a></li>
+          <li><a class="dropdown-item" href="#" data-filter="implementation">Implementation</a></li>
+          <li><a class="dropdown-item" href="#" data-filter="testing">Testing</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <h5>About Campus Innovations</h5>
+          <p>
+            Campus Innovations are projects that aim to improve campus life and operations. 
+            Each innovation goes through three phases: Ideation, Implementation, and Testing.
+            You can contribute to these projects to earn experience points and unlock special powers.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    {% for innovation in object_list %}
+      <div class="col-md-6 col-lg-4 mb-4 innovation-card" data-stage="{{ innovation.current_stage }}">
+        <div class="card h-100">
+          <div class="card-header">
+            <h5 class="mb-0">{{ innovation.name }}</h5>
+            <span class="badge {% if innovation.current_stage == 'ideation' %}bg-info{% elif innovation.current_stage == 'implementation' %}bg-primary{% else %}bg-success{% endif %}">
+              {{ innovation.get_current_stage_display }}
+            </span>
+          </div>
+          <div class="card-body">
+            <p>{{ innovation.description }}</p>
+            
+            <div class="mb-3">
+              <small class="text-muted">Progress:</small>
+              <div class="progress">
+                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ innovation.progress }}%" aria-valuenow="{{ innovation.progress }}" aria-valuemin="0" aria-valuemax="100">{{ innovation.progress }}%</div>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <small class="text-muted">Location:</small>
+              <p class="mb-0">{{ innovation.zone.zone_type }} {{ innovation.zone.zone_number }} ({{ innovation.zone.sector.name }})</p>
+            </div>
+            
+            <a href="#" class="btn btn-outline-primary">View Details</a>
+            {% if innovation.current_stage != 'testing' or innovation.progress < 100 %}
+              <a href="#" class="btn btn-success ms-2">Contribute</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <div class="alert alert-info">
+          No active innovation projects at the moment. Check back later!
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% block extra_javascript %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Innovation filtering by stage
+    const filterLinks = document.querySelectorAll('[data-filter]');
+    const innovationCards = document.querySelectorAll('.innovation-card');
+    
+    filterLinks.forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Update dropdown button text
+        document.querySelector('#stageFilterDropdown').textContent = this.textContent;
+        
+        const filterValue = this.getAttribute('data-filter');
+        
+        innovationCards.forEach(card => {
+          if (filterValue === 'all') {
+            card.style.display = 'block';
+          } else {
+            const cardStage = card.getAttribute('data-stage');
+            card.style.display = cardStage === filterValue ? 'block' : 'none';
+          }
+        });
+      });
+    });
+  });
+</script>
+{% endblock %}
+{% endblock content %} 

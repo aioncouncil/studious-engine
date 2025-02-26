@@ -93,6 +93,11 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "studious_engine.users",
     # Your stuff: custom apps go here
+    "core",           # Core game mechanics
+    "experiences",    # Experience system
+    "zones",          # City/zone management
+    "powers",         # Powers (ideas, skills, technologies)
+    "innovations",    # Innovation system and Vitruvian Loop
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -182,7 +187,7 @@ TEMPLATES = [
         # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-TEMPLATES-BACKEND
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         # https://docs.djangoproject.com/en/dev/ref/settings/#dirs
-        "DIRS": [str(APPS_DIR / "templates")],
+        "DIRS": [str(APPS_DIR / "templates"), str(BASE_DIR / "templates")],
         # https://docs.djangoproject.com/en/dev/ref/settings/#app-dirs
         "APP_DIRS": True,
         "OPTIONS": {

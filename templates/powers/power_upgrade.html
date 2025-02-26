@@ -1,0 +1,51 @@
+{% extends "game_base.html" %}
+{% load static %}
+
+{% block title %}Upgrade {{ power.name }} - Powers - EudaimoniaGo{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'powers:power_list' %}">Powers</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'powers:power_detail' power.id %}">{{ power.name }}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Upgrade</li>
+    </ol>
+  </nav>
+
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+      <div class="card">
+        <div class="card-header text-center">
+          <h2 class="mb-0">Upgrade {{ power.name }}</h2>
+          <p class="text-muted">Current Level: {{ power.level }}</p>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-info">
+            <h4 class="alert-heading">Upgrade Cost</h4>
+            <p>This upgrade requires <strong>{{ upgrade_cost }} XP points</strong>.</p>
+            <p class="mb-0">You currently have <strong>{{ request.user.profile.experience_points|default:"0" }} XP points</strong>.</p>
+          </div>
+          
+          <h4 class="mt-4">Benefits of Level {{ power.level|add:"1" }}</h4>
+          <ul class="list-group mb-4">
+            {% for benefit in benefits %}
+            <li class="list-group-item">{{ benefit }}</li>
+            {% endfor %}
+          </ul>
+          
+          <form method="post" action="{% url 'powers:power_upgrade' power.id %}">
+            {% csrf_token %}
+            <div class="text-center">
+              <button type="submit" class="btn btn-primary btn-lg" {% if request.user.profile.experience_points < upgrade_cost %}disabled{% endif %}>
+                Upgrade Power
+              </button>
+              <a href="{% url 'powers:power_detail' power.id %}" class="btn btn-secondary btn-lg ms-2">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} 

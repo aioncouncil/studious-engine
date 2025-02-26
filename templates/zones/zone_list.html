@@ -1,0 +1,133 @@
+{% extends "game_base.html" %}
+{% load static %}
+
+{% block title %}Campus Zones - EudaimoniaGo{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h1 class="display-4">Campus Zones</h1>
+      <p class="lead">Explore the different areas of campus and their unique opportunities.</p>
+    </div>
+    <div class="col-md-4 d-flex align-items-center justify-content-md-end">
+      <div class="dropdown">
+        <button class="btn btn-primary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+          Filter Zones
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+          <li><a class="dropdown-item" href="#" data-filter="all">All Zones</a></li>
+          <li><a class="dropdown-item" href="#" data-filter="academic">Academic</a></li>
+          <li><a class="dropdown-item" href="#" data-filter="social">Social</a></li>
+          <li><a class="dropdown-item" href="#" data-filter="wellness">Wellness</a></li>
+          <li><a class="dropdown-item" href="#" data-filter="administrative">Administrative</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sector Navigation -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Campus Sectors</h5>
+          <div class="d-flex flex-wrap gap-2">
+            {% for sector in sectors %}
+              <a href="#sector-{{ sector.id }}" class="btn {% if sector.id == active_sector %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                {{ sector.name }}
+              </a>
+            {% empty %}
+              <p class="text-muted">No sectors available.</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Zones by Sector -->
+  {% for sector in sectors %}
+    <div id="sector-{{ sector.id }}" class="row mb-5">
+      <div class="col-12 mb-3">
+        <h2 class="border-bottom pb-2">{{ sector.name }}</h2>
+      </div>
+      
+      {% for zone in sector.zones %}
+        <div class="col-md-6 col-lg-4 mb-4 zone-card" data-type="{{ zone.zone_type|lower }}">
+          <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0">{{ zone.zone_type }} {{ zone.zone_number }}</h5>
+            </div>
+            <div class="card-body">
+              {% if zone.description %}
+                <p>{{ zone.description }}</p>
+              {% else %}
+                <p class="text-muted">A {{ zone.zone_type|lower }} zone in the {{ sector.name }} sector.</p>
+              {% endif %}
+              
+              <div class="mb-3">
+                <small class="text-muted">Status:</small>
+                <span class="badge {% if zone.is_active %}bg-success{% else %}bg-warning{% endif %}">
+                  {% if zone.is_active %}Active{% else %}Inactive{% endif %}
+                </span>
+              </div>
+              
+              <div class="mb-3">
+                <small class="text-muted">Experiences Available:</small>
+                <span class="badge bg-info">{{ zone.experiences_count|default:"0" }}</span>
+              </div>
+              
+              <a href="{% url 'zones:zone_detail' zone.id %}" class="btn btn-outline-primary">View Zone</a>
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="col-12">
+          <div class="alert alert-info">
+            No zones found in this sector.
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% empty %}
+    <div class="row">
+      <div class="col-12">
+        <div class="alert alert-warning">
+          No sectors or zones have been defined yet.
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+{% block extra_javascript %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Zone filtering
+    const filterLinks = document.querySelectorAll('[data-filter]');
+    const zoneCards = document.querySelectorAll('.zone-card');
+    
+    filterLinks.forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Update dropdown button text
+        document.querySelector('#filterDropdown').textContent = this.textContent;
+        
+        const filterValue = this.getAttribute('data-filter');
+        
+        zoneCards.forEach(card => {
+          if (filterValue === 'all') {
+            card.style.display = 'block';
+          } else {
+            const cardType = card.getAttribute('data-type');
+            card.style.display = cardType === filterValue ? 'block' : 'none';
+          }
+        });
+      });
+    });
+  });
+</script>
+{% endblock %}
+{% endblock content %} 

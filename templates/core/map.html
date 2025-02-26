@@ -1,0 +1,110 @@
+{% extends "game_base.html" %}
+{% load static %}
+
+{% block title %}Campus Map - EudaimoniaGo{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h1 class="display-4">Campus Map</h1>
+      <p class="lead">Explore campus zones, find experiences, and track your location.</p>
+    </div>
+    <div class="col-md-4 d-flex align-items-center justify-content-md-end">
+      <button id="locate-me" class="btn btn-primary">
+        <i class="fas fa-location-arrow"></i> Locate Me
+      </button>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card mb-4">
+        <div class="card-body p-0">
+          <div id="campus-map" class="map-container">
+            <!-- Map will be initialized by JavaScript -->
+            <div class="map-placeholder text-center py-5">
+              <h3>Interactive Map</h3>
+              <p>The map will appear here when fully loaded.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-4">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h4 class="mb-0">Nearby Zones</h4>
+        </div>
+        <div class="card-body">
+          {% if nearby_zones %}
+            <ul class="list-group">
+              {% for zone in nearby_zones %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  {{ zone.zone_type }}
+                  <span class="badge bg-primary rounded-pill">{{ zone.area|title }}</span>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-muted">No zones nearby. Try moving to a different location.</p>
+          {% endif %}
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <h4 class="mb-0">Available Experiences</h4>
+        </div>
+        <div class="card-body">
+          {% if nearby_experiences %}
+            <ul class="list-group">
+              {% for experience in nearby_experiences %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  {{ experience.name }}
+                  <span class="badge bg-success rounded-pill">{{ experience.difficulty }}</span>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-muted">No experiences available nearby.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% block extra_javascript %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize map if Leaflet is available
+    if (typeof L !== 'undefined') {
+      initializeMap();
+    } else {
+      console.log('Leaflet library not loaded.');
+      document.querySelector('.map-placeholder').innerHTML = '<p class="alert alert-warning">Map library not available. Please check your internet connection.</p>';
+    }
+    
+    // Set up "Locate Me" button
+    const locateButton = document.getElementById('locate-me');
+    if (locateButton) {
+      locateButton.addEventListener('click', function() {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(function(position) {
+            alert('Your position: ' + position.coords.latitude + ', ' + position.coords.longitude);
+            // Here you would update the player's position in the database
+            // using the update_location endpoint
+          }, function(error) {
+            alert('Error getting location: ' + error.message);
+          });
+        } else {
+          alert('Geolocation is not supported by this browser.');
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}
+{% endblock content %} 

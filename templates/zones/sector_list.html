@@ -1,0 +1,141 @@
+{% extends "game_base.html" %}
+{% load static %}
+
+{% block title %}Campus Zones - EudaimoniaGo{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h1 class="display-4">Campus Zones</h1>
+      <p class="lead">Explore and interact with different areas on campus.</p>
+    </div>
+    <div class="col-md-4 d-flex align-items-center justify-content-md-end">
+      <div class="dropdown">
+        <button class="btn btn-primary dropdown-toggle" type="button" id="zoneFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+          All Zones
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="zoneFilterDropdown">
+          <li><a class="dropdown-item active" href="#" data-filter="all">All Zones</a></li>
+          <li><a class="dropdown-item" href="#" data-filter="academic">Academic</a></li>
+          <li><a class="dropdown-item" href="#" data-filter="social">Social</a></li>
+          <li><a class="dropdown-item" href="#" data-filter="wellness">Wellness</a></li>
+          <li><a class="dropdown-item" href="#" data-filter="administrative">Administrative</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Campus Sectors Navigation -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="mb-0">Campus Sectors</h4>
+        </div>
+        <div class="card-body">
+          <div class="d-flex flex-wrap gap-2">
+            {% for sector in sectors %}
+              <a href="#sector-{{ sector.number }}" class="btn btn-outline-primary">
+                {{ sector.name }}
+              </a>
+            {% empty %}
+              <p class="text-muted">No sectors found.</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Zones by Sector -->
+  {% for sector in sectors %}
+    <div id="sector-{{ sector.number }}" class="row mb-5">
+      <div class="col-12">
+        <h2 class="mb-3">{{ sector.name }}</h2>
+        <p>{{ sector.description }}</p>
+        
+        <!-- Zones in this sector -->
+        <div class="row">
+          {% for zone in sector.zones %}
+            <div class="col-md-6 col-lg-4 mb-4 zone-card" data-zone-type="{{ zone.zone_type|lower }}">
+              <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                  <span>{{ zone.zone_type }}</span>
+                  <span class="badge bg-primary">{{ zone.get_area_display }}</span>
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title">Zone {{ zone.zone_number }}</h5>
+                  <p class="card-text mb-2">Located in {{ sector.name }} sector</p>
+                  <p class="card-text"><small class="text-muted">Status: {% if zone.is_active %}Active{% else %}Inactive{% endif %}</small></p>
+                  
+                  {% if zone.experiences.count > 0 %}
+                    <div class="mt-3">
+                      <h6>Available Experiences</h6>
+                      <ul class="list-group list-group-flush">
+                        {% for experience in zone.experiences %}
+                          <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            {{ experience.name }}
+                            <span class="badge bg-success rounded-pill">{{ experience.difficulty }}</span>
+                          </li>
+                        {% endfor %}
+                      </ul>
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="card-footer">
+                  <a href="{% url 'zones:zone_detail' zone.id %}" class="btn btn-primary">View Details</a>
+                  <a href="{% url 'zones:zone_contribute' zone.id %}" class="btn btn-outline-primary">Contribute</a>
+                </div>
+              </div>
+            </div>
+          {% empty %}
+            <div class="col-12">
+              <div class="alert alert-info">No zones available in this sector.</div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+{% block extra_javascript %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Set up zone filtering
+    const filterLinks = document.querySelectorAll('[data-filter]');
+    const zoneCards = document.querySelectorAll('.zone-card');
+    const filterDropdownButton = document.getElementById('zoneFilterDropdown');
+    
+    filterLinks.forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Update active class
+        filterLinks.forEach(l => l.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Update dropdown button text
+        filterDropdownButton.textContent = this.textContent;
+        
+        // Filter zones
+        const filterValue = this.dataset.filter;
+        
+        zoneCards.forEach(card => {
+          if (filterValue === 'all') {
+            card.style.display = '';
+          } else {
+            if (card.dataset.zoneType === filterValue) {
+              card.style.display = '';
+            } else {
+              card.style.display = 'none';
+            }
+          }
+        });
+      });
+    });
+  });
+</script>
+{% endblock %}
+{% endblock content %} 

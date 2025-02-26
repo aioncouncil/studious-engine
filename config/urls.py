@@ -23,7 +23,12 @@ urlpatterns = [
     path("users/", include("studious_engine.users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
     # Your stuff: custom urls includes go here
-    # ...
+     # EudaimoniaGo game URLs
+    path("game/", include("core.urls", namespace="core")),
+    path("experiences/", include("experiences.urls", namespace="experiences")),
+    path("zones/", include("zones.urls", namespace="zones")),
+    path("innovations/", include("innovations.urls", namespace="innovations")),
+    path("powers/", include("powers.urls", namespace="powers")),
     # Media files
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
 ]

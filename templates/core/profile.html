@@ -1,0 +1,119 @@
+{% extends "game_base.html" %}
+{% load static %}
+
+{% block title %}Player Profile - EudaimoniaGo{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <h1 class="display-4">Player Profile</h1>
+      <p class="lead">View your stats, achievements, and progress in EudaimoniaGo.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-4 mb-4">
+      <!-- Player Info Card -->
+      <div class="card profile-card">
+        <div class="card-body text-center">
+          <div class="mb-3">
+            <img src="{% static 'images/default-avatar.png' %}" alt="Profile Avatar" class="profile-avatar mb-3" onerror="this.src='https://via.placeholder.com/150'">
+            <h3 class="mb-0">{{ request.user.username }}</h3>
+            <p class="text-muted">Level {{ player.level|default:1 }}</p>
+          </div>
+          
+          <div class="progress mb-3">
+            <div class="progress-bar bg-success" role="progressbar" style="width: {{ player.level_progress|default:0 }}%" aria-valuenow="{{ player.level_progress|default:0 }}" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+          
+          <p class="text-muted">{{ player.level_progress|default:0 }}% to Level {{ player.level|default:1|add:1 }}</p>
+          
+          <div class="d-flex justify-content-around mt-4">
+            <div>
+              <h4>{{ player.total_xp|default:0 }}</h4>
+              <p class="text-muted small mb-0">Total XP</p>
+            </div>
+            <div>
+              <h4>{{ player.powers_unlocked|default:0 }}</h4>
+              <p class="text-muted small mb-0">Powers</p>
+            </div>
+            <div>
+              <h4>{{ player.zones_visited|default:0 }}</h4>
+              <p class="text-muted small mb-0">Zones</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-8">
+      <!-- Happiness Metrics -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h4 class="mb-0">Eudaimonia Metrics</h4>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <h5>Purpose</h5>
+              <div class="progress mb-2">
+                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ player.metrics.purpose|default:20 }}%" aria-valuenow="{{ player.metrics.purpose|default:20 }}" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+              <p class="small text-muted">Your sense of meaning and direction</p>
+            </div>
+            <div class="col-md-6 mb-3">
+              <h5>Growth</h5>
+              <div class="progress mb-2">
+                <div class="progress-bar bg-info" role="progressbar" style="width: {{ player.metrics.growth|default:30 }}%" aria-valuenow="{{ player.metrics.growth|default:30 }}" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+              <p class="small text-muted">Personal development and learning</p>
+            </div>
+            <div class="col-md-6 mb-3">
+              <h5>Relationships</h5>
+              <div class="progress mb-2">
+                <div class="progress-bar bg-warning" role="progressbar" style="width: {{ player.metrics.relationships|default:40 }}%" aria-valuenow="{{ player.metrics.relationships|default:40 }}" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+              <p class="small text-muted">Quality of social connections</p>
+            </div>
+            <div class="col-md-6 mb-3">
+              <h5>Autonomy</h5>
+              <div class="progress mb-2">
+                <div class="progress-bar bg-success" role="progressbar" style="width: {{ player.metrics.autonomy|default:25 }}%" aria-valuenow="{{ player.metrics.autonomy|default:25 }}" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+              <p class="small text-muted">Freedom and self-determination</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Recent Activity -->
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h4 class="mb-0">Recent Activity</h4>
+          <span class="badge bg-primary">Last 7 Days</span>
+        </div>
+        <div class="card-body">
+          {% if player.recent_activities %}
+            <ul class="list-group">
+              {% for activity in player.recent_activities %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <div>
+                    <strong>{{ activity.title }}</strong>
+                    <p class="mb-0 text-muted small">{{ activity.description }}</p>
+                  </div>
+                  <span class="badge bg-success">+{{ activity.xp }} XP</span>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <div class="alert alert-info">
+              No recent activity found. Start exploring the campus to earn experience!
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %} 

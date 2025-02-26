@@ -1,0 +1,55 @@
+{% extends "game_base.html" %}
+{% load static %}
+
+{% block title %}Powers - EudaimoniaGo{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h1 class="display-4">Powers</h1>
+      <p class="lead">Discover and develop your powers to enhance your capabilities in the game.</p>
+    </div>
+    <div class="col-md-4 d-flex align-items-center justify-content-md-end">
+      <div class="btn-group" role="group">
+        <button type="button" class="btn btn-outline-primary active">All</button>
+        <button type="button" class="btn btn-outline-primary">Skills</button>
+        <button type="button" class="btn btn-outline-primary">Abilities</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    {% if powers %}
+      {% for power in powers %}
+        <div class="col-md-6 col-lg-4 mb-4">
+          <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span class="badge bg-primary">{{ power.get_power_type_display }}</span>
+              <span class="badge bg-info">Level {{ power.level }}</span>
+            </div>
+            <div class="card-body">
+              <h5 class="card-title">{{ power.name }}</h5>
+              <p class="card-text">{{ power.description }}</p>
+              <div class="progress mb-3">
+                <div class="progress-bar bg-success" role="progressbar" style="width: {{ power.progress }}%" aria-valuenow="{{ power.progress }}" aria-valuemin="0" aria-valuemax="100">{{ power.progress }}%</div>
+              </div>
+            </div>
+            <div class="card-footer">
+              <a href="{% url 'powers:power_detail' power.id %}" class="btn btn-primary">View Details</a>
+              <a href="{% url 'powers:power_use' power.id %}" class="btn btn-success">Use Power</a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="col-12">
+        <div class="alert alert-info">
+          <p>You haven't unlocked any powers yet. Participate in experiences to discover and develop powers!</p>
+          <a href="{% url 'experiences:experience_list' %}" class="btn btn-primary">Explore Experiences</a>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %} 

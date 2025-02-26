@@ -1,3 +1,57 @@
 {% extends "base.html" %}
 
+{% block content %}
+<div class="container">
+  <h1 class="mt-5 mb-4">Welcome to EudaimoniaGo</h1>
+  
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card mb-4">
+        <div class="card-body">
+          <h2 class="card-title">Start Your Journey</h2>
+          <p class="card-text">
+            EudaimoniaGo is an innovative campus-based game that combines real-world exploration
+            with digital gameplay to enhance your university experience.
+          </p>
+          <p class="card-text">
+            Explore campus zones, discover new experiences, develop your powers, and contribute to innovations
+            that benefit the entire campus community.
+          </p>
+          
+          <div class="text-center mt-4">
+            <a href="{% url 'core:dashboard' %}" class="btn btn-primary btn-lg">Enter Game</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div class="card mb-4">
+        <div class="card-header">Game Features</div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item">
+            <a href="{% url 'core:dashboard' %}">Game Dashboard</a>
+          </li>
+          <li class="list-group-item">
+            <a href="{% url 'core:map' %}">Interactive Campus Map</a>
+          </li>
+          <li class="list-group-item">
+            <a href="{% url 'core:player_profile' %}">Player Profile</a>
+          </li>
+          <li class="list-group-item">
+            <a href="{% url 'powers:power_list' %}">Powers & Abilities</a>
+          </li>
+          <li class="list-group-item">
+            <a href="{% url 'zones:sector_list' %}">Campus Zones</a>
+          </li>
+          <li class="list-group-item">
+            <a href="{% url 'innovations:innovation_list' %}">Campus Innovations</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
 
