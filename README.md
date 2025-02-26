@@ -7,6 +7,19 @@ Gamified Civilization & Manufacturing Engine for Creating & Running Physical Pos
 
 License: MIT
 
+## App Configuration Notes
+
+The apps in this project follow these conventions:
+
+1. App names in `INSTALLED_APPS` should match the import path used in the code
+2. For example, the core app is configured with `name = "core"` in CoreConfig and referenced as `"core.apps.CoreConfig"` in INSTALLED_APPS
+3. When models reference models from other apps, they should use the same app name (e.g., `from core.models import ...`)
+
+If you encounter import errors:
+- Check that the app configuration in `apps.py` matches how it's referenced in `settings.py`
+- Make sure imports use consistent paths throughout the codebase
+- Run `python manage.py collectstatic` after adding new static files
+
 ## Settings
 
 Moved to [settings](https://cookiecutter-django.readthedocs.io/en/latest/1-getting-started/settings.html).

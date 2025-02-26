@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}EudaimoniaGo Map{% endblock title %}
+
+{% block css %}
+{{ block.super }}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin=""/>
+<style>
+  #map {
+    height: 70vh;
+    width: 100%;
+  }
+  .control-panel {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: -70px;
+    position: relative;
+    z-index: 1000;
+  }
+</style>
+{% endblock css %}
+
+{% block javascript %}
+{{ block.super }}
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
+<script defer>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the map
+    var map = L.map('map').setView([{{ player_latitude }}, {{ player_longitude }}], 15);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+    
+    // Add player marker
+    var playerIcon = L.icon({
+      iconUrl: '{% static "images/player_marker.png" %}',
+      iconSize: [32, 32],
+      iconAnchor: [16, 32],
+      popupAnchor: [0, -32]
+    });
+    
+    var playerMarker = L.marker([{{ player_latitude }}, {{ player_longitude }}], {icon: playerIcon}).addTo(map);
+    playerMarker.bindPopup("<b>You are here</b><br>{{ player.user.username }}").openPopup();
+    
+    // Sample zone markers (in a real implementation, these would be loaded from the server)
+    var zones = [
+      {name: "Think Tank: Philosophy", type: "think", lat: {{ player_latitude }} + 0.003, lng: {{ player_longitude }} - 0.002},
+      {name: "Production Tank: Crafts", type: "production", lat: {{ player_latitude }} - 0.002, lng: {{ player_longitude }} + 0.003},
+      {name: "Agora Market", type: "market", lat: {{ player_latitude }} + 0.001, lng: {{ player_longitude }} + 0.001}
+    ];
+    
+    // Add zone markers
+    zones.forEach(function(zone) {
+      var zoneIcon;
+      
+      if (zone.type === "think") {
+        zoneIcon = L.icon({
+          iconUrl: '{% static "images/think_tank.png" %}',
+          iconSize: [24, 24],
+          iconAnchor: [12, 24],
+          popupAnchor: [0, -24]
+        });
+      } else if (zone.type === "production") {
+        zoneIcon = L.icon({
+          iconUrl: '{% static "images/production_tank.png" %}',
+          iconSize: [24, 24],
+          iconAnchor: [12, 24],
+          popupAnchor: [0, -24]
+        });
+      } else {
+        zoneIcon = L.icon({
+          iconUrl: '{% static "images/market.png" %}',
+          iconSize: [24, 24],
+          iconAnchor: [12, 24],
+          popupAnchor: [0, -24]
+        });
+      }
+      
+      L.marker([zone.lat, zone.lng], {icon: zoneIcon}).addTo(map)
+        .bindPopup("<b>" + zone.name + "</b><br>Tap to interact");
+    });
+    
+    // Sample experience markers
+    var experiences = [
+      {name: "Quest: City Clean-up", type: "quest", lat: {{ player_latitude }} - 0.001, lng: {{ player_longitude }} - 0.001},
+      {name: "Challenge: Mathematics", type: "challenge", lat: {{ player_latitude }} + 0.002, lng: {{ player_longitude }} + 0.002}
+    ];
+    
+    // Add experience markers
+    experiences.forEach(function(exp) {
+      var expIcon = L.icon({
+        iconUrl: '{% static "images/experience.png" %}',
+        iconSize: [24, 24],
+        iconAnchor: [12, 24],
+        popupAnchor: [0, -24]
+      });
+      
+      L.marker([exp.lat, exp.lng], {icon: expIcon}).addTo(map)
+        .bindPopup("<b>" + exp.name + "</b><br>Tap to engage");
+    });
+    
+    // Get user's current location
+    function updateLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+          var lat = position.coords.latitude;
+          var lng = position.coords.longitude;
+          
+          // Update hidden form fields
+          document.getElementById('id_latitude').value = lat;
+          document.getElementById('id_longitude').value = lng;
+          
+          // Update player marker position
+          playerMarker.setLatLng([lat, lng]);
+          map.setView([lat, lng], 15);
+          
+          // Submit the form to update server-side location
+          document.getElementById('location-form').submit();
+        });
+      }
+    }
+    
+    // Set up update location button
+    document.getElementById('update-location').addEventListener('click', updateLocation);
+  });
+</script>
+{% endblock javascript %}
+
+{% block content %}
+<div class="container-fluid py-3">
+  <div class="row mb-3">
+    <div class="col-md-12">
+      <h1>EudaimoniaGo Map</h1>
+      <p class="lead">Explore zones, experiences, and powers in your vicinity</p>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-md-12">
+      <div id="map"></div>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-md-4 offset-md-8">
+      <div class="control-panel">
+        <h4>Navigation</h4>
+        <p>Use the map to discover nearby game elements:</p>
+        <ul>
+          <li><span class="badge bg-primary">Blue</span> - Think Tanks</li>
+          <li><span class="badge bg-success">Green</span> - Production Tanks</li>
+          <li><span class="badge bg-warning">Yellow</span> - Experiences</li>
+          <li><span class="badge bg-info">Teal</span> - Markets</li>
+          <li><span class="badge bg-danger">Red</span> - Powers to Master</li>
+        </ul>
+        
+        <form id="location-form" method="post" action="{% url 'core:update_location' %}">
+          {% csrf_token %}
+          <input type="hidden" id="id_latitude" name="latitude" value="{{ player_latitude }}">
+          <input type="hidden" id="id_longitude" name="longitude" value="{{ player_longitude }}">
+          <button type="button" id="update-location" class="btn btn-primary">Update My Location</button>
+        </form>
+        
+        <hr>
+        
+        <div class="d-grid gap-2">
+          <a href="{% url 'core:dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Welcome to EudaimoniaGo{% endblock %}
+
+{% block css %}
+{{ block.super }}
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  .welcome-container {
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    background-image: url('{% static "images/welcome-background.jpg" %}');
+    background-size: cover;
+    background-position: center;
+    position: relative;
+  }
+  
+  .welcome-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.3);
+    z-index: 1;
+  }
+  
+  .content-wrapper {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    width: 100%;
+  }
+  
+  .logo-container {
+    margin-top: 10vh;
+    width: 80%;
+    max-width: 300px;
+    text-align: center;
+  }
+  
+  .logo {
+    width: 100%;
+    height: auto;
+  }
+  
+  .welcome-message {
+    color: white;
+    text-align: center;
+    margin: 20px 0;
+    font-size: 1.8rem;
+    font-weight: bold;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
+  
+  .welcome-text {
+    color: white;
+    text-align: center;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  }
+  
+  .action-buttons {
+    width: 100%;
+    margin-bottom: 10vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .continue-button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 15px 0;
+    border: none;
+    border-radius: 50px;
+    width: 80%;
+    max-width: 300px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    margin-bottom: 15px;
+  }
+  
+  .referral-link {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+  
+  .pokemon-images {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40%;
+    z-index: 1;
+    pointer-events: none;
+  }
+  
+  .pokemon {
+    position: absolute;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  
+  /* Pokemon positions based on the screenshot */
+  .pokemon-1 {
+    width: 80px;
+    height: 80px;
+    background-image: url('{% static "images/power-wisdom.png" %}');
+    bottom: 20%;
+    left: 15%;
+  }
+  
+  .pokemon-2 {
+    width: 100px;
+    height: 100px;
+    background-image: url('{% static "images/power-creativity.png" %}');
+    bottom: 10%;
+    right: 20%;
+  }
+  
+  .pokemon-3 {
+    width: 70px;
+    height: 70px;
+    background-image: url('{% static "images/power-strength.png" %}');
+    bottom: 25%;
+    right: 40%;
+  }
+  
+  .pokemon-4 {
+    width: 90px;
+    height: 90px;
+    background-image: url('{% static "images/power-leadership.png" %}');
+    bottom: 5%;
+    left: 35%;
+  }
+  
+  .shadow {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 40px;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0.3) 0%,rgba(0,0,0,0) 70%);
+    border-radius: 50%;
+    transform: translateY(10px);
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="welcome-container">
+  <div class="welcome-overlay"></div>
+  
+  <div class="content-wrapper">
+    <div class="logo-container">
+      <img src="{% static 'images/eudaimonia-logo.png' %}" alt="EudaimoniaGo" class="logo">
+    </div>
+    
+    <div>
+      <h1 class="welcome-message">Welcome!</h1>
+      <p class="welcome-text">Your EudaimoniaGo journey is about to begin!</p>
+    </div>
+    
+    <div class="action-buttons">
+      <!-- Changed to use the 'home' URL instead of 'core:dashboard' -->
+      <a href="{% url 'home' %}" class="continue-button">CONTINUE</a>
+      <a href="#" class="referral-link">Have a referral code?</a>
+    </div>
+  </div>
+  
+  <!-- Power visuals replacing Pokemon -->
+  <div class="pokemon-images">
+    <div class="pokemon pokemon-1">
+      <div class="shadow"></div>
+    </div>
+    <div class="pokemon pokemon-2">
+      <div class="shadow"></div>
+    </div>
+    <div class="pokemon pokemon-3">
+      <div class="shadow"></div>
+    </div>
+    <div class="pokemon pokemon-4">
+      <div class="shadow"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

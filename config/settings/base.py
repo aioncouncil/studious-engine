@@ -93,11 +93,11 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "studious_engine.users",
     # Your stuff: custom apps go here
-    "core",           # Core game mechanics
-    "experiences",    # Experience system
-    "zones",          # City/zone management
-    "powers",         # Powers (ideas, skills, technologies)
-    "innovations",    # Innovation system and Vitruvian Loop
+    "core.apps.CoreConfig",           # Core game mechanics
+    "experiences.apps.ExperiencesConfig",    # Experience system
+    "zones.apps.ZonesConfig",          # City/zone management
+    "powers.apps.PowersConfig",         # Powers (ideas, skills, technologies)
+    "innovations.apps.InnovationsConfig",    # Innovation system and Vitruvian Loop
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

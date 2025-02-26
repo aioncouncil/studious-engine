@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}EudaimoniaGo Experiences{% endblock title %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h1>Available Experiences</h1>
+      <p class="lead">Engage in activities to grow your skills and contribute to the city</p>
+    </div>
+    <div class="col-md-4 text-end">
+      <a href="{% url 'core:dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+  </div>
+  
+  <!-- Filter Controls -->
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <h5>Filter Experiences</h5>
+        </div>
+        <div class="card-body">
+          <form method="get" class="row g-3">
+            <div class="col-md-3">
+              <label for="type" class="form-label">Experience Type</label>
+              <select name="type" id="type" class="form-select">
+                <option value="">All Types</option>
+                <option value="quest">Quest</option>
+                <option value="challenge">Challenge</option>
+                <option value="collaboration">Collaboration</option>
+                <option value="innovation">Innovation</option>
+                <option value="reflection">Reflection</option>
+              </select>
+            </div>
+            
+            <div class="col-md-3">
+              <label for="matrix" class="form-label">Matrix Position</label>
+              <select name="matrix" id="matrix" class="form-select">
+                <option value="">All Positions</option>
+                <option value="soul_out">Soul Out (Think Tank)</option>
+                <option value="soul_in">Soul In (Review)</option>
+                <option value="body_out">Body Out (Production Tank)</option>
+                <option value="body_in">Body In (Market)</option>
+              </select>
+            </div>
+            
+            <div class="col-md-3">
+              <label for="art_type" class="form-label">Art Type</label>
+              <select name="art_type" id="art_type" class="form-select">
+                <option value="">All Arts</option>
+                <option value="imitation">Imitation</option>
+                <option value="production">Production</option>
+                <option value="usage">Usage</option>
+              </select>
+            </div>
+            
+            <div class="col-md-3 d-flex align-items-end">
+              <button type="submit" class="btn btn-primary">Apply Filters</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Active Experiences -->
+  {% if active_experiences %}
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h4>Your Active Experiences</h4>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            {% for player_exp in active_experiences %}
+            <div class="col-md-4 mb-3">
+              <div class="card h-100">
+                <div class="card-header">
+                  {{ player_exp.experience.name }}
+                </div>
+                <div class="card-body">
+                  <h6 class="card-subtitle mb-2 text-muted">
+                    {{ player_exp.experience.get_experience_type_display }} |
+                    {{ player_exp.experience.get_matrix_position_display }}
+                  </h6>
+                  <p class="card-text">{{ player_exp.experience.description|truncatewords:20 }}</p>
+                  <div class="progress mb-2">
+                    <div class="progress-bar" role="progressbar" style="width: {{ player_exp.progress }}%;" aria-valuenow="{{ player_exp.progress }}" aria-valuemin="0" aria-valuemax="100">{{ player_exp.progress }}%</div>
+                  </div>
+                  <p><strong>Status:</strong> {{ player_exp.get_status_display }}</p>
+                  <a href="{% url 'experiences:update_experience' player_exp.experience.id %}" class="btn btn-sm btn-primary">Update Progress</a>
+                  <a href="{% url 'experiences:experience_detail' player_exp.experience.id %}" class="btn btn-sm btn-secondary">Details</a>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  
+  <!-- Available Experiences -->
+  <div class="row">
+    <div class="col-md-12">
+      <h3>Available Experiences</h3>
+      {% if experiences %}
+        <div class="row">
+          {% for experience in experiences %}
+          <div class="col-md-4 mb-4">
+            <div class="card h-100 {% if experience.experience_type == 'quest' %}border-primary{% elif experience.experience_type == 'challenge' %}border-success{% elif experience.experience_type == 'collaboration' %}border-info{% elif experience.experience_type == 'innovation' %}border-warning{% else %}border-secondary{% endif %}">
+              <div class="card-header">
+                <span class="badge {% if experience.experience_type == 'quest' %}bg-primary{% elif experience.experience_type == 'challenge' %}bg-success{% elif experience.experience_type == 'collaboration' %}bg-info{% elif experience.experience_type == 'innovation' %}bg-warning{% else %}bg-secondary{% endif %}">
+                  {{ experience.get_experience_type_display }}
+                </span>
+                <span class="badge {% if experience.matrix_position == 'soul_out' %}bg-primary{% elif experience.matrix_position == 'soul_in' %}bg-danger{% elif experience.matrix_position == 'body_out' %}bg-success{% else %}bg-info{% endif %}">
+                  {{ experience.get_matrix_position_display }}
+                </span>
+              </div>
+              <div class="card-body">
+                <h5 class="card-title">{{ experience.name }}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">
+                  {{ experience.get_art_type_display }} |
+                  {{ experience.get_good_type_display }}
+                </h6>
+                <p class="card-text">{{ experience.description|truncatewords:20 }}</p>
+                <div class="row mb-2">
+                  <div class="col-6">
+                    <small class="text-muted">Difficulty: {{ experience.difficulty }}/10</small>
+                  </div>
+                  <div class="col-6 text-end">
+                    <small class="text-muted">Duration: {{ experience.duration_minutes }} min</small>
+                  </div>
+                </div>
+                <div class="d-grid gap-2">
+                  <a href="{% url 'experiences:experience_detail' experience.id %}" class="btn btn-primary">View Details</a>
+                </div>
+              </div>
+              <div class="card-footer text-muted">
+                <small>Rewards: {{ experience.happiness_reward }} Happiness, {{ experience.experience_reward }} XP</small>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="alert alert-info">
+          No experiences available based on your filters. Try adjusting the filters or check back later.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock content %}
