@@ -1,0 +1,413 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Innovation Processes | Atlantis Go{% endblock title %}
+
+{% block extra_css %}
+<style>
+  .innovation-card {
+    border-radius: 12px;
+    transition: transform 0.2s;
+    height: 100%;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  
+  .innovation-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  }
+  
+  .type-indicator {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 50px 50px 0;
+    border-color: transparent #4285F4 transparent transparent;
+  }
+  
+  .type-icon {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    color: white;
+  }
+  
+  .type-product { border-color: transparent #4285F4 transparent transparent; }
+  .type-process { border-color: transparent #34A853 transparent transparent; }
+  .type-service { border-color: transparent #FBBC05 transparent transparent; }
+  .type-social { border-color: transparent #EA4335 transparent transparent; }
+  .type-governance { border-color: transparent #8E44AD transparent transparent; }
+  .type-educational { border-color: transparent #16A085 transparent transparent; }
+  
+  .participant-avatars {
+    display: flex;
+  }
+  
+  .participant-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-left: -10px;
+    border: 2px solid white;
+    background-color: #f8f9fa;
+  }
+  
+  .participant-avatar:first-child {
+    margin-left: 0;
+  }
+  
+  .badge-stage {
+    margin-right: 5px;
+  }
+  
+  .filter-bar {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .floating-action-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Header Section -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1>Innovation Processes</h1>
+      <p class="lead">Discover or initiate innovation opportunities in the city</p>
+    </div>
+    <a href="{% url 'core:dashboard' %}" class="btn btn-outline-secondary d-none d-md-block">
+      <i class="fas fa-th-large"></i> Dashboard
+    </a>
+  </div>
+  
+  <!-- Filter Section -->
+  <div class="filter-bar mb-4">
+    <form method="get" class="row g-3">
+      <div class="col-md-3">
+        <label for="type" class="form-label">Innovation Type</label>
+        <select name="type" id="type" class="form-select">
+          <option value="">All Types</option>
+          <option value="product" {% if request.GET.type == 'product' %}selected{% endif %}>Product</option>
+          <option value="process" {% if request.GET.type == 'process' %}selected{% endif %}>Process</option>
+          <option value="service" {% if request.GET.type == 'service' %}selected{% endif %}>Service</option>
+          <option value="social" {% if request.GET.type == 'social' %}selected{% endif %}>Social</option>
+          <option value="governance" {% if request.GET.type == 'governance' %}selected{% endif %}>Governance</option>
+          <option value="educational" {% if request.GET.type == 'educational' %}selected{% endif %}>Educational</option>
+        </select>
+      </div>
+      
+      <div class="col-md-3">
+        <label for="zone" class="form-label">Zone</label>
+        <select name="zone" id="zone" class="form-select">
+          <option value="">All Zones</option>
+          {% for zone in zones %}
+            <option value="{{ zone.id }}" {% if request.GET.zone == zone.id|stringformat:"s" %}selected{% endif %}>
+              {{ zone.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      
+      <div class="col-md-3">
+        <label for="stage" class="form-label">Current Stage</label>
+        <select name="stage" id="stage" class="form-select">
+          <option value="">All Stages</option>
+          <option value="order" {% if request.GET.stage == 'order' %}selected{% endif %}>Order</option>
+          <option value="arrangement" {% if request.GET.stage == 'arrangement' %}selected{% endif %}>Arrangement</option>
+          <option value="eurythmy" {% if request.GET.stage == 'eurythmy' %}selected{% endif %}>Eurythmy</option>
+          <option value="symmetry" {% if request.GET.stage == 'symmetry' %}selected{% endif %}>Symmetry</option>
+          <option value="propriety" {% if request.GET.stage == 'propriety' %}selected{% endif %}>Propriety</option>
+          <option value="economy" {% if request.GET.stage == 'economy' %}selected{% endif %}>Economy</option>
+        </select>
+      </div>
+      
+      <div class="col-md-3">
+        <label for="status" class="form-label">Status</label>
+        <select name="status" id="status" class="form-select">
+          <option value="">All Statuses</option>
+          <option value="in_progress" {% if request.GET.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+          <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Completed</option>
+          <option value="failed" {% if request.GET.status == 'failed' %}selected{% endif %}>Failed</option>
+        </select>
+      </div>
+      
+      <div class="col-12 d-flex justify-content-end">
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-filter"></i> Apply Filters
+        </button>
+        <a href="{% url 'innovations:innovation_list' %}" class="btn btn-outline-secondary ms-2">
+          <i class="fas fa-times"></i> Clear
+        </a>
+      </div>
+    </form>
+  </div>
+  
+  <!-- Active Innovations -->
+  {% if user_innovations %}
+  <div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">Your Innovation Processes</h4>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        {% for innovation in user_innovations %}
+        <div class="col-md-6 col-lg-4 mb-4">
+          <div class="card innovation-card">
+            <div class="type-indicator type-{{ innovation.innovation_type }}"></div>
+            <div class="type-icon">
+              {% if innovation.innovation_type == 'product' %}
+                <i class="fas fa-box"></i>
+              {% elif innovation.innovation_type == 'process' %}
+                <i class="fas fa-cogs"></i>
+              {% elif innovation.innovation_type == 'service' %}
+                <i class="fas fa-concierge-bell"></i>
+              {% elif innovation.innovation_type == 'social' %}
+                <i class="fas fa-users"></i>
+              {% elif innovation.innovation_type == 'governance' %}
+                <i class="fas fa-landmark"></i>
+              {% elif innovation.innovation_type == 'educational' %}
+                <i class="fas fa-graduation-cap"></i>
+              {% endif %}
+            </div>
+            
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start">
+                <h5 class="card-title">{{ innovation.name }}</h5>
+                <span class="badge rounded-pill 
+                  {% if innovation.status == 'in_progress' %}bg-primary
+                  {% elif innovation.status == 'completed' %}bg-success
+                  {% else %}bg-danger{% endif %}">
+                  {{ innovation.get_status_display }}
+                </span>
+              </div>
+              
+              <p class="card-text small">{{ innovation.problem_statement|truncatewords:15 }}</p>
+              
+              <div class="mb-3">
+                <span class="badge badge-stage bg-info">{{ innovation.get_current_stage_display }}</span>
+                <span class="badge bg-secondary">{{ innovation.zone.name }}</span>
+              </div>
+              
+              <!-- Progress Bar -->
+              <div class="progress mb-3" style="height: 5px;">
+                <div class="progress-bar bg-success" role="progressbar" 
+                     aria-valuenow="{{ innovation.calculate_overall_progress }}" 
+                     aria-valuemin="0" aria-valuemax="100"
+                     style="width: {{ innovation.calculate_overall_progress }}%;"></div>
+              </div>
+              
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="participant-avatars">
+                  {% for participant in innovation.participants.all|slice:":3" %}
+                    <img src="{{ participant.avatar.url|default:'https://via.placeholder.com/30' }}" 
+                         alt="{{ participant.user.username }}" 
+                         class="participant-avatar" 
+                         data-bs-toggle="tooltip" 
+                         title="{{ participant.user.username }}">
+                  {% endfor %}
+                  {% if innovation.participants.count > 3 %}
+                    <div class="participant-avatar d-flex align-items-center justify-content-center">
+                      +{{ innovation.participants.count|add:"-3" }}
+                    </div>
+                  {% endif %}
+                </div>
+                
+                <a href="{% url 'innovations:innovation_detail' innovation.id %}" class="btn btn-sm btn-primary">
+                  Continue
+                </a>
+              </div>
+            </div>
+            <div class="card-footer text-muted">
+              <small>Created {{ innovation.created_at|date:"M d, Y" }}</small>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  
+  <!-- Innovation Listing -->
+  <h2 class="mb-3">Discover Innovations</h2>
+  {% if innovations %}
+  <div class="row">
+    {% for innovation in innovations %}
+    <div class="col-md-6 col-lg-4 mb-4">
+      <div class="card innovation-card">
+        <div class="type-indicator type-{{ innovation.innovation_type }}"></div>
+        <div class="type-icon">
+          {% if innovation.innovation_type == 'product' %}
+            <i class="fas fa-box"></i>
+          {% elif innovation.innovation_type == 'process' %}
+            <i class="fas fa-cogs"></i>
+          {% elif innovation.innovation_type == 'service' %}
+            <i class="fas fa-concierge-bell"></i>
+          {% elif innovation.innovation_type == 'social' %}
+            <i class="fas fa-users"></i>
+          {% elif innovation.innovation_type == 'governance' %}
+            <i class="fas fa-landmark"></i>
+          {% elif innovation.innovation_type == 'educational' %}
+            <i class="fas fa-graduation-cap"></i>
+          {% endif %}
+        </div>
+        
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <h5 class="card-title">{{ innovation.name }}</h5>
+            <span class="badge rounded-pill 
+              {% if innovation.status == 'in_progress' %}bg-primary
+              {% elif innovation.status == 'completed' %}bg-success
+              {% else %}bg-danger{% endif %}">
+              {{ innovation.get_status_display }}
+            </span>
+          </div>
+          
+          <p class="card-text small">{{ innovation.problem_statement|truncatewords:15 }}</p>
+          
+          <div class="mb-3">
+            <span class="badge badge-stage bg-info">{{ innovation.get_current_stage_display }}</span>
+            <span class="badge bg-secondary">{{ innovation.zone.name }}</span>
+          </div>
+          
+          <!-- Progress Bar -->
+          <div class="progress mb-3" style="height: 5px;">
+            <div class="progress-bar bg-success" role="progressbar" 
+                 aria-valuenow="{{ innovation.calculate_overall_progress }}" 
+                 aria-valuemin="0" aria-valuemax="100"
+                 style="width: {{ innovation.calculate_overall_progress }}%;"></div>
+          </div>
+          
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+              <img src="{{ innovation.initiator.avatar.url|default:'https://via.placeholder.com/30' }}" 
+                   alt="{{ innovation.initiator.user.username }}" 
+                   class="participant-avatar" 
+                   data-bs-toggle="tooltip" 
+                   title="Initiated by {{ innovation.initiator.user.username }}">
+              <span class="ms-2 small text-muted">{{ innovation.participants.count }} participants</span>
+            </div>
+            
+            <a href="{% url 'innovations:innovation_detail' innovation.id %}" class="btn btn-sm btn-primary">
+              View
+            </a>
+          </div>
+        </div>
+        <div class="card-footer text-muted">
+          <small>Created {{ innovation.created_at|date:"M d, Y" }}</small>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  
+  <!-- Pagination -->
+  {% if innovations.has_other_pages %}
+  <nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+      {% if innovations.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?{% if request.GET %}{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}{% endif %}page=1" aria-label="First">
+            <span aria-hidden="true">&laquo;&laquo;</span>
+          </a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="?{% if request.GET %}{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}{% endif %}page={{ innovations.previous_page_number }}" aria-label="Previous">
+            <span aria-hidden="true">&laquo;</span>
+          </a>
+        </li>
+      {% else %}
+        <li class="page-item disabled">
+          <a class="page-link" href="#" aria-label="First">
+            <span aria-hidden="true">&laquo;&laquo;</span>
+          </a>
+        </li>
+        <li class="page-item disabled">
+          <a class="page-link" href="#" aria-label="Previous">
+            <span aria-hidden="true">&laquo;</span>
+          </a>
+        </li>
+      {% endif %}
+      
+      {% for num in innovations.paginator.page_range %}
+        {% if innovations.number == num %}
+          <li class="page-item active">
+            <a class="page-link" href="#">{{ num }}</a>
+          </li>
+        {% elif num > innovations.number|add:'-3' and num < innovations.number|add:'3' %}
+          <li class="page-item">
+            <a class="page-link" href="?{% if request.GET %}{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}{% endif %}page={{ num }}">{{ num }}</a>
+          </li>
+        {% endif %}
+      {% endfor %}
+      
+      {% if innovations.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?{% if request.GET %}{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}{% endif %}page={{ innovations.next_page_number }}" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+          </a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="?{% if request.GET %}{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}{% endif %}page={{ innovations.paginator.num_pages }}" aria-label="Last">
+            <span aria-hidden="true">&raquo;&raquo;</span>
+          </a>
+        </li>
+      {% else %}
+        <li class="page-item disabled">
+          <a class="page-link" href="#" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+          </a>
+        </li>
+        <li class="page-item disabled">
+          <a class="page-link" href="#" aria-label="Last">
+            <span aria-hidden="true">&raquo;&raquo;</span>
+          </a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+  
+  {% else %}
+  <div class="alert alert-info">
+    <i class="fas fa-info-circle me-2"></i> No innovations found matching your criteria. Try adjusting your filters or initiate a new innovation process.
+  </div>
+  {% endif %}
+  
+  <!-- Floating Action Button for New Innovation -->
+  <a href="{% url 'innovations:create_innovation' %}" class="btn btn-primary floating-action-button">
+    <i class="fas fa-plus"></i>
+  </a>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Enable tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+  });
+</script>
+{% endblock extra_js %}

@@ -1,0 +1,201 @@
+{% comment %}
+[CLAUDE:OPTIMIZATION_LAYER:START]
+This template is part of the experience_system component
+See .claude/README.md for more information
+[CLAUDE:OPTIMIZATION_LAYER:END]
+{% endcomment %}
+
+{% extends "game_app_base.html" %}
+{% load static %}
+{% load experience_tags %}
+
+{% block title %}Experiences - EudaimoniaGo{% endblock %}
+
+{% block inner %}
+  <div class="container-fluid py-3">
+    <div class="row mb-4">
+      <div class="col-md-8">
+        <h1 class="page-heading">Experiences</h1>
+        <p class="lead">Engage in activities to grow your skills and contribute to campus life.</p>
+      </div>
+      <div class="col-md-4 d-flex align-items-center justify-content-md-end">
+        <div class="btn-group">
+          <a href="{% url 'core:map' %}" class="btn btn-outline-secondary me-2">
+            <i class="fas fa-map-marked-alt"></i> Find Nearby
+          </a>
+          <button class="btn btn-eudaimonia" data-bs-toggle="modal" data-bs-target="#filterModal">
+            <i class="fas fa-filter"></i> Filter
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Experiences -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Your Active Experiences</h5>
+            <span class="badge bg-primary">{{ active_experiences|length|default:0 }}</span>
+          </div>
+          <div class="card-body">
+            {% if active_experiences %}
+              <div class="row row-cols-1 row-cols-md-2 g-4">
+                {% for player_exp in active_experiences %}
+                  <div class="col">
+                    <div class="card h-100">
+                      <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">{{ player_exp.experience.name }}</h5>
+                        <span class="badge bg-primary">{{ player_exp.experience.get_experience_type_display }}</span>
+                      </div>
+                      <div class="card-body">
+                        <p class="card-text">{{ player_exp.experience.description|truncatewords:20 }}</p>
+                        
+                        <div class="mb-3">
+                          <label class="form-label small">Progress</label>
+                          <div class="progress">
+                            <div class="{% progress_bar_class player_exp.progress %}" role="progressbar" style="width: {{ player_exp.progress }}%;" aria-valuenow="{{ player_exp.progress }}" aria-valuemin="0" aria-valuemax="100">
+                              {{ player_exp.progress }}%
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                          <a href="{% url 'experiences:experience_detail' player_exp.experience.id %}" class="btn btn-eudaimonia">Continue</a>
+                        </div>
+                      </div>
+                      <div class="card-footer text-muted">
+                        <small>Status: {{ player_exp.get_status_display }}</small>
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="text-center py-4">
+                <i class="fas fa-tasks fa-3x mb-3 text-muted"></i>
+                <h5>No Active Experiences</h5>
+                <p>Start an experience from the list below</p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Available Experiences -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Available Experiences</h5>
+            <span class="badge bg-success">{{ experiences|length|default:0 }}</span>
+          </div>
+          <div class="card-body">
+            {% if experiences %}
+              <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for experience in experiences %}
+                  <div class="col">
+                    <div class="card h-100">
+                      <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">{{ experience.name }}</h5>
+                        <span class="badge {% if experience.experience_type == 'quest' %}bg-primary{% elif experience.experience_type == 'challenge' %}bg-success{% elif experience.experience_type == 'collaboration' %}bg-info{% else %}bg-warning{% endif %}">
+                          {{ experience.get_experience_type_display }}
+                        </span>
+                      </div>
+                      <div class="card-body">
+                        <p class="card-text mb-3">{{ experience.description|truncatewords:20 }}</p>
+                        
+                        <div class="row mb-3">
+                          <div class="col-6">
+                            <p class="mb-0"><i class="fas fa-star text-warning me-1"></i> <small>{{ experience.experience_reward }} XP</small></p>
+                          </div>
+                          <div class="col-6 text-end">
+                            <p class="mb-0"><i class="fas fa-clock text-info me-1"></i> <small>{{ experience.duration_minutes }} min</small></p>
+                          </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                          <a href="{% url 'experiences:experience_detail' experience.id %}" class="btn btn-eudaimonia">View Details</a>
+                        </div>
+                      </div>
+                      <div class="card-footer">
+                        <div class="d-flex justify-content-between">
+                          <small><i class="fas fa-map-marker-alt text-danger me-1"></i> {{ experience.associated_zones.first.name|default:"Any Zone" }}</small>
+                          <small><i class="fas fa-signal"></i> Lvl {{ experience.minimum_rank|default:1 }}</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="text-center py-4">
+                <i class="fas fa-search fa-3x mb-3 text-muted"></i>
+                <h5>No Experiences Available</h5>
+                <p>Check back later or adjust your filters</p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Modal -->
+    <div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="filterModalLabel">Filter Experiences</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form method="get">
+              <div class="mb-3">
+                <label for="type" class="form-label">Experience Type</label>
+                <select class="form-select" id="type" name="type">
+                  <option value="">All Types</option>
+                  <option value="quest">Quest</option>
+                  <option value="challenge">Challenge</option>
+                  <option value="collaboration">Collaboration</option>
+                  <option value="innovation">Innovation</option>
+                  <option value="reflection">Reflection</option>
+                </select>
+              </div>
+              
+              <div class="mb-3">
+                <label for="matrix" class="form-label">Matrix Position</label>
+                <select class="form-select" id="matrix" name="matrix">
+                  <option value="">All Positions</option>
+                  <option value="soul_out">Soul Out (Think Tank)</option>
+                  <option value="soul_in">Soul In (Review)</option>
+                  <option value="body_out">Body Out (Production Tank)</option>
+                  <option value="body_in">Body In (Market)</option>
+                </select>
+              </div>
+              
+              <div class="mb-3">
+                <label for="zone" class="form-label">Zone</label>
+                <select class="form-select" id="zone" name="zone">
+                  <option value="">All Zones</option>
+                  {% for zone in zones %}
+                    <option value="{{ zone.id }}">{{ zone.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              
+              <div class="mb-3">
+                <label for="level" class="form-label">Minimum Level: <span id="levelValue">1</span></label>
+                <input type="range" class="form-range" min="1" max="10" step="1" id="level" name="level" value="1" 
+                  oninput="document.getElementById('levelValue').textContent = this.value">
+              </div>
+              
+              <div class="d-grid">
+                <button type="submit" class="btn btn-eudaimonia">Apply Filters</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+{% endblock %} 

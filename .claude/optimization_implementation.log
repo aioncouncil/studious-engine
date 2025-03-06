@@ -1,0 +1,260 @@
+Implementation started at Wed Mar  5 23:11:00 CST 2025
+Added references to studious_engine/core/templatetags/__init__.py
+Added references to studious_engine/core/templatetags/core_extras.py
+Added references to studious_engine/core/signals.py
+Added references to studious_engine/core/migrations/0005_remove_userlocation_current_zone_id_and_more.py
+Added references to studious_engine/core/migrations/0002_playerprofile_avatar_playerprofile_bio_and_more.py
+Added references to studious_engine/core/migrations/__init__.py
+Added references to studious_engine/core/migrations/0001_initial.py
+Added references to studious_engine/core/migrations/0004_add_economic_layer.py
+Added references to studious_engine/core/migrations/0003_marketitem_wishlist.py
+Added references to studious_engine/core/serializers.py
+Added references to studious_engine/core/tests/test_services.py
+Added references to studious_engine/core/tests/__init__.py
+Added references to studious_engine/core/tests/test_models.py
+Added references to studious_engine/core/tests/test_api.py
+Added references to studious_engine/core/tests/test_art_api.py
+Added references to studious_engine/core/management/__init__.py
+Added references to studious_engine/core/management/commands/seed_eudaimonia.py
+Added references to studious_engine/core/management/commands/__init__.py
+Added references to studious_engine/core/management/commands/seed_art_system.py
+Added references to studious_engine/core/management/commands/test_views.py
+Added references to studious_engine/core/management/commands/create_test_tech_tree_progress.py
+Added references to studious_engine/core/management/commands/create_test_tech_trees.py
+Added references to studious_engine/core/management/commands/test_core_views.py
+Added references to studious_engine/core/__init__.py
+Added references to studious_engine/core/models/art/__init__.py
+Added references to studious_engine/core/models/art/user_progress.py
+Added references to studious_engine/core/models/art/art.py
+Added references to studious_engine/core/models/art/tech_tree.py
+Added references to studious_engine/core/models/__init__.py
+Added references to studious_engine/core/apps.py
+Added references to studious_engine/core/api.py
+Added references to studious_engine/core/serializers/innovation_serializers.py
+Added references to studious_engine/core/serializers/market_serializers.py
+Added references to studious_engine/core/serializers/art/art_serializers.py
+Added references to studious_engine/core/serializers/art/__init__.py
+Added references to studious_engine/core/serializers/art/progress_serializers.py
+Added references to studious_engine/core/serializers/zone_serializers.py
+Added references to studious_engine/core/serializers/__init__.py
+Added references to studious_engine/core/serializers/player_serializers.py
+Added references to studious_engine/core/serializers/experience_serializers.py
+Added references to studious_engine/core/admin.py
+Added references to studious_engine/core/api/__init__.py
+Added references to studious_engine/core/api/art.py
+Added references to studious_engine/core/api/router.py
+Added references to studious_engine/core/api/base.py
+Added references to studious_engine/core/urls.py
+Added references to studious_engine/core/views/__init__.py
+Added references to studious_engine/core/views/core.py
+Added references to studious_engine/core/views/art.py
+Added references to studious_engine/core/services/art/art_service.py
+Added references to studious_engine/core/services/art/practice_service.py
+Added references to studious_engine/core/services/art/tech_tree_service.py
+Added references to studious_engine/core/services/art/__init__.py
+Added references to studious_engine/core/services/art/mastery_service.py
+Added references to studious_engine/core/services/__init__.py
+Added references to studious_engine/core/services/user_service.py
+Added references to studious_engine/core/views.py
+Added references to studious_engine/zones/migrations/__init__.py
+Added references to studious_engine/zones/migrations/0002_zone_city_zone_country_zone_description_and_more.py
+Added references to studious_engine/zones/migrations/0001_initial.py
+Added references to studious_engine/zones/migrations/0003_remove_zonehappiness_friendships_and_more.py
+Added references to studious_engine/zones/management/__init__.py
+Added references to studious_engine/zones/management/commands/setup_test_data.py
+Added references to studious_engine/zones/management/commands/__init__.py
+Added references to studious_engine/zones/__init__.py
+Added references to studious_engine/zones/models/__init__.py
+Added references to studious_engine/zones/apps.py
+Added references to studious_engine/zones/forms.py
+Added references to studious_engine/zones/admin.py
+Added references to studious_engine/zones/urls.py
+Added references to studious_engine/zones/views/__init__.py
+Added references to studious_engine/zones/views/zones.py
+Added references to studious_engine/zones/views.py
+Added references to studious_engine/create_market_images.py
+Added references to studious_engine/experiences/templatetags/__init__.py
+Added references to studious_engine/experiences/templatetags/experience_tags.py
+Added references to studious_engine/experiences/migrations/0002_experience_latitude_experience_longitude.py
+Added references to studious_engine/experiences/migrations/__init__.py
+Added references to studious_engine/experiences/migrations/0001_initial.py
+Added references to studious_engine/experiences/migrations/0003_experienceinstance_experienceparticipation.py
+Added references to studious_engine/experiences/serializers.py
+Added references to studious_engine/experiences/__init__.py
+Added references to studious_engine/experiences/models/__init__.py
+Added references to studious_engine/experiences/apps.py
+Added references to studious_engine/experiences/forms.py
+Added references to studious_engine/experiences/api.py
+Added references to studious_engine/experiences/admin.py
+Added references to studious_engine/experiences/urls.py
+Added references to studious_engine/experiences/views.py
+Added references to studious_engine/create_market_items.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/redis/commands/core.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/referencing/tests/test_core.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/referencing/_core.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/allauth/core/tests/__init__.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/allauth/core/tests/test_ratelimit.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/allauth/core/internal/modelkit.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/allauth/core/internal/adapter.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/allauth/core/internal/tests/test_modelkit.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/allauth/core/internal/tests/__init__.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/allauth/core/internal/tests/test_httpkit.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/allauth/core/internal/__init__.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/allauth/core/internal/httpkit.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/allauth/core/__init__.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/allauth/core/ratelimit.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/allauth/core/context.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/allauth/core/exceptions.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/idna/core.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/pip/_vendor/idna/core.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/pip/_vendor/certifi/core.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/rest_framework/schemas/coreapi.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/certifi/core.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/jsonschema_specifications/_core.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/signing.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/signals.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/cache/backends/memcached.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/cache/backends/db.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/cache/backends/filebased.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/cache/backends/__init__.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/cache/backends/redis.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/cache/backends/dummy.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/cache/backends/base.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/cache/backends/locmem.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/cache/__init__.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/cache/utils.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/mail/backends/console.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/mail/backends/filebased.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/mail/backends/__init__.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/mail/backends/smtp.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/mail/backends/dummy.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/mail/backends/base.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/mail/backends/locmem.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/mail/__init__.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/mail/message.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/mail/utils.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/checks/compatibility/__init__.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/checks/compatibility/django_4_0.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/checks/files.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/checks/caches.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/checks/security/sessions.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/checks/security/csrf.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/checks/security/__init__.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/checks/security/base.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/checks/registry.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/checks/model_checks.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/checks/database.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/checks/__init__.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/checks/templates.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/checks/translation.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/checks/async_checks.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/checks/messages.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/checks/urls.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/validators.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/asgi.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/color.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/__init__.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/templates.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/utils.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/commands/createcachetable.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/commands/inspectdb.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/commands/squashmigrations.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/commands/check.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/commands/startapp.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/commands/optimizemigration.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/commands/sqlmigrate.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/commands/makemigrations.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/commands/sqlflush.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/commands/makemessages.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/commands/shell.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/commands/__init__.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/commands/dumpdata.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/commands/test.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/commands/flush.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/commands/loaddata.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/commands/runserver.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/commands/showmigrations.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/commands/sqlsequencereset.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/commands/dbshell.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/commands/sendtestemail.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/commands/startproject.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/commands/migrate.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/commands/compilemessages.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/commands/diffsettings.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/commands/testserver.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/sql.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/management/base.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/__init__.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/serializers/pyyaml.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/serializers/__init__.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/serializers/xml_serializer.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/serializers/jsonl.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/serializers/python.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/serializers/json.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/serializers/base.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/paginator.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/files/locks.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/files/__init__.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/files/storage/mixins.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/files/storage/handler.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/files/storage/memory.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/files/storage/filesystem.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/files/storage/__init__.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/files/storage/base.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/files/uploadhandler.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/files/utils.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/files/uploadedfile.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/files/temp.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/files/images.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/files/move.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/files/base.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/exceptions.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/handlers/exception.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/handlers/asgi.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/handlers/__init__.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/handlers/base.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/handlers/wsgi.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/servers/__init__.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/servers/basehttp.py
+Added references to studious_engine/venv/lib/python3.13/site-packages/django/core/wsgi.py
+Skipping studious_engine/core/templates/core/virtues.html - already has references
+Skipping studious_engine/core/templates/core/arts/art_detail.html - already has references
+Skipping studious_engine/core/templates/core/arts/mastery_dashboard.html - already has references
+Skipping studious_engine/core/templates/core/arts/mastery_stats.html - already has references
+Skipping studious_engine/core/templates/core/arts/tech_tree_detail.html - already has references
+Skipping studious_engine/core/templates/core/arts/mastery_detail.html - already has references
+Skipping studious_engine/core/templates/core/arts/tech_tree.html - already has references
+Skipping studious_engine/core/templates/core/arts/pokedex.html - already has references
+Skipping studious_engine/core/templates/core/dashboard.html - already has references
+Skipping studious_engine/core/templates/core/update_location.html - already has references
+Skipping studious_engine/core/templates/core/location_updated.html - already has references
+Skipping studious_engine/zones/templates/zones/sector_list.html - already has references
+Skipping studious_engine/zones/templates/zones/sector_detail.html - already has references
+Skipping studious_engine/zones/templates/zones/zone_contribute.html - already has references
+Skipping studious_engine/zones/templates/zones/zone_detail.html - already has references
+Skipping studious_engine/experiences/templates/experiences/join_experience.html - already has references
+Skipping studious_engine/experiences/templates/experiences/experience_instance_list.html - already has references
+Skipping studious_engine/experiences/templates/experiences/update_status.html - already has references
+Skipping studious_engine/experiences/templates/experiences/power_detail.html - already has references
+Skipping studious_engine/experiences/templates/experiences/experience_instance_form.html - already has references
+Skipping studious_engine/experiences/templates/experiences/experience_detail.html - already has references
+Skipping studious_engine/experiences/templates/experiences/experience_list.html - already has references
+Skipping studious_engine/experiences/templates/experiences/experience_instance_detail.html - already has references
+Skipping studious_engine/experiences/templates/experiences/power_list.html - already has references
+Skipping studious_engine/templates/core/profile.html - already has references
+Skipping studious_engine/templates/core/map.html - already has references
+Skipping studious_engine/templates/core/player_profile.html - already has references
+Skipping studious_engine/templates/core/dashboard.html - already has references
+Skipping studious_engine/templates/core/nearby_view.html - already has references
+Skipping studious_engine/templates/core/store.html - already has references
+Skipping studious_engine/templates/core/wishlist.html - already has references
+Skipping studious_engine/templates/zones/sector_list.html - already has references
+Skipping studious_engine/templates/zones/zone_list.html - already has references
+Skipping studious_engine/templates/zones/zone_submitted.html - already has references
+Skipping studious_engine/templates/zones/submit_zone.html - already has references
+Skipping studious_engine/templates/experiences/join_experience.html - already has references
+Skipping studious_engine/templates/experiences/submit_experience.html - already has references
+Skipping studious_engine/templates/experiences/experience_detail.html - already has references
+Skipping studious_engine/templates/experiences/experience_list.html - already has references
+Skipping studious_engine/templates/experiences/experience_submitted.html - already has references
+Skipping studious_engine/templates/experiences/power_list.html - already has references

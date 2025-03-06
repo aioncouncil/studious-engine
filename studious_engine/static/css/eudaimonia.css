@@ -1,0 +1,521 @@
+/* Eudaimonia CSS - Apple-inspired futuristic design system */
+
+:root {
+  /* Color Variables */
+  --eudaimonia-background: #f5f5f7;
+  --eudaimonia-card-bg: rgba(255, 255, 255, 0.8);
+  --eudaimonia-primary: #0071e3;
+  --eudaimonia-secondary: #5e5ce6;
+  --eudaimonia-accent: #ee6c4d;
+  --eudaimonia-success: #28cd41;
+  --eudaimonia-warning: #ff9f0a;
+  --eudaimonia-danger: #ff3b30;
+  --eudaimonia-light: #f5f5f7;
+  --eudaimonia-dark: #1d1d1f;
+  --eudaimonia-gray: #86868b;
+  --eudaimonia-text: #1d1d1f;
+  --eudaimonia-text-secondary: #86868b;
+  
+  /* Primary color palette */
+  --eudaimonia-primary-hover: #0077ed;
+  --eudaimonia-primary-light: rgba(0, 113, 227, 0.1);
+  
+  /* Secondary color palette */
+  --eudaimonia-secondary-hover: #6a68f0;
+  
+  /* Accent colors */
+  --eudaimonia-info: #5ac8fa;
+  
+  /* Glass effect variables */
+  --eudaimonia-glass-bg: rgba(255, 255, 255, 0.7);
+  --eudaimonia-glass-border: rgba(255, 255, 255, 0.2);
+  --eudaimonia-glass-shadow: rgba(0, 0, 0, 0.05);
+  
+  /* Animation speeds */
+  --eudaimonia-transition-speed: 0.3s;
+  
+  /* Art system colors */
+  --art-primary: #5e5ce6;
+  --art-secondary: #0071e3;
+  --art-accent: #5ac8fa;
+  --tech-tree-primary: #ee6c4d;
+  --tech-tree-secondary: #ff9f0a;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--eudaimonia-background);
+  color: var(--eudaimonia-text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-image: linear-gradient(135deg, #f5f5f7 0%, #e3e3e8 100%);
+  background-attachment: fixed;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+}
+
+.display-4 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.page-heading {
+  font-weight: 700;
+  background: linear-gradient(90deg, var(--eudaimonia-primary), var(--eudaimonia-secondary));
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  margin-bottom: 1rem;
+}
+
+.lead {
+  font-weight: 400;
+  color: var(--eudaimonia-text-secondary);
+  font-size: 1.15rem;
+}
+
+/* Navbar Styling */
+.navbar {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 0.75rem 1rem;
+}
+
+.navbar-brand img {
+  height: 40px;
+  filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.1));
+  transition: transform 0.3s ease;
+}
+
+.navbar-brand:hover img {
+  transform: scale(1.05);
+}
+
+.nav-link {
+  color: var(--eudaimonia-dark);
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+  margin: 0 0.25rem;
+}
+
+.nav-link:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: var(--eudaimonia-primary);
+}
+
+.nav-link.active {
+  background-color: rgba(0, 113, 227, 0.1);
+  color: var(--eudaimonia-primary);
+}
+
+.nav-link i {
+  margin-right: 0.5rem;
+}
+
+/* Card Styling */
+.card {
+  background: var(--eudaimonia-card-bg);
+  border: none;
+  border-radius: 1rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  background-color: rgba(0, 0, 0, 0.02);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 1rem 1.25rem;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+.card-footer {
+  background-color: rgba(0, 0, 0, 0.02);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 1rem 1.25rem;
+}
+
+/* Button Styling */
+.btn {
+  border-radius: 2rem;
+  padding: 0.5rem 1.5rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-eudaimonia {
+  background: linear-gradient(135deg, var(--eudaimonia-primary), var(--eudaimonia-secondary));
+  border: none;
+  color: white;
+  box-shadow: 0 2px 10px rgba(0, 113, 227, 0.3);
+}
+
+.btn-eudaimonia:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 113, 227, 0.4);
+  color: white;
+}
+
+.btn-outline-primary {
+  border-color: var(--eudaimonia-primary);
+  color: var(--eudaimonia-primary);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--eudaimonia-primary);
+  color: white;
+}
+
+/* Badge Styling */
+.badge {
+  font-weight: 500;
+  padding: 0.5em 0.75em;
+  border-radius: 1rem;
+}
+
+.bg-primary {
+  background-color: var(--eudaimonia-primary) !important;
+}
+
+.bg-secondary {
+  background-color: var(--eudaimonia-secondary) !important;
+}
+
+.bg-success {
+  background-color: var(--eudaimonia-success) !important;
+}
+
+.bg-warning {
+  background-color: var(--eudaimonia-warning) !important;
+}
+
+.bg-danger {
+  background-color: var(--eudaimonia-danger) !important;
+}
+
+/* Progress Bar Styling */
+.progress {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.progress-bar {
+  background: linear-gradient(90deg, var(--eudaimonia-primary), var(--eudaimonia-secondary));
+  border-radius: 1rem;
+}
+
+/* List Group Styling */
+.list-group-item {
+  border-color: rgba(0, 0, 0, 0.05);
+  padding: 1rem 1.25rem;
+}
+
+.list-group-item-action:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Alert Styling */
+.alert {
+  border: none;
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+}
+
+.alert-warning {
+  background-color: rgba(255, 159, 10, 0.1);
+  color: var(--eudaimonia-warning);
+}
+
+/* Dropdown Styling */
+.dropdown-menu {
+  border: none;
+  border-radius: 1rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.dropdown-item {
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.dropdown-item.active {
+  background-color: rgba(0, 113, 227, 0.1);
+  color: var(--eudaimonia-primary);
+}
+
+/* Content Styling */
+.content {
+  padding: 2rem 0;
+}
+
+/* Animation and Transitions */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.floating {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Timeline styling */
+.timeline {
+  position: relative;
+  margin: 0 0 30px 10px;
+  padding-left: 20px;
+}
+
+.timeline-item {
+  position: relative;
+  padding-bottom: 20px;
+}
+
+.timeline-item-marker {
+  position: absolute;
+  left: -30px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: var(--eudaimonia-primary);
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.2);
+  z-index: 1;
+}
+
+.timeline-item:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: -24px;
+  top: 12px;
+  bottom: -10px;
+  width: 1px;
+  background-color: rgba(0, 113, 227, 0.2);
+}
+
+.timeline-item-content {
+  padding-left: 10px;
+}
+
+/* Art System - Mastery Progress */
+.mastery-card {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background: var(--eudaimonia-card-bg);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mastery-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+.mastery-header {
+  padding: 15px;
+  background: linear-gradient(135deg, var(--art-primary), var(--art-secondary));
+  color: white;
+}
+
+.mastery-title {
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.mastery-subtitle {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.mastery-body {
+  padding: 15px;
+}
+
+.mastery-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.mastery-stat {
+  text-align: center;
+}
+
+.mastery-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--eudaimonia-dark);
+}
+
+.mastery-label {
+  font-size: 0.8rem;
+  color: var(--eudaimonia-text-secondary);
+}
+
+/* Tech Tree Styling */
+.tech-tree-card {
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--tech-tree-primary), var(--tech-tree-secondary));
+  color: white;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.tech-tree-node {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.tech-tree-node:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.tech-tree-node.locked {
+  opacity: 0.7;
+}
+
+.tech-tree-node.active {
+  border-left: 4px solid var(--eudaimonia-success);
+}
+
+.node-title {
+  font-weight: 600;
+  color: var(--eudaimonia-dark);
+}
+
+.node-description {
+  font-size: 0.9rem;
+  color: var(--eudaimonia-text-secondary);
+}
+
+.progress-bar-container {
+  height: 10px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  overflow: hidden;
+  margin: 10px 0;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: var(--eudaimonia-success);
+  border-radius: 5px;
+}
+
+/* Art Parts styling */
+.art-part {
+  background: var(--eudaimonia-card-bg);
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease;
+}
+
+.art-part:hover {
+  transform: translateY(-2px);
+}
+
+.art-part.completed {
+  border-left: 4px solid var(--eudaimonia-success);
+}
+
+.art-part.active {
+  border-left: 4px solid var(--eudaimonia-primary);
+}
+
+.part-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.part-title {
+  font-weight: 600;
+  color: var(--eudaimonia-dark);
+}
+
+.part-method {
+  font-size: 0.8rem;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background: var(--eudaimonia-primary-light);
+  color: var(--eudaimonia-primary);
+}
+
+.part-description {
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: var(--eudaimonia-text-secondary);
+}
+
+/* Achievement card styles */
+.achievement-card {
+  transition: all 0.3s ease;
+}
+
+.achievement-card.locked {
+  opacity: 0.6;
+}
+
+.achievement-card.unlocked {
+  border-color: var(--eudaimonia-primary);
+}
+
+.achievement-icon {
+  color: var(--eudaimonia-primary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .card {
+    border-radius: 14px;
+  }
+  
+  .btn {
+    border-radius: 10px;
+    padding: 0.5rem 1rem;
+  }
+  
+  .navbar-brand img {
+    max-height: 32px;
+  }
+}

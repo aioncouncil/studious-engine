@@ -1,0 +1,393 @@
+{% comment %}
+[CLAUDE:OPTIMIZATION_LAYER:START]
+This template is part of the zone_system component
+See .claude/README.md for more information
+[CLAUDE:OPTIMIZATION_LAYER:END]
+{% endcomment %}
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ zone.zone_type }} - EudaimoniaGo{% endblock title %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'zones:sector_list' %}">Sectors</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'zones:sector_detail' zone.sector.id %}">{{ zone.sector.name }}</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Zone {{ zone.zone_number }}</li>
+        </ol>
+      </nav>
+      <h1>{{ zone.zone_type }}</h1>
+      <h5>Zone {{ zone.zone_number }} in {{ zone.sector.name }} ({{ zone.get_area_display }})</h5>
+      <p>Rank: {{ zone.rank }}</p>
+    </div>
+    <div class="col-md-4 text-end">
+      <a href="{% url 'zones:zone_contribute' zone.id %}?tank_type=think" class="btn btn-primary">Contribute to Think Tank</a>
+      <a href="{% url 'zones:zone_contribute' zone.id %}?tank_type=production" class="btn btn-success">Contribute to Production Tank</a>
+    </div>
+  </div>
+  
+  <!-- Zone Content Tabs -->
+  <div class="row">
+    <div class="col-md-12">
+      <ul class="nav nav-tabs" id="zoneContentTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">Overview</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="think-tank-tab" data-bs-toggle="tab" data-bs-target="#think-tank" type="button" role="tab" aria-controls="think-tank" aria-selected="false">Think Tank</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="production-tank-tab" data-bs-toggle="tab" data-bs-target="#production-tank" type="button" role="tab" aria-controls="production-tank" aria-selected="false">Production Tank</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="experiences-tab" data-bs-toggle="tab" data-bs-target="#experiences" type="button" role="tab" aria-controls="experiences" aria-selected="false">Experiences</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="contributors-tab" data-bs-toggle="tab" data-bs-target="#contributors" type="button" role="tab" aria-controls="contributors" aria-selected="false">Contributors</button>
+        </li>
+      </ul>
+      <div class="tab-content" id="zoneContentTabsContent">
+        <!-- Overview Tab -->
+        <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+          <div class="card border-top-0 rounded-0 rounded-bottom">
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <h4>Zone Information</h4>
+                  <table class="table">
+                    <tr>
+                      <th>Zone Type:</th>
+                      <td>{{ zone.zone_type }}</td>
+                    </tr>
+                    <tr>
+                      <th>Area:</th>
+                      <td>{{ zone.get_area_display }}</td>
+                    </tr>
+                    <tr>
+                      <th>Rank:</th>
+                      <td>{{ zone.get_rank_display }}</td>
+                    </tr>
+                    <tr>
+                      <th>Sector:</th>
+                      <td>{{ zone.sector.name }} ({{ zone.sector.get_number_display }})</td>
+                    </tr>
+                    <tr>
+                      <th>Leaders:</th>
+                      <td>
+                        {% if zone_leaders %}
+                          {% for leader in zone_leaders %}
+                            {{ leader.player.user.username }}{% if not forloop.last %}, {% endif %}
+                          {% endfor %}
+                        {% else %}
+                          No designated leaders
+                        {% endif %}
+                      </td>
+                    </tr>
+                  </table>
+                  
+                  <h4 class="mt-4">Your Contribution</h4>
+                  <div class="card">
+                    <div class="card-body">
+                      <div class="row">
+                        <div class="col-6">
+                          <h5>Think Tank</h5>
+                          <div class="progress mb-2">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ player_contribution.think_tank_contributions }}%" aria-valuenow="{{ player_contribution.think_tank_contributions }}" aria-valuemin="0" aria-valuemax="100">{{ player_contribution.think_tank_contributions }}</div>
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <h5>Production Tank</h5>
+                          <div class="progress mb-2">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ player_contribution.production_tank_contributions }}%" aria-valuenow="{{ player_contribution.production_tank_contributions }}" aria-valuemin="0" aria-valuemax="100">{{ player_contribution.production_tank_contributions }}</div>
+                          </div>
+                        </div>
+                      </div>
+                      <p class="text-center mt-2">Overall Influence: {{ player_contribution.overall_influence }}%</p>
+                      
+                      {% if player_contribution.is_zone_leader %}
+                        <div class="alert alert-success mt-3">
+                          <h5>You are a Zone Leader!</h5>
+                          <p>You've been a leader since {{ player_contribution.leadership_start_date }}</p>
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="col-md-6">
+                  <h4>Zone Happiness</h4>
+                  <div class="card">
+                    <div class="card-body">
+                      <!-- Soul Metrics -->
+                      <h5>Soul</h5>
+                      <div class="progress mb-2">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: {{ happiness.wisdom }}%" aria-valuenow="{{ happiness.wisdom }}" aria-valuemin="0" aria-valuemax="100">Wisdom: {{ happiness.wisdom }}</div>
+                      </div>
+                      <div class="progress mb-2">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ happiness.courage }}%" aria-valuenow="{{ happiness.courage }}" aria-valuemin="0" aria-valuemax="100">Courage: {{ happiness.courage }}</div>
+                      </div>
+                      <div class="progress mb-2">
+                        <div class="progress-bar bg-info" role="progressbar" style="width: {{ happiness.temperance }}%" aria-valuenow="{{ happiness.temperance }}" aria-valuemin="0" aria-valuemax="100">Temperance: {{ happiness.temperance }}</div>
+                      </div>
+                      <div class="progress mb-2">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{ happiness.justice }}%" aria-valuenow="{{ happiness.justice }}" aria-valuemin="0" aria-valuemax="100">Justice: {{ happiness.justice }}</div>
+                      </div>
+                      <p>Average: {{ happiness.soul_average|floatformat:1 }}</p>
+                      
+                      <!-- Body Metrics -->
+                      <h5>Body</h5>
+                      <div class="progress mb-2">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: {{ happiness.strength }}%" aria-valuenow="{{ happiness.strength }}" aria-valuemin="0" aria-valuemax="100">Strength: {{ happiness.strength }}</div>
+                      </div>
+                      <div class="progress mb-2">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ happiness.wealth }}%" aria-valuenow="{{ happiness.wealth }}" aria-valuemin="0" aria-valuemax="100">Wealth: {{ happiness.wealth }}</div>
+                      </div>
+                      <div class="progress mb-2">
+                        <div class="progress-bar bg-info" role="progressbar" style="width: {{ happiness.beauty }}%" aria-valuenow="{{ happiness.beauty }}" aria-valuemin="0" aria-valuemax="100">Beauty: {{ happiness.beauty }}</div>
+                      </div>
+                      <div class="progress mb-2">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{ happiness.health }}%" aria-valuenow="{{ happiness.health }}" aria-valuemin="0" aria-valuemax="100">Health: {{ happiness.health }}</div>
+                      </div>
+                      <p>Average: {{ happiness.body_average|floatformat:1 }}</p>
+                      
+                      <!-- Environment Metrics -->
+                      <h5>Environment</h5>
+                      <div class="progress mb-2">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: {{ happiness.resources }}%" aria-valuenow="{{ happiness.resources }}" aria-valuemin="0" aria-valuemax="100">Resources: {{ happiness.resources }}</div>
+                      </div>
+                      <div class="progress mb-2">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ happiness.friendships }}%" aria-valuenow="{{ happiness.friendships }}" aria-valuemin="0" aria-valuemax="100">Friendships: {{ happiness.friendships }}</div>
+                      </div>
+                      <div class="progress mb-2">
+                        <div class="progress-bar bg-info" role="progressbar" style="width: {{ happiness.honors }}%" aria-valuenow="{{ happiness.honors }}" aria-valuemin="0" aria-valuemax="100">Honors: {{ happiness.honors }}</div>
+                      </div>
+                      <div class="progress mb-2">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{ happiness.glory }}%" aria-valuenow="{{ happiness.glory }}" aria-valuemin="0" aria-valuemax="100">Glory: {{ happiness.glory }}</div>
+                      </div>
+                      <p>Average: {{ happiness.environment_average|floatformat:1 }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Think Tank Tab -->
+        <div class="tab-pane fade" id="think-tank" role="tabpanel" aria-labelledby="think-tank-tab">
+          <div class="card border-top-0 rounded-0 rounded-bottom">
+            <div class="card-body">
+              <h4>Think Tank: Ideation and Planning</h4>
+              <p>The Think Tank represents the Soul Out (planning and innovation) aspects of this zone.</p>
+              
+              <div class="row mt-4">
+                <div class="col-md-12">
+                  <h5>Current Think Tank Projects</h5>
+                  {% if innovations %}
+                    <div class="row">
+                      {% for innovation in innovations %}
+                        <div class="col-md-6 mb-3">
+                          <div class="card">
+                            <div class="card-header">
+                              <h5>{{ innovation.name }}</h5>
+                              <span class="badge bg-info">{{ innovation.get_current_stage_display }}</span>
+                            </div>
+                            <div class="card-body">
+                              <p>{{ innovation.description|truncatechars:100 }}</p>
+                              <div class="progress mb-2">
+                                <div class="progress-bar bg-info" role="progressbar" style="width: {{ innovation.progress }}%" aria-valuenow="{{ innovation.progress }}" aria-valuemin="0" aria-valuemax="100">{{ innovation.progress }}%</div>
+                              </div>
+                              <a href="#" class="btn btn-primary btn-sm">Contribute</a>
+                            </div>
+                          </div>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  {% else %}
+                    <div class="alert alert-info">
+                      There are no active innovation projects for this zone. You can start one!
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+              
+              <div class="row mt-4">
+                <div class="col-md-12">
+                  <div class="d-grid gap-2">
+                    <a href="{% url 'zones:zone_contribute' zone.id %}?tank_type=think" class="btn btn-primary">Contribute to Think Tank</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Production Tank Tab -->
+        <div class="tab-pane fade" id="production-tank" role="tabpanel" aria-labelledby="production-tank-tab">
+          <div class="card border-top-0 rounded-0 rounded-bottom">
+            <div class="card-body">
+              <h4>Production Tank: Implementation and Creation</h4>
+              <p>The Production Tank represents the Body Out (creation and implementation) aspects of this zone.</p>
+              
+              <div class="row mt-4">
+                <div class="col-md-12">
+                  <h5>Production Statistics</h5>
+                  <table class="table">
+                    <tr>
+                      <th>Resources Produced:</th>
+                      <td>127 units</td>
+                    </tr>
+                    <tr>
+                      <th>Projects Completed:</th>
+                      <td>12</td>
+                    </tr>
+                    <tr>
+                      <th>Active Producers:</th>
+                      <td>8</td>
+                    </tr>
+                    <tr>
+                      <th>Efficiency Rating:</th>
+                      <td>72%</td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              
+              <div class="row mt-4">
+                <div class="col-md-12">
+                  <h5>Current Production Tasks</h5>
+                  <div class="list-group">
+                    <a href="#" class="list-group-item list-group-item-action">
+                      <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">Build Infrastructure Components</h5>
+                        <small>70% Complete</small>
+                      </div>
+                      <p class="mb-1">Creating physical components for city infrastructure based on approved designs.</p>
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                      <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">Resource Refining</h5>
+                        <small>45% Complete</small>
+                      </div>
+                      <p class="mb-1">Processing raw materials into usable resources for other zones.</p>
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                      <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">Implement Tech Tree Advancements</h5>
+                        <small>30% Complete</small>
+                      </div>
+                      <p class="mb-1">Physically implementing innovations from the Think Tank.</p>
+                    </a>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row mt-4">
+                <div class="col-md-12">
+                  <div class="d-grid gap-2">
+                    <a href="{% url 'zones:zone_contribute' zone.id %}?tank_type=production" class="btn btn-success">Contribute to Production Tank</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Experiences Tab -->
+        <div class="tab-pane fade" id="experiences" role="tabpanel" aria-labelledby="experiences-tab">
+          <div class="card border-top-0 rounded-0 rounded-bottom">
+            <div class="card-body">
+              <h4>Zone Experiences</h4>
+              <p>These experiences are associated with this zone and can help you increase your contribution.</p>
+              
+              {% if experiences %}
+                <div class="row">
+                  {% for experience in experiences %}
+                    <div class="col-md-6 mb-3">
+                      <div class="card h-100">
+                        <div class="card-header">
+                          <span class="badge {% if experience.experience_type == 'quest' %}bg-primary{% elif experience.experience_type == 'challenge' %}bg-success{% elif experience.experience_type == 'collaboration' %}bg-info{% elif experience.experience_type == 'innovation' %}bg-warning{% else %}bg-secondary{% endif %}">
+                            {{ experience.get_experience_type_display }}
+                          </span>
+                          <span class="badge {% if experience.matrix_position == 'soul_out' %}bg-primary{% elif experience.matrix_position == 'soul_in' %}bg-danger{% elif experience.matrix_position == 'body_out' %}bg-success{% else %}bg-info{% endif %}">
+                            {{ experience.get_matrix_position_display }}
+                          </span>
+                        </div>
+                        <div class="card-body">
+                          <h5 class="card-title">{{ experience.name }}</h5>
+                          <p class="card-text">{{ experience.description|truncatechars:100 }}</p>
+                          <div class="row mb-2">
+                            <div class="col-6">
+                              <small class="text-muted">Difficulty: {{ experience.difficulty }}/10</small>
+                            </div>
+                            <div class="col-6 text-end">
+                              <small class="text-muted">Duration: {{ experience.duration_minutes }} min</small>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="card-footer">
+                          <a href="{% url 'experiences:experience_detail' experience.id %}" class="btn btn-primary btn-sm">View Experience</a>
+                        </div>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <div class="alert alert-info">
+                  No experiences are currently associated with this zone.
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        
+        <!-- Contributors Tab -->
+        <div class="tab-pane fade" id="contributors" role="tabpanel" aria-labelledby="contributors-tab">
+          <div class="card border-top-0 rounded-0 rounded-bottom">
+            <div class="card-body">
+              <h4>Top Contributors</h4>
+              <p>These players have made significant contributions to this zone.</p>
+              
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Rank</th>
+                      <th>Player</th>
+                      <th>Think Tank</th>
+                      <th>Production Tank</th>
+                      <th>Overall Influence</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for contrib in top_contributors %}
+                      <tr {% if contrib.player.user == request.user %}class="table-primary"{% endif %}>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ contrib.player.user.username }}</td>
+                        <td>{{ contrib.think_tank_contributions }}</td>
+                        <td>{{ contrib.production_tank_contributions }}</td>
+                        <td>{{ contrib.overall_influence }}%</td>
+                        <td>
+                          {% if contrib.is_zone_leader %}
+                            <span class="badge bg-success">Leader</span>
+                          {% endif %}
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

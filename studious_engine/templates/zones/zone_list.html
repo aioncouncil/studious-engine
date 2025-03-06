@@ -1,0 +1,92 @@
+{% comment %}
+[CLAUDE:OPTIMIZATION_LAYER:START]
+This template is part of the zone_system component
+See .claude/README.md for more information
+[CLAUDE:OPTIMIZATION_LAYER:END]
+{% endcomment %}
+
+{% extends "game_app_base.html" %}
+{% load static %}
+
+{% block title %}Zones - EudaimoniaGo{% endblock %}
+
+{% block inner %}
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h1 class="display-4 page-heading">Campus Zones</h1>
+      <p class="lead">Explore different zones across campus and unlock unique experiences.</p>
+    </div>
+    <div class="col-md-4 d-flex align-items-center justify-content-md-end">
+      <div class="btn-group">
+        <a href="{% url 'core:map' %}" class="btn btn-eudaimonia">
+          <i class="fas fa-map-marked-alt"></i> View Map
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sector Navigation -->
+  <div class="mb-4">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex flex-wrap gap-2">
+          <button class="btn btn-eudaimonia active">All Sectors</button>
+          {% for sector in sectors %}
+            <a href="{% url 'zones:sector_detail' sector.id %}" class="btn btn-outline-primary">{{ sector.name }}</a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Zone List -->
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for zone in object_list %}
+      <div class="col">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">{{ zone.zone_type }} {{ zone.zone_number }}</h5>
+            <span class="badge bg-primary">{{ zone.sector.name }}</span>
+          </div>
+          <div class="card-body">
+            <p class="card-text">{{ zone.description }}</p>
+            
+            <div class="mb-3">
+              <p class="mb-1"><i class="fas fa-location-dot"></i> <strong>Location:</strong> {{ zone.location_description }}</p>
+              <p class="mb-1"><i class="fas fa-fire"></i> <strong>Activity Level:</strong> 
+                {% if zone.activity_level == 'high' %}
+                  <span class="text-danger">High</span>
+                {% elif zone.activity_level == 'medium' %}
+                  <span class="text-warning">Medium</span>
+                {% else %}
+                  <span class="text-success">Low</span>
+                {% endif %}
+              </p>
+            </div>
+            
+            <div class="d-grid gap-2">
+              <a href="{% url 'zones:zone_detail' zone.id %}" class="btn btn-eudaimonia">Explore Zone</a>
+            </div>
+          </div>
+          <div class="card-footer">
+            <small class="text-muted">
+              <i class="fas fa-bolt"></i> {{ zone.experience_count }} Experiences • 
+              <i class="fas fa-crown"></i> {{ zone.achievement_count }} Achievements
+            </small>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body text-center">
+            <i class="fas fa-map-location-dot fa-3x mb-3 text-muted"></i>
+            <h5>No Zones Available</h5>
+            <p>There are currently no zones available in this sector.</p>
+            <a href="{% url 'core:map' %}" class="btn btn-eudaimonia">Return to Map</a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %} 

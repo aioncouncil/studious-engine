@@ -1,0 +1,421 @@
+{% comment %}
+[CLAUDE:OPTIMIZATION_LAYER:START]
+This template is part of the core_user_system component
+See .claude/README.md for more information
+[CLAUDE:OPTIMIZATION_LAYER:END]
+{% endcomment %}
+
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+{% load experience_tags %}
+
+{% block title %}Art Mastery Statistics{% endblock %}
+
+{% block extra_css %}
+<style>
+  .stats-header {
+    background-color: #f5f7fa;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .stats-card {
+    border-radius: 10px;
+    margin-bottom: 20px;
+    transition: transform 0.2s;
+  }
+  
+  .stats-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  }
+  
+  .stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #4a6cf7;
+  }
+  
+  .stat-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+  }
+  
+  .mastery-progress {
+    height: 8px;
+    border-radius: 4px;
+  }
+  
+  .mastery-card {
+    border-radius: 10px;
+    margin-bottom: 15px;
+    transition: all 0.2s;
+  }
+  
+  .mastery-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  }
+  
+  .mastery-chart-container {
+    height: 300px;
+    margin-bottom: 20px;
+  }
+  
+  /* Styles for the radar chart */
+  #radar-chart {
+    width: 100%;
+    height: 100%;
+  }
+  
+  /* Category colors */
+  .liberal-arts {
+    color: #4a6cf7;
+  }
+  
+  .mechanical-arts {
+    color: #28a745;
+  }
+  
+  .fine-arts {
+    color: #fd7e14;
+  }
+  
+  .social-arts {
+    color: #6f42c1;
+  }
+  
+  /* Fix for progress bars */
+  .progress-bar {
+    transition: width 0.5s ease;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Dashboard</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'core:arts_pokedex' %}">Arts</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Mastery Statistics</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+  
+  <!-- Stats Header -->
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="stats-header">
+        <div class="row align-items-center">
+          <div class="col-md-8">
+            <h1>Art Mastery Statistics</h1>
+            <p>Track your progress and mastery across all arts.</p>
+          </div>
+          <div class="col-md-4 text-end">
+            <a href="{% url 'core:arts_pokedex' %}" class="btn btn-outline-primary">
+              <i class="fas fa-th"></i> Art Collection
+            </a>
+            <a href="{% url 'core:art_mastery_dashboard' %}" class="btn btn-primary">
+              <i class="fas fa-chart-line"></i> Mastery Dashboard
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Overview Stats -->
+  <div class="row mb-5">
+    <div class="col-md-3">
+      <div class="card stats-card text-center">
+        <div class="card-body">
+          <div class="stat-value">{{ mastery_summary.total_arts }}</div>
+          <div class="stat-label">Arts Discovered</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card stats-card text-center">
+        <div class="card-body">
+          <div class="stat-value">{{ mastery_summary.average_mastery|floatformat:1 }}</div>
+          <div class="stat-label">Average Mastery</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card stats-card text-center">
+        <div class="card-body">
+          <div class="stat-value">{{ practice_stats.total_sessions }}</div>
+          <div class="stat-label">Total Practice Sessions</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card stats-card text-center">
+        <div class="card-body">
+          <div class="stat-value">{{ practice_stats.total_minutes|intcomma }}</div>
+          <div class="stat-label">Total Practice Minutes</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="row">
+    <!-- Mastery Chart -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h4>Mastery Distribution</h4>
+        </div>
+        <div class="card-body">
+          <div class="mastery-chart-container">
+            <canvas id="radar-chart"></canvas>
+          </div>
+          <div class="row text-center">
+            <div class="col-md-3">
+              <div class="stat-label liberal-arts">Liberal Arts</div>
+              <div class="stat-value">{{ mastery_summary.category_averages.liberal_arts|default:"0"|floatformat:1 }}</div>
+            </div>
+            <div class="col-md-3">
+              <div class="stat-label mechanical-arts">Mechanical Arts</div>
+              <div class="stat-value">{{ mastery_summary.category_averages.mechanical_arts|default:"0"|floatformat:1 }}</div>
+            </div>
+            <div class="col-md-3">
+              <div class="stat-label fine-arts">Fine Arts</div>
+              <div class="stat-value">{{ mastery_summary.category_averages.fine_arts|default:"0"|floatformat:1 }}</div>
+            </div>
+            <div class="col-md-3">
+              <div class="stat-label social-arts">Social Arts</div>
+              <div class="stat-value">{{ mastery_summary.category_averages.social_arts|default:"0"|floatformat:1 }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Practice Stats -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h4>Practice Statistics</h4>
+        </div>
+        <div class="card-body">
+          <div class="row mb-4">
+            <div class="col-md-4 text-center">
+              <div class="stat-label">Weekly Average</div>
+              <div class="stat-value">{{ practice_stats.sessions_per_week|floatformat:1 }}</div>
+              <small>sessions</small>
+            </div>
+            <div class="col-md-4 text-center">
+              <div class="stat-label">Monthly Average</div>
+              <div class="stat-value">{{ practice_stats.sessions_per_month|floatformat:1 }}</div>
+              <small>sessions</small>
+            </div>
+            <div class="col-md-4 text-center">
+              <div class="stat-label">Average Duration</div>
+              <div class="stat-value">{{ practice_stats.average_duration|floatformat:0 }}</div>
+              <small>minutes</small>
+            </div>
+          </div>
+          
+          <h5>Recent Practice Trends</h5>
+          
+          <div class="d-flex align-items-center mb-3">
+            <div style="width: 120px;">This Week:</div>
+            <div class="progress flex-grow-1" style="height: 10px;">
+              <div class="progress-bar bg-primary" role="progressbar" 
+                   data-progress="{{ practice_stats.this_week_percentage|default:'0' }}"
+                   aria-valuenow="{{ practice_stats.this_week_sessions }}" 
+                   aria-valuemin="0" aria-valuemax="7"></div>
+            </div>
+            <div class="ms-2">{{ practice_stats.this_week_sessions }} sessions</div>
+          </div>
+          
+          <div class="d-flex align-items-center mb-3">
+            <div style="width: 120px;">This Month:</div>
+            <div class="progress flex-grow-1" style="height: 10px;">
+              <div class="progress-bar bg-success" role="progressbar" 
+                   data-progress="{{ practice_stats.this_month_percentage|default:'0' }}"
+                   aria-valuenow="{{ practice_stats.this_month_sessions }}" 
+                   aria-valuemin="0" aria-valuemax="30"></div>
+            </div>
+            <div class="ms-2">{{ practice_stats.this_month_sessions }} sessions</div>
+          </div>
+          
+          <div class="d-flex align-items-center">
+            <div style="width: 120px;">Last Month:</div>
+            <div class="progress flex-grow-1" style="height: 10px;">
+              <div class="progress-bar bg-info" role="progressbar" 
+                   data-progress="{{ practice_stats.last_month_percentage|default:'0' }}"
+                   aria-valuenow="{{ practice_stats.last_month_sessions }}" 
+                   aria-valuemin="0" aria-valuemax="30"></div>
+            </div>
+            <div class="ms-2">{{ practice_stats.last_month_sessions }} sessions</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Top Masteries -->
+  <div class="row mt-5">
+    <div class="col-md-12">
+      <h3 class="mb-4">Top Masteries</h3>
+    </div>
+    
+    {% for mastery in masteries|slice:":6" %}
+    <div class="col-md-4">
+      <div class="card mastery-card">
+        <div class="card-body">
+          <div class="d-flex align-items-center mb-2">
+            <div class="me-3">
+              <div class="art-icon" data-color="{% if mastery.art.color %}{{ mastery.art.color }}{% else %}#e5e7eb{% endif %}">
+                <i class="fas fa-{% if mastery.art.icon %}{{ mastery.art.icon }}{% else %}palette{% endif %} text-white"></i>
+              </div>
+            </div>
+            <div>
+              <h5 class="card-title mb-0">{{ mastery.art.name }}</h5>
+              <small class="text-muted">{{ mastery.art.category }}</small>
+            </div>
+          </div>
+          
+          <div class="progress mastery-progress mb-2">
+            <div class="progress-bar bg-primary" role="progressbar" 
+                 data-progress="{{ mastery.mastery_level }}"
+                 aria-valuenow="{{ mastery.mastery_level }}" 
+                 aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+          
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <span class="badge bg-primary">Level {{ mastery.mastery_level|floatformat:1 }}</span>
+            </div>
+            <a href="{% url 'core:art_mastery_detail' mastery.id %}" class="btn btn-sm btn-outline-primary">
+              View Details
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-md-12">
+      <div class="alert alert-info">
+        You haven't mastered any arts yet. Start practicing to build your masteries!
+      </div>
+    </div>
+    {% endfor %}
+    
+    {% if masteries.count > 6 %}
+    <div class="col-md-12 text-center mt-3">
+      <a href="#" class="btn btn-outline-primary">View All Masteries</a>
+    </div>
+    {% endif %}
+  </div>
+  
+  <!-- Practice Recommendations -->
+  <div class="row mt-5">
+    <div class="col-md-12">
+      <h3 class="mb-4">Recommended Practice Focus</h3>
+      <div class="card">
+        <div class="card-body">
+          <p>Based on your current masteries and practice history, focus on these areas:</p>
+          
+          <ul class="list-group list-group-flush">
+            {% if mastery_summary.lowest_category %}
+            <li class="list-group-item">
+              <strong>Improve {{ mastery_summary.lowest_category }} category</strong> - Your average mastery is {{ mastery_summary.category_averages|get:mastery_summary.lowest_category|floatformat:1 }}
+            </li>
+            {% endif %}
+            
+            {% if mastery_summary.most_practiced_art %}
+            <li class="list-group-item">
+              <strong>Continue mastering {{ mastery_summary.most_practiced_art.name }}</strong> - Your current level is {{ mastery_summary.most_practiced_art.mastery_level|floatformat:1 }}
+            </li>
+            {% endif %}
+            
+            {% if mastery_summary.least_practiced_art %}
+            <li class="list-group-item">
+              <strong>Spend more time on {{ mastery_summary.least_practiced_art.name }}</strong> - Only practiced {{ mastery_summary.least_practiced_art.practice_count }} times
+            </li>
+            {% endif %}
+            
+            {% if practice_stats.sessions_per_week < 3 %}
+            <li class="list-group-item">
+              <strong>Increase practice frequency</strong> - Aim for at least 3 sessions per week
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Set progress bar widths based on data-progress attributes
+    document.querySelectorAll('.progress-bar[data-progress]').forEach(function(progressBar) {
+      const progress = progressBar.getAttribute('data-progress');
+      progressBar.style.width = progress + '%';
+    });
+    
+    // Style for art icons
+    document.querySelectorAll('.art-icon').forEach(function(icon) {
+      const color = icon.getAttribute('data-color');
+      icon.style.width = '40px';
+      icon.style.height = '40px';
+      icon.style.backgroundColor = color;
+      icon.style.borderRadius = '8px';
+      icon.style.display = 'flex';
+      icon.style.alignItems = 'center';
+      icon.style.justifyContent = 'center';
+    });
+    
+    // Radar chart for mastery categories
+    const ctx = document.getElementById('radar-chart').getContext('2d');
+    
+    // Get category averages with defaults
+    const liberalArts = {{ mastery_summary.category_averages.liberal_arts|default:"0" }};
+    const mechanicalArts = {{ mastery_summary.category_averages.mechanical_arts|default:"0" }};
+    const fineArts = {{ mastery_summary.category_averages.fine_arts|default:"0" }};
+    const socialArts = {{ mastery_summary.category_averages.social_arts|default:"0" }};
+    
+    const radarChart = new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels: ['Liberal Arts', 'Mechanical Arts', 'Fine Arts', 'Social Arts'],
+        datasets: [{
+          label: 'Mastery Level',
+          data: [liberalArts, mechanicalArts, fineArts, socialArts],
+          backgroundColor: 'rgba(74, 108, 247, 0.2)',
+          borderColor: 'rgba(74, 108, 247, 1)',
+          pointBackgroundColor: 'rgba(74, 108, 247, 1)',
+          pointBorderColor: '#fff',
+          pointHoverBackgroundColor: '#fff',
+          pointHoverBorderColor: 'rgba(74, 108, 247, 1)'
+        }]
+      },
+      options: {
+        scales: {
+          r: {
+            angleLines: {
+              display: true
+            },
+            suggestedMin: 0,
+            suggestedMax: 100
+          }
+        }
+      }
+    });
+  });
+</script>
+{% endblock %} 

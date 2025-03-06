@@ -1,0 +1,340 @@
+{% extends "game_app_base.html" %}
+{% load static %}
+
+{% block title %}Tech Tree - EudaimoniaGo{% endblock %}
+
+{% block inner %}
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h1 class="display-4 page-heading">Innovation Tech Tree</h1>
+      <p class="lead">Explore and unlock advanced technologies for campus innovation</p>
+    </div>
+    <div class="col-md-4 d-flex align-items-center justify-content-md-end">
+      <div class="btn-group">
+        <a href="{% url 'innovations:innovation_list' %}" class="btn btn-outline-secondary">
+          <i class="fas fa-arrow-left"></i> Back to Innovations
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tech Tree Stats -->
+  <div class="row mb-4">
+    <div class="col-md-4 mb-4 mb-md-0">
+      <div class="card h-100">
+        <div class="card-header">
+          <h5 class="mb-0">Your Tech Progress</h5>
+        </div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-4">
+              <p class="mb-1 fw-bold">{{ tech_stats.unlocked }}</p>
+              <p class="text-muted small">Unlocked</p>
+            </div>
+            <div class="col-4">
+              <p class="mb-1 fw-bold">{{ tech_stats.available }}</p>
+              <p class="text-muted small">Available</p>
+            </div>
+            <div class="col-4">
+              <p class="mb-1 fw-bold">{{ tech_stats.total }}</p>
+              <p class="text-muted small">Total</p>
+            </div>
+          </div>
+          
+          <hr>
+          
+          <h6>Overall Progress</h6>
+          <div class="progress mb-2">
+            <div class="progress-bar" role="progressbar" 
+                 style="width: {{ tech_stats.progress_percentage }}%"
+                 aria-valuenow="{{ tech_stats.progress_percentage }}" 
+                 aria-valuemin="0" 
+                 aria-valuemax="100"></div>
+          </div>
+          <p class="small text-center mb-3">{{ tech_stats.unlocked }} of {{ tech_stats.total }} technologies ({{ tech_stats.progress_percentage }}%)</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-8">
+      <div class="card h-100">
+        <div class="card-header">
+          <h5 class="mb-0">Tech Points</h5>
+        </div>
+        <div class="card-body">
+          <div class="d-flex align-items-center mb-3">
+            <div class="me-4 text-center">
+              <h2 class="display-4 mb-0">{{ player.tech_points }}</h2>
+              <p class="text-muted">Available Points</p>
+            </div>
+            <div class="flex-grow-1">
+              <p class="mb-2">Tech points are earned through campus innovations and experiences. Spend them to unlock new technologies in the tech tree.</p>
+              <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="#" class="btn btn-outline-primary">
+                  <i class="fas fa-info-circle"></i> How to Earn More
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tech Tree Categories -->
+  <div class="mb-4">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex flex-wrap gap-2">
+          <button class="btn btn-eudaimonia tech-filter active" data-filter="all">All Categories</button>
+          {% for category in tech_categories %}
+            <button class="btn btn-outline-primary tech-filter" data-filter="{{ category.slug }}">{{ category.name }}</button>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tech Tree Visualization -->
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Technology Tree</h5>
+      <button class="btn btn-sm btn-outline-secondary" id="zoomReset">
+        <i class="fas fa-expand"></i> Reset View
+      </button>
+    </div>
+    <div class="card-body p-0">
+      <div id="tech-tree-container" class="tech-tree-wrapper">
+        <!-- SVG Tech Tree will be rendered here -->
+        <svg id="tech-tree-svg" width="100%" height="600">
+          <g id="zoom-container">
+            <!-- Lines connecting technologies -->
+            {% for connection in tech_connections %}
+              <line 
+                class="tech-connection {{ connection.source.category.slug }}-connection {{ connection.target.category.slug }}-connection"
+                x1="{{ connection.source.x }}" 
+                y1="{{ connection.source.y }}" 
+                x2="{{ connection.target.x }}" 
+                y2="{{ connection.target.y }}"
+                {% if connection.source.unlocked and connection.target.unlocked %}
+                  stroke="var(--eudaimonia-success)"
+                {% elif connection.source.unlocked %}
+                  stroke="var(--eudaimonia-primary)"
+                {% else %}
+                  stroke="var(--eudaimonia-gray)"
+                {% endif %}
+              ></line>
+            {% endfor %}
+            
+            <!-- Technology nodes -->
+            {% for node in tech_nodes %}
+              <g class="tech-node {{ node.category.slug }}-node" data-id="{{ node.id }}" transform="translate({{ node.x }}, {{ node.y }})">
+                <circle 
+                  r="25" 
+                  {% if node.unlocked %}
+                    class="unlocked"
+                    fill="var(--eudaimonia-primary)"
+                  {% elif node.available %}
+                    class="available"
+                    fill="var(--eudaimonia-secondary)"
+                  {% else %}
+                    class="locked"
+                    fill="var(--eudaimonia-gray)"
+                  {% endif %}
+                ></circle>
+                <text text-anchor="middle" dy=".3em" fill="white">{{ node.level }}</text>
+                <title>{{ node.name }}</title>
+              </g>
+            {% endfor %}
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Available Technologies -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0">Available Technologies</h5>
+    </div>
+    <div class="card-body">
+      {% if available_technologies %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+          {% for tech in available_technologies %}
+            <div class="col tech-item" data-category="{{ tech.category.slug }}">
+              <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                  <h6 class="mb-0">{{ tech.name }}</h6>
+                  <span class="badge bg-primary">Level {{ tech.level }}</span>
+                </div>
+                <div class="card-body">
+                  <p class="card-text">{{ tech.description }}</p>
+                  <div class="d-flex justify-content-between align-items-center mt-3">
+                    <span class="badge bg-info">{{ tech.category.name }}</span>
+                    <span class="text-muted">{{ tech.cost }} Tech Points</span>
+                  </div>
+                </div>
+                <div class="card-footer">
+                  <div class="d-grid">
+                    <a href="{% url 'innovations:tech_tree_node_detail' tech.id %}" class="btn btn-eudaimonia">
+                      {% if tech.cost <= player.tech_points %}
+                        <i class="fas fa-unlock"></i> Unlock Technology
+                      {% else %}
+                        <i class="fas fa-info-circle"></i> View Details
+                      {% endif %}
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-center py-4">
+          <i class="fas fa-lock fa-3x mb-3 text-muted"></i>
+          <h5>No Available Technologies</h5>
+          <p>Complete more innovations to unlock new technology options</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Technology filtering
+    const filterButtons = document.querySelectorAll('.tech-filter');
+    const techItems = document.querySelectorAll('.tech-item');
+    const techNodes = document.querySelectorAll('.tech-node');
+    const techConnections = document.querySelectorAll('.tech-connection');
+    
+    filterButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        // Update active button
+        filterButtons.forEach(btn => btn.classList.remove('active'));
+        this.classList.add('active');
+        
+        const filter = this.dataset.filter;
+        
+        // Filter tech items
+        techItems.forEach(item => {
+          if (filter === 'all' || item.dataset.category === filter) {
+            item.style.display = '';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+        
+        // Filter tech nodes in SVG
+        techNodes.forEach(node => {
+          if (filter === 'all' || node.classList.contains(`${filter}-node`)) {
+            node.style.opacity = '1';
+          } else {
+            node.style.opacity = '0.3';
+          }
+        });
+        
+        // Filter connections in SVG
+        techConnections.forEach(connection => {
+          if (filter === 'all' || 
+              connection.classList.contains(`${filter}-connection`)) {
+            connection.style.opacity = '1';
+          } else {
+            connection.style.opacity = '0.3';
+          }
+        });
+      });
+    });
+    
+    // SVG Pan and Zoom
+    const svgElement = document.getElementById('tech-tree-svg');
+    const zoomContainer = document.getElementById('zoom-container');
+    let isPanning = false;
+    let startPoint = { x: 0, y: 0 };
+    let currentTranslate = { x: 0, y: 0 };
+    let scale = 1;
+    
+    // Pan functionality
+    svgElement.addEventListener('mousedown', function(evt) {
+      isPanning = true;
+      startPoint = {
+        x: evt.clientX - currentTranslate.x,
+        y: evt.clientY - currentTranslate.y
+      };
+      svgElement.style.cursor = 'grabbing';
+    });
+    
+    svgElement.addEventListener('mousemove', function(evt) {
+      if (!isPanning) return;
+      
+      currentTranslate = {
+        x: evt.clientX - startPoint.x,
+        y: evt.clientY - startPoint.y
+      };
+      
+      updateTransform();
+    });
+    
+    svgElement.addEventListener('mouseup', function() {
+      isPanning = false;
+      svgElement.style.cursor = 'grab';
+    });
+    
+    svgElement.addEventListener('mouseleave', function() {
+      isPanning = false;
+      svgElement.style.cursor = 'grab';
+    });
+    
+    // Zoom functionality
+    svgElement.addEventListener('wheel', function(evt) {
+      evt.preventDefault();
+      
+      const delta = evt.deltaY;
+      scale += delta > 0 ? -0.1 : 0.1;
+      
+      // Constrain scale
+      scale = Math.min(Math.max(0.5, scale), 2);
+      
+      updateTransform();
+    });
+    
+    // Reset button
+    document.getElementById('zoomReset').addEventListener('click', function() {
+      scale = 1;
+      currentTranslate = { x: 0, y: 0 };
+      updateTransform();
+    });
+    
+    // Node click - redirect to detail page
+    document.querySelectorAll('.tech-node').forEach(node => {
+      node.addEventListener('click', function() {
+        const techId = this.dataset.id;
+        window.location.href = `/innovations/tech-tree/${techId}/`;
+      });
+      
+      // Make nodes interactive
+      node.style.cursor = 'pointer';
+      
+      // Add hover effect
+      node.addEventListener('mouseenter', function() {
+        const circle = this.querySelector('circle');
+        circle.setAttribute('r', '27');
+      });
+      
+      node.addEventListener('mouseleave', function() {
+        const circle = this.querySelector('circle');
+        circle.setAttribute('r', '25');
+      });
+    });
+    
+    function updateTransform() {
+      zoomContainer.setAttribute('transform', 
+        `translate(${currentTranslate.x}, ${currentTranslate.y}) scale(${scale})`);
+    }
+    
+    // Initialize
+    svgElement.style.cursor = 'grab';
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,379 @@
+{% comment %}
+[CLAUDE:OPTIMIZATION_LAYER:START]
+This template is part of the core_user_system component
+See .claude/README.md for more information
+[CLAUDE:OPTIMIZATION_LAYER:END]
+{% endcomment %}
+
+{% extends "game_base.html" %}
+{% load static %}
+
+{% block title %}EudaimoniaGo Scores{% endblock title %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row mb-4">
+    <div class="col-12">
+      <h1>Character Development</h1>
+      <h3>Hello, {{ player_profile.user.username }}!</h3>
+      <p class="lead">Track your progress toward eudaimonia through these interconnected scores.</p>
+    </div>
+  </div>
+  
+  {# Main Happiness Score #}
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-body p-3">
+          <div class="d-flex align-items-center">
+            <div class="happiness-icon me-3">
+              <i class="fas fa-smile fa-2x text-warning"></i>
+            </div>
+            <div class="flex-grow-1">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <h3 class="mb-0">Happiness</h3>
+                <h3 class="mb-0 text-primary">{{ happiness_score }}</h3>
+              </div>
+              <div class="progress" style="height: 15px;">
+                <div class="progress-bar bg-warning" role="progressbar" style="width: {{ happiness_score }}%" 
+                     aria-valuenow="{{ happiness_score }}" aria-valuemin="0" aria-valuemax="100">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  {# Three Main Categories #}
+  <div class="row mb-4">
+    {# GOOD #}
+    <div class="col-md-4 mb-3">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-success text-white">
+          <div class="d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Good</h4>
+            <h4 class="mb-0">{{ good_score }}</h4>
+          </div>
+          <div class="progress mt-2" style="height: 8px;">
+            <div class="progress-bar bg-light" role="progressbar" style="width: {{ good_score }}%" 
+                 aria-valuenow="{{ good_score }}" aria-valuemin="0" aria-valuemax="100">
+            </div>
+          </div>
+        </div>
+        <div class="card-body p-2">
+          {% for virtue in good_virtues %}
+          <div class="score-item d-flex align-items-center p-2 border-bottom">
+            <i class="fas fa-{{ virtue.icon }} fa-fw text-success me-2"></i>
+            <div class="flex-grow-1">
+              <div class="d-flex justify-content-between">
+                <span>{{ virtue.name }}</span>
+                <span class="text-success">{{ virtue.progress }}</span>
+              </div>
+              <div class="progress" style="height: 6px;">
+                <div class="progress-bar bg-success" role="progressbar" style="width: {{ virtue.progress }}%" 
+                     aria-valuenow="{{ virtue.progress }}" aria-valuemin="0" aria-valuemax="100">
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+          
+          {# Custom User Scores #}
+          <div class="mt-3">
+            <div class="score-item custom-score d-flex align-items-center p-2 border-bottom">
+              <i class="fas fa-plus-circle fa-fw text-success me-2"></i>
+              <div class="flex-grow-1">
+                <div class="d-flex justify-content-between">
+                  <input type="text" class="form-control form-control-sm" placeholder="Add your own..." style="width: 70%">
+                  <input type="number" class="form-control form-control-sm" placeholder="Score" style="width: 25%">
+                </div>
+              </div>
+            </div>
+            {# Empty slots for user's custom scores will be added dynamically #}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    {# FORTUNE #}
+    <div class="col-md-4 mb-3">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-info text-white">
+          <div class="d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Fortune</h4>
+            <h4 class="mb-0">{{ fortune_score }}</h4>
+          </div>
+          <div class="progress mt-2" style="height: 8px;">
+            <div class="progress-bar bg-light" role="progressbar" style="width: {{ fortune_score }}%" 
+                 aria-valuenow="{{ fortune_score }}" aria-valuemin="0" aria-valuemax="100">
+            </div>
+          </div>
+        </div>
+        <div class="card-body p-2">
+          {% for virtue in fortune_virtues %}
+          <div class="score-item d-flex align-items-center p-2 border-bottom">
+            <i class="fas fa-{{ virtue.icon }} fa-fw text-info me-2"></i>
+            <div class="flex-grow-1">
+              <div class="d-flex justify-content-between">
+                <span>{{ virtue.name }}</span>
+                <span class="text-info">{{ virtue.progress }}</span>
+              </div>
+              <div class="progress" style="height: 6px;">
+                <div class="progress-bar bg-info" role="progressbar" style="width: {{ virtue.progress }}%" 
+                     aria-valuenow="{{ virtue.progress }}" aria-valuemin="0" aria-valuemax="100">
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+          
+          {# Custom User Scores #}
+          <div class="mt-3">
+            <div class="score-item custom-score d-flex align-items-center p-2 border-bottom">
+              <i class="fas fa-plus-circle fa-fw text-info me-2"></i>
+              <div class="flex-grow-1">
+                <div class="d-flex justify-content-between">
+                  <input type="text" class="form-control form-control-sm" placeholder="Add your own..." style="width: 70%">
+                  <input type="number" class="form-control form-control-sm" placeholder="Score" style="width: 25%">
+                </div>
+              </div>
+            </div>
+            {# Empty slots for user's custom scores will be added dynamically #}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    {# MIXED #}
+    <div class="col-md-4 mb-3">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-purple text-white" style="background-color: #9370DB;">
+          <div class="d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Mixed</h4>
+            <h4 class="mb-0">{{ mixed_score }}</h4>
+          </div>
+          <div class="progress mt-2" style="height: 8px;">
+            <div class="progress-bar bg-light" role="progressbar" style="width: {{ mixed_score }}%" 
+                 aria-valuenow="{{ mixed_score }}" aria-valuemin="0" aria-valuemax="100">
+            </div>
+          </div>
+        </div>
+        <div class="card-body p-2">
+          {% for virtue in mixed_virtues %}
+          <div class="score-item d-flex align-items-center p-2 border-bottom">
+            <i class="fas fa-{{ virtue.icon }} fa-fw text-purple me-2" style="color: #9370DB;"></i>
+            <div class="flex-grow-1">
+              <div class="d-flex justify-content-between">
+                <span>{{ virtue.name }}</span>
+                <span style="color: #9370DB;">{{ virtue.progress }}</span>
+              </div>
+              <div class="progress" style="height: 6px;">
+                <div class="progress-bar" role="progressbar" style="width: {{ virtue.progress }}%; background-color: #9370DB;" 
+                     aria-valuenow="{{ virtue.progress }}" aria-valuemin="0" aria-valuemax="100">
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+          
+          {# Custom User Scores #}
+          <div class="mt-3">
+            <div class="score-item custom-score d-flex align-items-center p-2 border-bottom">
+              <i class="fas fa-plus-circle fa-fw text-purple me-2" style="color: #9370DB;"></i>
+              <div class="flex-grow-1">
+                <div class="d-flex justify-content-between">
+                  <input type="text" class="form-control form-control-sm" placeholder="Add your own..." style="width: 70%">
+                  <input type="number" class="form-control form-control-sm" placeholder="Score" style="width: 25%">
+                </div>
+              </div>
+            </div>
+            {# Empty slots for user's custom scores will be added dynamically #}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  {# Score Breakdowns #}
+  <div class="row">
+    <div class="col-12">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">Score Details</h4>
+        </div>
+        <div class="card-body p-3">
+          <div class="score-detail mb-4">
+            <h5 class="score-detail-name">Wisdom <span class="text-primary">{{ good_virtues.0.progress }}</span></h5>
+            <div class="progress mb-2" style="height: 10px;">
+              <div class="progress-bar bg-primary" role="progressbar" style="width: {{ good_virtues.0.progress }}%" 
+                   aria-valuenow="{{ good_virtues.0.progress }}" aria-valuemin="0" aria-valuemax="100">
+              </div>
+            </div>
+            <div class="row">
+              {% for detail in wisdom_details %}
+              <div class="col-md-3 col-6 mb-3">
+                <div class="card h-100">
+                  <div class="card-body p-2">
+                    <div class="d-flex justify-content-between mb-1">
+                      <small>{{ detail.name }}</small>
+                      <small class="text-primary">{{ detail.progress }}</small>
+                    </div>
+                    <div class="progress" style="height: 5px;">
+                      <div class="progress-bar bg-primary" role="progressbar" style="width: {{ detail.progress }}%" 
+                           aria-valuenow="{{ detail.progress }}" aria-valuemin="0" aria-valuemax="100">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+              <div class="col-md-3 col-6 mb-3">
+                <div class="card h-100 add-detail-card">
+                  <div class="card-body p-2 d-flex align-items-center justify-content-center">
+                    <i class="fas fa-plus-circle text-muted"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {# More score details would be shown here, either in tabs or expandable sections #}
+          <div class="text-center mt-4">
+            <button class="btn btn-outline-primary">
+              <i class="fas fa-chevron-down me-2"></i> Show More Score Details
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  {# Radar Chart for Overall Balance #}
+  <div class="row">
+    <div class="col-md-8 offset-md-2 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">Virtue Balance</h4>
+        </div>
+        <div class="card-body">
+          <div class="radar-chart-container">
+            <canvas id="virtueRadarChart" width="400" height="300"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block javascript %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Create radar chart for virtues
+    const virtueCtx = document.getElementById('virtueRadarChart').getContext('2d');
+    const virtueData = {
+      labels: [
+        {% for virtue in good_virtues %}
+          '{{ virtue.name }}'{% if not forloop.last %}, {% endif %}
+        {% endfor %},
+        {% for virtue in fortune_virtues %}
+          '{{ virtue.name }}'{% if not forloop.last %}, {% endif %}
+        {% endfor %},
+        {% for virtue in mixed_virtues %}
+          '{{ virtue.name }}'{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+      ],
+      datasets: [{
+        label: 'Character Development',
+        data: [
+          {% for virtue in good_virtues %}
+            {{ virtue.progress }}{% if not forloop.last %}, {% endif %}
+          {% endfor %},
+          {% for virtue in fortune_virtues %}
+            {{ virtue.progress }}{% if not forloop.last %}, {% endif %}
+          {% endfor %},
+          {% for virtue in mixed_virtues %}
+            {{ virtue.progress }}{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+        ],
+        fill: true,
+        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+        borderColor: 'rgb(54, 162, 235)',
+        pointBackgroundColor: 'rgb(54, 162, 235)',
+        pointBorderColor: '#fff',
+        pointHoverBackgroundColor: '#fff',
+        pointHoverBorderColor: 'rgb(54, 162, 235)'
+      }]
+    };
+    
+    new Chart(virtueCtx, {
+      type: 'radar',
+      data: virtueData,
+      options: {
+        elements: {
+          line: {
+            borderWidth: 3
+          }
+        },
+        scales: {
+          r: {
+            angleLines: {
+              display: true
+            },
+            suggestedMin: 0,
+            suggestedMax: 100
+          }
+        }
+      }
+    });
+    
+    // Handle custom score addition
+    document.querySelectorAll('.custom-score').forEach(el => {
+      el.addEventListener('keyup', function(e) {
+        if (e.key === 'Enter') {
+          const inputs = this.querySelectorAll('input');
+          const scoreName = inputs[0].value.trim();
+          const scoreValue = parseInt(inputs[1].value);
+          
+          if (scoreName && !isNaN(scoreValue)) {
+            // Get the parent container
+            const parentContainer = this.closest('.card-body');
+            const categoryColor = this.querySelector('i').style.color || 
+                                 this.querySelector('i').classList.contains('text-info') ? '#17a2b8' : 
+                                 this.querySelector('i').classList.contains('text-success') ? '#28a745' : '#9370DB';
+            
+            // Create new score item
+            const newItem = document.createElement('div');
+            newItem.className = 'score-item d-flex align-items-center p-2 border-bottom';
+            newItem.innerHTML = `
+              <i class="fas fa-check-circle fa-fw me-2" style="color: ${categoryColor};"></i>
+              <div class="flex-grow-1">
+                <div class="d-flex justify-content-between">
+                  <span>${scoreName}</span>
+                  <span style="color: ${categoryColor};">${scoreValue}</span>
+                </div>
+                <div class="progress" style="height: 6px;">
+                  <div class="progress-bar" role="progressbar" style="width: ${scoreValue}%; background-color: ${categoryColor};" 
+                       aria-valuenow="${scoreValue}" aria-valuemin="0" aria-valuemax="100">
+                  </div>
+                </div>
+              </div>
+            `;
+            
+            // Insert before the custom score input
+            parentContainer.insertBefore(newItem, this);
+            
+            // Clear inputs
+            inputs[0].value = '';
+            inputs[1].value = '';
+          }
+        }
+      });
+    });
+  });
+</script>
+{% endblock javascript %} 

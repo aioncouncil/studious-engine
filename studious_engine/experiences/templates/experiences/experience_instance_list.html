@@ -1,0 +1,223 @@
+{% comment %}
+[CLAUDE:OPTIMIZATION_LAYER:START]
+This template is part of the experience_system component
+See .claude/README.md for more information
+[CLAUDE:OPTIMIZATION_LAYER:END]
+{% endcomment %}
+
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% translate "Experience Instances" %}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row mb-4">
+    <div class="col-12">
+      <h1 class="display-4 mb-3">{% translate "Experience Instances" %}</h1>
+      <p class="lead text-muted">
+        Join active experience instances or create your own to share with others.
+      </p>
+      <div class="d-flex justify-content-between mb-4">
+        <a href="{% url 'experiences:create_instance' %}" class="btn btn-primary">
+          <i class="fas fa-plus-circle"></i> Host New Experience Instance
+        </a>
+        <div class="btn-group" role="group">
+          <button type="button" class="btn btn-outline-primary active" data-filter="all">All</button>
+          <button type="button" class="btn btn-outline-primary" data-filter="active">Active</button>
+          <button type="button" class="btn btn-outline-primary" data-filter="upcoming">Upcoming</button>
+          <button type="button" class="btn btn-outline-primary" data-filter="completed">Completed</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter controls -->
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-body">
+          <form method="get" action="{% url 'experiences:instance_list' %}" class="row g-3">
+            <div class="col-md-3">
+              <label for="experience_type" class="form-label">Experience Type</label>
+              <select class="form-select" id="experience_type" name="experience_id">
+                <option value="">All Types</option>
+                {% for experience in all_experiences %}
+                  <option value="{{ experience.id }}" {% if request.GET.experience_id == experience.id|stringformat:"i" %}selected{% endif %}>
+                    {{ experience.name }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label for="zone" class="form-label">Zone</label>
+              <select class="form-select" id="zone" name="zone_id">
+                <option value="">All Zones</option>
+                {% for zone in all_zones %}
+                  <option value="{{ zone.id }}" {% if request.GET.zone_id == zone.id|stringformat:"i" %}selected{% endif %}>
+                    {{ zone.name }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label for="start_date" class="form-label">Start Date</label>
+              <input type="date" class="form-control" id="start_date" name="start_after" value="{{ request.GET.start_after }}">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+              <button type="submit" class="btn btn-success w-100">
+                <i class="fas fa-filter"></i> Apply Filters
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Experience instances list -->
+  <div class="row">
+    {% if experience_instances %}
+      {% for instance in experience_instances %}
+        <div class="col-md-6 col-lg-4 mb-4 instance-card" 
+             data-status="{{ instance.status }}" 
+             data-time="{% if instance.start_time > now %}upcoming{% elif instance.status == 'completed' %}completed{% else %}active{% endif %}">
+          <div class="card h-100 shadow-sm">
+            <div class="card-header bg-{% if instance.status == 'active' %}success{% elif instance.status == 'planned' %}info{% elif instance.status == 'completed' %}secondary{% else %}warning{% endif %}">
+              <div class="d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0 text-white">{{ instance.name }}</h5>
+                <span class="badge {% if instance.is_public %}bg-primary{% else %}bg-warning{% endif %}">
+                  {% if instance.is_public %}Public{% else %}Private{% endif %}
+                </span>
+              </div>
+            </div>
+            <div class="card-body">
+              <h6 class="card-subtitle mb-2 text-muted">{{ instance.experience.name }}</h6>
+              <p class="card-text small">
+                <i class="fas fa-map-marker-alt"></i> 
+                {% if instance.zone %}
+                  {{ instance.zone.name }}
+                {% else %}
+                  {{ instance.location_description|default:"Location TBD" }}
+                {% endif %}
+              </p>
+              <p class="card-text small">
+                <i class="fas fa-calendar-alt"></i> {{ instance.start_time|date:"M d, Y" }} at {{ instance.start_time|time:"g:i A" }}
+              </p>
+              <p class="card-text small">
+                <i class="fas fa-user-alt"></i> Hosted by {{ instance.host.user.username }}
+              </p>
+              <div class="progress mb-3" style="height: 5px;">
+                <div class="progress-bar bg-primary" role="progressbar" 
+                     style="width: {{ instance.current_participants|div:instance.capacity|mul:100 }}%;" 
+                     aria-valuenow="{{ instance.current_participants }}" 
+                     aria-valuemin="0" aria-valuemax="{{ instance.capacity }}"></div>
+              </div>
+              <p class="card-text small text-center">
+                <span class="fw-bold">{{ instance.current_participants }}/{{ instance.capacity }}</span> participants
+              </p>
+            </div>
+            <div class="card-footer bg-transparent border-top-0">
+              <div class="d-grid gap-2">
+                <a href="{% url 'experiences:instance_detail' instance.id %}" 
+                   class="btn btn-outline-primary">
+                  <i class="fas fa-info-circle"></i> Details
+                </a>
+                {% if instance.status != 'completed' and not instance.is_full %}
+                  <a href="{% url 'experiences:join_instance' instance.id %}" 
+                     class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Join
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="col-12">
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle me-2"></i> No experience instances found. Be the first to create one!
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Pagination -->
+  {% if is_paginated %}
+    <div class="row">
+      <div class="col-12">
+        <nav aria-label="Page navigation">
+          <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?page=1">&laquo; First</a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+              </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+              {% if page_obj.number == num %}
+                <li class="page-item active">
+                  <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+              {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+              {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Filter buttons functionality
+    const filterButtons = document.querySelectorAll('[data-filter]');
+    const instanceCards = document.querySelectorAll('.instance-card');
+    
+    filterButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        // Remove active class from all buttons
+        filterButtons.forEach(btn => btn.classList.remove('active'));
+        // Add active class to clicked button
+        this.classList.add('active');
+        
+        const filter = this.getAttribute('data-filter');
+        
+        instanceCards.forEach(card => {
+          if (filter === 'all') {
+            card.style.display = 'block';
+          } else {
+            const timeStatus = card.getAttribute('data-time');
+            if (timeStatus === filter) {
+              card.style.display = 'block';
+            } else {
+              card.style.display = 'none';
+            }
+          }
+        });
+      });
+    });
+  });
+</script>
+{% endblock %} 

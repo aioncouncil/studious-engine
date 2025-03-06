@@ -1,0 +1,210 @@
+{% comment %}
+[CLAUDE:OPTIMIZATION_LAYER:START]
+This template is part of the experience_system component
+See .claude/README.md for more information
+[CLAUDE:OPTIMIZATION_LAYER:END]
+{% endcomment %}
+
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+  {% if object %}
+    {% translate "Edit Experience Instance" %}
+  {% else %}
+    {% translate "Host New Experience Instance" %}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <a href="{% url 'experiences:instance_list' %}" class="btn btn-outline-secondary">
+          <i class="fas fa-arrow-left"></i> Back to Instances
+        </a>
+      </div>
+      
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white py-3">
+          <h1 class="card-title h3 m-0">
+            {% if object %}
+              {% translate "Edit Experience Instance" %}: {{ object.name }}
+            {% else %}
+              {% translate "Host New Experience Instance" %}
+            {% endif %}
+          </h1>
+        </div>
+        <div class="card-body">
+          <form method="post" novalidate>
+            {% csrf_token %}
+            
+            <div class="row">
+              <div class="col-md-8">
+                <h5 class="mb-3">Basic Information</h5>
+                
+                {% if not object %}
+                <div class="mb-3">
+                  {{ form.experience|as_crispy_field }}
+                </div>
+                {% endif %}
+                
+                <div class="mb-3">
+                  {{ form.name|as_crispy_field }}
+                </div>
+                
+                <div class="mb-3">
+                  {{ form.zone|as_crispy_field }}
+                </div>
+                
+                <div class="row">
+                  <div class="col-md-6">
+                    {{ form.start_time|as_crispy_field }}
+                  </div>
+                  <div class="col-md-6">
+                    {{ form.end_time|as_crispy_field }}
+                  </div>
+                </div>
+                
+                <div class="row">
+                  <div class="col-md-6">
+                    {{ form.frequency|as_crispy_field }}
+                  </div>
+                  <div class="col-md-6">
+                    {{ form.capacity|as_crispy_field }}
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  {{ form.location_description|as_crispy_field }}
+                </div>
+                
+                <h5 class="mt-4 mb-3">Additional Details</h5>
+                
+                <div class="row">
+                  <div class="col-md-6">
+                    {{ form.is_public|as_crispy_field }}
+                  </div>
+                  {% if object %}
+                  <div class="col-md-6">
+                    {{ form.status|as_crispy_field }}
+                  </div>
+                  {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                  {{ form.meeting_point|as_crispy_field }}
+                  <small class="form-text text-muted">
+                    Enter as JSON: {"latitude": 37.7749, "longitude": -122.4194, "name": "Meeting Point"}
+                  </small>
+                </div>
+                
+                <div class="mb-3">
+                  {{ form.resources_provided|as_crispy_field }}
+                  <small class="form-text text-muted">
+                    Enter as JSON: {"books": 5, "art supplies": 10, "computers": 3}
+                  </small>
+                </div>
+                
+                {% if form.recurrence_rule %}
+                <div class="mb-3">
+                  {{ form.recurrence_rule|as_crispy_field }}
+                  <small class="form-text text-muted">
+                    Enter as JSON: {"days": [0, 2, 4], "interval": 1, "until": "2023-12-31"}
+                  </small>
+                </div>
+                {% endif %}
+              </div>
+              
+              <div class="col-md-4">
+                <div class="card mb-4">
+                  <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">Hosting Tips</h5>
+                  </div>
+                  <div class="card-body">
+                    <p><strong>Clear Description:</strong> Make sure your location description is clear and detailed.</p>
+                    <p><strong>Capacity Planning:</strong> Set a realistic capacity based on the space and experience type.</p>
+                    <p><strong>Resources:</strong> List all resources you'll provide to participants.</p>
+                    <p><strong>Scheduling:</strong> Choose timing that works for your target participants.</p>
+                    <p><strong>Frequency:</strong> For recurring events, set a consistent schedule.</p>
+                  </div>
+                </div>
+                
+                <div class="card mb-4">
+                  <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">Matrix Flow</h5>
+                  </div>
+                  <div class="card-body">
+                    <p>Every experience follows the matrix flow:</p>
+                    <ol>
+                      <li><strong>Soul Out (Think Tank):</strong> Planning and ideation</li>
+                      <li><strong>Body Out (Production Tank):</strong> Creating and producing</li>
+                      <li><strong>Soul In (Review):</strong> Reflecting and analyzing</li>
+                      <li><strong>Body In (Market):</strong> Sharing and receiving feedback</li>
+                    </ol>
+                    <p class="mb-0">You'll guide participants through these phases during the experience.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="d-grid gap-2 col-md-6 mx-auto mt-4">
+              <button type="submit" class="btn btn-primary btn-lg">
+                {% if object %}
+                  <i class="fas fa-save"></i> Save Changes
+                {% else %}
+                  <i class="fas fa-plus-circle"></i> Create Experience Instance
+                {% endif %}
+              </button>
+              <a href="{% url 'experiences:instance_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-times"></i> Cancel
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get frequency select element
+    const frequencySelect = document.getElementById('id_frequency');
+    const recurrenceRuleField = document.getElementById('div_id_recurrence_rule');
+    
+    if (frequencySelect && recurrenceRuleField) {
+      // Show/hide recurrence rule field based on frequency selection
+      function toggleRecurrenceRule() {
+        if (frequencySelect.value === 'once') {
+          recurrenceRuleField.style.display = 'none';
+        } else {
+          recurrenceRuleField.style.display = 'block';
+        }
+      }
+      
+      // Initial call
+      toggleRecurrenceRule();
+      
+      // Add event listener
+      frequencySelect.addEventListener('change', toggleRecurrenceRule);
+    }
+    
+    // Initialize datetime pickers
+    flatpickr('#id_start_time', {
+      enableTime: true,
+      dateFormat: 'Y-m-d H:i',
+    });
+    
+    flatpickr('#id_end_time', {
+      enableTime: true,
+      dateFormat: 'Y-m-d H:i',
+    });
+  });
+</script>
+{% endblock %} 

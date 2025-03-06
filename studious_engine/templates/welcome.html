@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Welcome to EudaimoniaGo{% endblock %}
+
+{% block bodyclass %}welcome-page{% endblock %}
+
+{% block navbar %}
+<!-- Intentionally empty to remove navbar -->
+{% endblock navbar %}
+
+{% block css %}
+{{ block.super }}
+<style>
+  body.welcome-page {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #000;
+  }
+  
+  .welcome-container {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+    background-image: url('{% static "images/welcome-background.jpg" %}');
+    background-size: cover;
+    background-position: center;
+    position: relative;
+  }
+  
+  .welcome-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+  }
+  
+  .welcome-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 10px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .welcome-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: white;
+    letter-spacing: -0.5px;
+  }
+  
+  .welcome-subtitle {
+    font-size: 1.5rem;
+    font-weight: 300;
+    color: white;
+    margin-bottom: 2rem;
+  }
+  
+  .welcome-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 2rem;
+    align-items: center;
+  }
+  
+  .welcome-btn {
+    padding: 0.8rem 2rem;
+    border-radius: 5px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    min-width: 200px;
+    text-align: center;
+  }
+  
+  .btn-primary {
+    background-color: #3498db;
+    color: white;
+    border: none;
+  }
+  
+  .btn-primary:hover {
+    background-color: #2980b9;
+  }
+  
+  .btn-secondary {
+    background: transparent;
+    color: white;
+    border: 1px solid white;
+  }
+  
+  .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Override the container class to be full width */
+  .container {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="welcome-container">
+  <div class="welcome-overlay"></div>
+  
+  <div class="welcome-content">
+    <h1 class="welcome-title">EudaimoniaGo</h1>
+    <p class="welcome-subtitle">
+      Your campus adventure starts here
+    </p>
+    
+    <div class="welcome-buttons">
+      <a href="{% url 'core:dashboard' %}" class="welcome-btn btn-primary">
+        Continue
+      </a>
+      <a href="#" class="welcome-btn btn-secondary">
+        Referred by someone?
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

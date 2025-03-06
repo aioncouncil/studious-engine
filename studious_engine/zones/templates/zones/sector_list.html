@@ -1,0 +1,99 @@
+{% comment %}
+[CLAUDE:OPTIMIZATION_LAYER:START]
+This template is part of the zone_system component
+See .claude/README.md for more information
+[CLAUDE:OPTIMIZATION_LAYER:END]
+{% endcomment %}
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}EudaimoniaGo Sectors{% endblock title %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h1>City Sectors</h1>
+      <p class="lead">Explore the 12 sectors of the city and their specialized zones</p>
+    </div>
+    <div class="col-md-4 text-end">
+      <a href="{% url 'core:dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+  </div>
+  
+  <!-- Governing Sector Highlight -->
+  {% if governing_sector %}
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="card border-primary">
+        <div class="card-header bg-primary text-white">
+          <h4>Current Governing Sector: {{ governing_sector.name }}</h4>
+        </div>
+        <div class="card-body">
+          <p>{{ governing_sector.description }}</p>
+          <p><strong>Governing until:</strong> {{ governing_sector.governing_end_date|default:"Ongoing" }}</p>
+          <a href="{% url 'zones:sector_detail' governing_sector.id %}" class="btn btn-primary">Visit Governing Sector</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  
+  <!-- Sectors Grid -->
+  <div class="row">
+    {% for sector in sectors %}
+    <div class="col-md-4 mb-4">
+      <div class="card h-100">
+        <div class="card-header {% if sector.is_governing %}bg-primary text-white{% endif %}">
+          <h5>{{ sector.get_number_display }}</h5>
+        </div>
+        <div class="card-body">
+          <h5 class="card-title">{{ sector.name }}</h5>
+          <p class="card-text">{{ sector.description|truncatechars:100 }}</p>
+          
+          <!-- Player's involvement in this sector -->
+          {% if sector.id in sector_contributions %}
+            <div class="mb-3">
+              <h6>Your Involvement:</h6>
+              <ul class="list-unstyled">
+                <li>Zones contributed to: {{ sector_contributions|length }}</li>
+                {% with leader_zones=sector_contributions|selectattr:"is_zone_leader"|list %}
+                  {% if leader_zones %}
+                    <li>Leader in {{ leader_zones|length }} zone(s)</li>
+                  {% endif %}
+                {% endwith %}
+              </ul>
+            </div>
+          {% endif %}
+          
+          <div class="d-grid gap-2">
+            <a href="{% url 'zones:sector_detail' sector.id %}" class="btn btn-primary">Explore Sector</a>
+          </div>
+        </div>
+        <div class="card-footer text-muted">
+          <small>{{ sector.zones.count }} Zones</small>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  
+  <!-- City Map Visualization -->
+  <div class="row mt-5">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <h4>City Map</h4>
+        </div>
+        <div class="card-body">
+          <div class="text-center">
+            <img src="{% static 'images/city_map_placeholder.png' %}" class="img-fluid" alt="City Map">
+            <p class="text-muted mt-3">Interactive city map coming soon!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

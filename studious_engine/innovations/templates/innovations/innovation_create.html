@@ -1,0 +1,124 @@
+{% extends "game_app_base.html" %}
+{% load static %}
+
+{% block title %}Create Innovation - EudaimoniaGo{% endblock %}
+
+{% block inner %}
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h1 class="display-4 page-heading">Create New Innovation</h1>
+      <p class="lead">Start a new innovation project to solve campus challenges.</p>
+    </div>
+    <div class="col-md-4 d-flex align-items-center justify-content-md-end">
+      <a href="{% url 'innovations:innovation_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Innovations
+      </a>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Innovation Details</h5>
+        </div>
+        <div class="card-body">
+          <form method="post" class="needs-validation" novalidate>
+            {% csrf_token %}
+            
+            <div class="mb-3">
+              <label for="name" class="form-label">Innovation Name</label>
+              <input type="text" class="form-control" id="name" name="name" required>
+              <div class="invalid-feedback">
+                Please provide a name for your innovation.
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="description" class="form-label">Description</label>
+              <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+              <div class="invalid-feedback">
+                Please provide a description of your innovation.
+              </div>
+              <div class="form-text">
+                Explain what challenge this innovation addresses and how it will work.
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="zone" class="form-label">Zone</label>
+              <select class="form-select" id="zone" name="zone" required>
+                <option value="" selected disabled>Select a zone</option>
+                {% for zone in zones %}
+                  <option value="{{ zone.id }}">{{ zone.name }} ({{ zone.sector }})</option>
+                {% endfor %}
+              </select>
+              <div class="invalid-feedback">
+                Please select a zone for this innovation.
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="category" class="form-label">Category</label>
+              <select class="form-select" id="category" name="category" required>
+                <option value="" selected disabled>Select a category</option>
+                <option value="technological">Technological</option>
+                <option value="social">Social</option>
+                <option value="environmental">Environmental</option>
+                <option value="educational">Educational</option>
+              </select>
+              <div class="invalid-feedback">
+                Please select a category for this innovation.
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="resources" class="form-label">Required Resources</label>
+              <textarea class="form-control" id="resources" name="resources" rows="3"></textarea>
+              <div class="form-text">
+                Optional: List any specific resources needed for this innovation.
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="expected_impact" class="form-label">Expected Impact</label>
+              <textarea class="form-control" id="expected_impact" name="expected_impact" rows="3" required></textarea>
+              <div class="invalid-feedback">
+                Please describe the expected impact of your innovation.
+              </div>
+            </div>
+            
+            <div class="mb-3 form-check">
+              <input type="checkbox" class="form-check-input" id="tech_tree" name="affects_tech_tree">
+              <label class="form-check-label" for="tech_tree">This innovation affects the Tech Tree</label>
+            </div>
+            
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-eudaimonia">Create Innovation</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_javascript %}
+<script>
+  // Form validation
+  document.addEventListener('DOMContentLoaded', function() {
+    const forms = document.querySelectorAll('.needs-validation');
+    
+    Array.from(forms).forEach(form => {
+      form.addEventListener('submit', event => {
+        if (!form.checkValidity()) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        
+        form.classList.add('was-validated');
+      }, false);
+    });
+  });
+</script>
+{% endblock %} 

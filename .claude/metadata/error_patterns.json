@@ -1,0 +1,74 @@
+{
+  "error_patterns": [
+    {
+      "pattern": "FieldError: Cannot resolve keyword '{field}' into field",
+      "context": "Django ORM query",
+      "solution": "Check that the field name exists on the model and is spelled correctly. For related fields, use double-underscores (model__field).",
+      "component": "core_user_system",
+      "example_fix": "user_profile.objects.filter(user__username='johndoe') # Not user_username"
+    },
+    {
+      "pattern": "ImportError: cannot import name '{name}' from '{module}'",
+      "context": "Module imports",
+      "solution": "Verify that the class or function exists in the referenced module. Check for circular imports.",
+      "component": "general",
+      "example_fix": "from .models import UserProfile # Not from .models import Profile"
+    },
+    {
+      "pattern": "TypeError: Object of type '{type}' is not JSON serializable",
+      "context": "JSON serialization",
+      "solution": "Convert non-serializable objects (like datetime) to strings or implement a custom JSON encoder.",
+      "component": "experience_system",
+      "example_fix": "json.dumps({'date': datetime_obj.isoformat()}) # Not json.dumps({'date': datetime_obj})"
+    },
+    {
+      "pattern": "IntegrityError: NOT NULL constraint failed",
+      "context": "Database operations",
+      "solution": "Ensure all required fields have values before saving. Check for missing values in foreign key relationships.",
+      "component": "general",
+      "example_fix": "user_profile.user = user # Don't forget to set required relationships"
+    },
+    {
+      "pattern": "ViewDoesNotExist: Could not import '{view}'",
+      "context": "Django URL configuration",
+      "solution": "Check the view import path in urls.py. Ensure the view class or function exists in the specified module.",
+      "component": "zone_system",
+      "example_fix": "from zones.views import ZoneDetailView # Check correct module path"
+    },
+    {
+      "pattern": "TemplateSyntaxError: Invalid block tag: '{tag}'",
+      "context": "Django templates",
+      "solution": "Check template syntax for correct closing tags and variable formats. Ensure custom template tags are properly registered.",
+      "component": "interface",
+      "example_fix": "{% endfor %} # Not {% endloop %}"
+    },
+    {
+      "pattern": "AttributeError: '{class}' object has no attribute '{attribute}'",
+      "context": "Object properties",
+      "solution": "Verify the attribute name exists on the class. Check for typos or accessing properties before they're initialized.",
+      "component": "general",
+      "example_fix": "user_profile.experience_points # Not user_profile.xp"
+    },
+    {
+      "pattern": "ValueError: The view {view} didn't return an HttpResponse object",
+      "context": "Django views",
+      "solution": "Ensure all view paths return HttpResponse objects (or a subclass like JsonResponse or render()).",
+      "component": "interface",
+      "example_fix": "return render(request, 'template.html', context) # Don't forget to return the response"
+    },
+    {
+      "pattern": "OperationalError: database is locked",
+      "context": "Database operations",
+      "solution": "Check for long-running transactions or multiple connections trying to write to the database simultaneously.",
+      "component": "general",
+      "example_fix": "Use 'with transaction.atomic():' blocks to manage transaction boundaries"
+    },
+    {
+      "pattern": "ModuleNotFoundError: No module named '{module}'",
+      "context": "Python imports",
+      "solution": "Ensure the module is installed and in the Python path. Check for typos in import statements.",
+      "component": "general",
+      "example_fix": "pip install missing-package # Then retry"
+    }
+  ]
+} 

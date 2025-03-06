@@ -1,0 +1,592 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ innovation.name }} | Atlantis Go{% endblock title %}
+
+{% block extra_css %}
+<style>
+  .status-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 100;
+  }
+  
+  .innovation-header {
+    background-size: cover;
+    background-position: center;
+    color: white;
+    padding: 80px 20px 30px;
+    position: relative;
+    border-radius: 0 0 20px 20px;
+  }
+  
+  .innovation-header::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7));
+    border-radius: 0 0 20px 20px;
+    z-index: 0;
+  }
+  
+  .innovation-header .content {
+    position: relative;
+    z-index: 1;
+  }
+  
+  .stage-card {
+    border-radius: 12px;
+    transition: all 0.3s;
+    border: none;
+    overflow: hidden;
+  }
+  
+  .stage-card.active {
+    border-left: 5px solid #4285F4;
+    box-shadow: 0 4px 15px rgba(66, 133, 244, 0.2);
+  }
+  
+  .stage-card.completed {
+    border-left: 5px solid #34A853;
+  }
+  
+  .stage-card.upcoming {
+    opacity: 0.7;
+  }
+  
+  .component-card {
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    padding: 10px;
+    margin-bottom: 10px;
+    transition: transform 0.2s;
+  }
+  
+  .component-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  }
+  
+  .participant-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    margin-right: -15px;
+    background-color: #f8f9fa;
+  }
+  
+  .metrics-card {
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-left: 3px solid #4285F4;
+  }
+  
+  .floating-action-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+  
+  /* Stage-specific styling */
+  .stage-order {
+    border-color: #4285F4;
+  }
+  
+  .stage-arrangement {
+    border-color: #EA4335;
+  }
+  
+  .stage-eurythmy {
+    border-color: #FBBC05;
+  }
+  
+  .stage-symmetry {
+    border-color: #34A853;
+  }
+  
+  .stage-propriety {
+    border-color: #8E44AD;
+  }
+  
+  .stage-economy {
+    border-color: #16A085;
+  }
+  
+  /* Type-specific colors */
+  .type-product {
+    background-color: #4285F4;
+  }
+  
+  .type-process {
+    background-color: #34A853;
+  }
+  
+  .type-service {
+    background-color: #FBBC05;
+  }
+  
+  .type-social {
+    background-color: #EA4335;
+  }
+  
+  .type-governance {
+    background-color: #8E44AD;
+  }
+  
+  .type-educational {
+    background-color: #16A085;
+  }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="container-fluid p-0">
+  <!-- Header -->
+  <div class="innovation-header type-{{ innovation.innovation_type }}" style="background-image: url('{% static "images/innovations/header-bg.jpg" %}')">
+    <div class="content">
+      <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <a href="{% url 'innovations:innovation_list' %}" class="btn btn-outline-light btn-sm">
+            <i class="fas fa-arrow-left"></i> Back
+          </a>
+          
+          <span class="badge rounded-pill 
+            {% if innovation.status == 'in_progress' %}bg-primary
+            {% elif innovation.status == 'completed' %}bg-success
+            {% else %}bg-danger{% endif %} px-3 py-2">
+            {{ innovation.get_status_display }}
+          </span>
+        </div>
+        
+        <h1 class="display-5 fw-bold">{{ innovation.name }}</h1>
+        <p class="lead">{{ innovation.innovation_type|title }} Innovation in {{ innovation.zone.name }}</p>
+        
+        <div class="d-flex align-items-center mt-3">
+          <img src="{{ innovation.initiator.avatar.url|default:'https://via.placeholder.com/40' }}" 
+               alt="{{ innovation.initiator.user.username }}" 
+               class="participant-avatar me-2">
+          <div>
+            <p class="mb-0">Initiated by <strong>{{ innovation.initiator.user.username }}</strong></p>
+            <small class="text-white-50">{{ innovation.created_at|date:"M d, Y" }}</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="container py-4">
+    <!-- Progress Tracker -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title">Progress Tracker</h5>
+        <h6 class="text-muted mb-3">Current Stage: <span class="fw-bold">{{ innovation.get_current_stage_display }}</span></h6>
+        
+        <div class="progress mb-3" style="height: 8px;">
+          <div class="progress-bar bg-success" role="progressbar" 
+               aria-valuenow="{{ innovation.calculate_overall_progress }}" 
+               aria-valuemin="0" aria-valuemax="100"
+               style="width: {{ innovation.calculate_overall_progress }}%"></div>
+        </div>
+        
+        <div class="d-flex justify-content-between text-center">
+          <div class="stage-marker">
+            <div class="stage-dot {% if innovation.current_stage == 'order' or innovation.current_stage == 'arrangement' or innovation.current_stage == 'eurythmy' or innovation.current_stage == 'symmetry' or innovation.current_stage == 'propriety' or innovation.current_stage == 'economy' %}bg-success{% else %}bg-secondary{% endif %}"></div>
+            <small>Order</small>
+          </div>
+          <div class="stage-marker">
+            <div class="stage-dot {% if innovation.current_stage == 'arrangement' or innovation.current_stage == 'eurythmy' or innovation.current_stage == 'symmetry' or innovation.current_stage == 'propriety' or innovation.current_stage == 'economy' %}bg-success{% else %}bg-secondary{% endif %}"></div>
+            <small>Arrangement</small>
+          </div>
+          <div class="stage-marker">
+            <div class="stage-dot {% if innovation.current_stage == 'eurythmy' or innovation.current_stage == 'symmetry' or innovation.current_stage == 'propriety' or innovation.current_stage == 'economy' %}bg-success{% else %}bg-secondary{% endif %}"></div>
+            <small>Eurythmy</small>
+          </div>
+          <div class="stage-marker">
+            <div class="stage-dot {% if innovation.current_stage == 'symmetry' or innovation.current_stage == 'propriety' or innovation.current_stage == 'economy' %}bg-success{% else %}bg-secondary{% endif %}"></div>
+            <small>Symmetry</small>
+          </div>
+          <div class="stage-marker">
+            <div class="stage-dot {% if innovation.current_stage == 'propriety' or innovation.current_stage == 'economy' %}bg-success{% else %}bg-secondary{% endif %}"></div>
+            <small>Propriety</small>
+          </div>
+          <div class="stage-marker">
+            <div class="stage-dot {% if innovation.current_stage == 'economy' %}bg-success{% else %}bg-secondary{% endif %}"></div>
+            <small>Economy</small>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Problem & Solution Section -->
+    <div class="row mb-4">
+      <div class="col-md-6 mb-3 mb-md-0">
+        <div class="card h-100">
+          <div class="card-header bg-danger text-white">
+            <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i> Problem Statement</h5>
+          </div>
+          <div class="card-body">
+            <p>{{ innovation.problem_statement }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card h-100">
+          <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i> Proposed Solution</h5>
+          </div>
+          <div class="card-body">
+            <p>{{ innovation.proposed_solution }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Participants Section -->
+    <div class="card mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-users me-2"></i> Participants ({{ innovation.participants.count }})</h5>
+        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#inviteParticipantsModal">
+          <i class="fas fa-user-plus"></i> Invite
+        </button>
+      </div>
+      <div class="card-body">
+        <div class="d-flex flex-wrap">
+          {% for participant in innovation.participants.all %}
+            <div class="text-center me-3 mb-3">
+              <img src="{{ participant.avatar.url|default:'https://via.placeholder.com/40' }}" 
+                  alt="{{ participant.user.username }}" 
+                  class="participant-avatar mb-1"
+                  data-bs-toggle="tooltip" 
+                  title="{{ participant.user.username }}">
+              <small class="d-block">{{ participant.user.username|truncatechars:10 }}</small>
+            </div>
+          {% empty %}
+            <p class="text-muted">No participants yet. Be the first to join!</p>
+          {% endfor %}
+        </div>
+      </div>
+      {% if not request.user.profile in innovation.participants.all and innovation.status == 'in_progress' %}
+        <div class="card-footer text-center">
+          <form method="post" action="{% url 'innovations:join_innovation' innovation.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-handshake me-1"></i> Join This Innovation
+            </button>
+          </form>
+        </div>
+      {% endif %}
+    </div>
+    
+    <!-- Stages Section -->
+    <h4 class="mb-3">Innovation Stages</h4>
+    <div class="accordion mb-4" id="stagesAccordion">
+      {% for stage_name, stage_data in innovation.stage_progress.items %}
+        <div class="accordion-item stage-card 
+          {% if innovation.current_stage == stage_name %}active
+          {% elif stage_name in 'order arrangement eurythmy symmetry propriety economy'|slice:':innovation.STAGE_CHOICES|length' %}completed
+          {% else %}upcoming{% endif %}">
+          <h2 class="accordion-header" id="heading{{ stage_name|capfirst }}">
+            <button class="accordion-button {% if innovation.current_stage != stage_name %}collapsed{% endif %}" 
+                    type="button" data-bs-toggle="collapse" 
+                    data-bs-target="#collapse{{ stage_name|capfirst }}" 
+                    aria-expanded="{% if innovation.current_stage == stage_name %}true{% else %}false{% endif %}" 
+                    aria-controls="collapse{{ stage_name|capfirst }}">
+              <div class="d-flex justify-content-between align-items-center w-100 me-3">
+                <span>
+                  <strong>{{ stage_name|capfirst }}</strong> 
+                  {% if stage_data.completed %}<i class="fas fa-check-circle text-success ms-2"></i>{% endif %}
+                </span>
+                
+                <div class="d-flex align-items-center">
+                  <small class="text-muted me-2">{{ stage_data.progress }}%</small>
+                  <div class="progress" style="width: 100px; height: 8px;">
+                    <div class="progress-bar bg-info" role="progressbar" 
+                         aria-valuenow="{{ stage_data.progress }}" 
+                         aria-valuemin="0" aria-valuemax="100"
+                         style="width: {{ stage_data.progress }}%"></div>
+                  </div>
+                </div>
+              </div>
+            </button>
+          </h2>
+          <div id="collapse{{ stage_name|capfirst }}" 
+               class="accordion-collapse collapse {% if innovation.current_stage == stage_name %}show{% endif %}" 
+               aria-labelledby="heading{{ stage_name|capfirst }}" 
+               data-bs-parent="#stagesAccordion">
+            <div class="accordion-body">
+              {% if stage_name == 'order' %}
+                <h6>Components</h6>
+                <div class="component-card">
+                  <h6 class="fw-bold">Identified Components</h6>
+                  <p>{{ stage_data.components|default:"Components have not been identified yet." }}</p>
+                </div>
+                
+                <h6 class="mt-3">Metrics</h6>
+                <div class="component-card">
+                  <h6 class="fw-bold">Established Metrics</h6>
+                  <p>{{ stage_data.metrics|default:"Metrics have not been established yet." }}</p>
+                </div>
+                
+              {% elif stage_name == 'arrangement' %}
+                <h6>Ground Plan</h6>
+                <div class="component-card">
+                  <h6 class="fw-bold">Ground Plan</h6>
+                  <p>{{ stage_data.ground_plan|default:"Ground plan has not been created yet." }}</p>
+                </div>
+                
+                <h6 class="mt-3">Elevation</h6>
+                <div class="component-card">
+                  <h6 class="fw-bold">Elevation</h6>
+                  <p>{{ stage_data.elevation|default:"Elevation has not been defined yet." }}</p>
+                </div>
+                
+                <h6 class="mt-3">Perspective</h6>
+                <div class="component-card">
+                  <h6 class="fw-bold">Perspective</h6>
+                  <p>{{ stage_data.perspective|default:"Perspective has not been defined yet." }}</p>
+                </div>
+                
+              {% elif stage_name == 'eurythmy' %}
+                <h6>Component Optimizations</h6>
+                <div class="component-card">
+                  <h6 class="fw-bold">Component Optimizations</h6>
+                  <p>{{ stage_data.components|default:"Component optimizations have not been defined yet." }}</p>
+                </div>
+                
+              {% elif stage_name == 'symmetry' %}
+                <h6>Standard Unit</h6>
+                <div class="component-card">
+                  <h6 class="fw-bold">Standard Unit</h6>
+                  <p>{{ stage_data.standard|default:"Standard unit has not been defined yet." }}</p>
+                </div>
+                
+                <h6 class="mt-3">Component Relations</h6>
+                <div class="component-card">
+                  <h6 class="fw-bold">Component Relations</h6>
+                  <p>{{ stage_data.relations|default:"Component relations have not been defined yet." }}</p>
+                </div>
+                
+              {% elif stage_name == 'propriety' %}
+                <h6>Principles</h6>
+                <div class="component-card">
+                  <h6 class="fw-bold">Principles</h6>
+                  <p>{{ stage_data.principles|default:"Principles have not been defined yet." }}</p>
+                </div>
+                
+                <h6 class="mt-3">Justification</h6>
+                <div class="component-card">
+                  <h6 class="fw-bold">Justification</h6>
+                  <p>{{ stage_data.justification|default:"Justification has not been provided yet." }}</p>
+                </div>
+                
+              {% elif stage_name == 'economy' %}
+                <h6>Resource Management</h6>
+                <div class="component-card">
+                  <h6 class="fw-bold">Resource Management</h6>
+                  <p>{{ stage_data.resources|default:"Resource management has not been defined yet." }}</p>
+                </div>
+                
+                <h6 class="mt-3">Implementation Plan</h6>
+                <div class="component-card">
+                  <h6 class="fw-bold">Implementation Plan</h6>
+                  <p>{{ stage_data.implementation|default:"Implementation plan has not been defined yet." }}</p>
+                </div>
+              {% endif %}
+              
+              {% if innovation.current_stage == stage_name and request.user.profile in innovation.participants.all %}
+                <div class="mt-4">
+                  <a href="{% url 'innovations:contribute_stage' innovation.id stage_name %}" class="btn btn-primary">
+                    <i class="fas fa-pen me-1"></i> Contribute to this Stage
+                  </a>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    
+    <!-- Validation Metrics -->
+    {% if innovation.validation_metrics %}
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i> Validation Metrics</h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          {% for metric_name, metric_value in innovation.validation_metrics.items %}
+            <div class="col-md-6 mb-3">
+              <div class="metrics-card">
+                <h6 class="fw-bold">{{ metric_name|title }}</h6>
+                <div class="d-flex align-items-center">
+                  <div class="flex-grow-1 me-2">
+                    <div class="progress mb-2">
+                      <div class="progress-bar bg-success" role="progressbar" 
+                           aria-valuenow="{{ metric_value }}" 
+                           aria-valuemin="0" aria-valuemax="100"
+                           style="width: {{ metric_value }}%"></div>
+                    </div>
+                    <small class="text-muted">{{ metric_value }}% accomplished</small>
+                  </div>
+                  <h5 class="mb-0">{{ metric_value }}</h5>
+                </div>
+              </div>
+            </div>
+          {% empty %}
+            <div class="col-12">
+              <p class="text-muted">No validation metrics have been defined yet.</p>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    
+    <!-- Artifacts -->
+    {% if innovation.artifacts.exists %}
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-cube me-2"></i> Related Artifacts</h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          {% for artifact in innovation.artifacts.all %}
+            <div class="col-md-4 mb-3">
+              <div class="card h-100">
+                {% if artifact.media_file %}
+                  <img src="{{ artifact.media_file.url }}" class="card-img-top" alt="{{ artifact.name }}">
+                {% elif artifact.media_url %}
+                  <img src="{{ artifact.media_url }}" class="card-img-top" alt="{{ artifact.name }}">
+                {% endif %}
+                <div class="card-body">
+                  <h6 class="card-title">{{ artifact.name }}</h6>
+                  <p class="card-text small">{{ artifact.description|truncatewords:15 }}</p>
+                </div>
+                <div class="card-footer">
+                  <small class="text-muted">Created by {{ artifact.creator.user.username }}</small>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    
+    <!-- Actions Bar -->
+    {% if request.user.profile == innovation.initiator or request.user.is_staff %}
+    <div class="d-flex justify-content-between align-items-center mt-5">
+      {% if innovation.status == 'in_progress' and innovation.current_stage != 'economy' %}
+        <form method="post" action="{% url 'innovations:advance_stage' innovation.id %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-arrow-right me-1"></i> Advance to Next Stage
+          </button>
+        </form>
+      {% elif innovation.status == 'in_progress' and innovation.current_stage == 'economy' %}
+        <form method="post" action="{% url 'innovations:complete_innovation' innovation.id %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-check-circle me-1"></i> Complete Innovation
+          </button>
+        </form>
+      {% else %}
+        <div></div>
+      {% endif %}
+      
+      <div class="dropdown">
+        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="fas fa-ellipsis-v"></i> More Actions
+        </button>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="{% url 'innovations:edit_innovation' innovation.id %}">
+            <i class="fas fa-edit me-2"></i> Edit Innovation
+          </a></li>
+          <li><a class="dropdown-item" href="{% url 'innovations:add_artifact' innovation.id %}">
+            <i class="fas fa-plus me-2"></i> Add Artifact
+          </a></li>
+          <li><a class="dropdown-item" href="{% url 'innovations:update_metrics' innovation.id %}">
+            <i class="fas fa-chart-bar me-2"></i> Update Metrics
+          </a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li>
+            <form method="post" action="{% url 'innovations:delete_innovation' innovation.id %}" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Are you sure you want to delete this innovation? This action cannot be undone.')">
+                <i class="fas fa-trash-alt me-2"></i> Delete Innovation
+              </button>
+            </form>
+          </li>
+        </ul>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Invite Participants Modal -->
+<div class="modal fade" id="inviteParticipantsModal" tabindex="-1" aria-labelledby="inviteParticipantsModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="inviteParticipantsModalLabel">Invite Participants</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="post" action="{% url 'innovations:invite_participants' innovation.id %}">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="inviteUsers" class="form-label">Select Users</label>
+            <select class="form-select" id="inviteUsers" name="user_ids" multiple>
+              {% for user in available_users %}
+                <option value="{{ user.id }}">{{ user.username }}</option>
+              {% endfor %}
+            </select>
+            <small class="form-text text-muted">Hold Ctrl/Cmd to select multiple users</small>
+          </div>
+          <div class="mb-3">
+            <label for="inviteMessage" class="form-label">Invitation Message</label>
+            <textarea class="form-control" id="inviteMessage" name="message" rows="3" placeholder="Optional message to include with the invitation"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Send Invitations</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if innovation.status == 'in_progress' and request.user.profile == innovation.initiator %}
+<!-- Floating Action Button -->
+<a href="{% url 'innovations:contribute_stage' innovation.id innovation.current_stage %}" class="floating-action-button btn btn-primary">
+  <i class="fas fa-pen"></i>
+</a>
+{% endif %}
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Enable tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+  });
+</script>
+{% endblock extra_js %}

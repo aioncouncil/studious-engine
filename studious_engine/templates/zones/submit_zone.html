@@ -1,0 +1,198 @@
+{% comment %}
+[CLAUDE:OPTIMIZATION_LAYER:START]
+This template is part of the zone_system component
+See .claude/README.md for more information
+[CLAUDE:OPTIMIZATION_LAYER:END]
+{% endcomment %}
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Submit a New Zone{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+<style>
+    .map-container {
+        height: 400px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    #location-map {
+        height: 100%;
+        width: 100%;
+    }
+    
+    .location-preview {
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 4px;
+        margin-bottom: 20px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .help-text {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">Submit a New Zone</h1>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">What are Zones?</h5>
+            <p>Zones are areas in the real world where players can gather, collaborate, and engage with various activities. 
+            Each zone has a specific purpose based on its type.</p>
+            <ul>
+                <li><strong>Think Tanks (Polis)</strong>: For learning, discussion, and idea generation</li>
+                <li><strong>Production Tanks (Chora)</strong>: For making things and physical activities</li>
+                <li><strong>Markets (Agora)</strong>: For trading resources and socializing</li>
+            </ul>
+        </div>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="{{ form.zone_type.id_for_label }}">Zone Type</label>
+                    {{ form.zone_type }}
+                    <div class="help-text">{{ form.zone_type.help_text }}</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.area.id_for_label }}">Area Type</label>
+                    {{ form.area }}
+                    <div class="help-text">{{ form.area.help_text }}</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.sector.id_for_label }}">Sector</label>
+                    {{ form.sector }}
+                    <div class="help-text">{{ form.sector.help_text }}</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.description.id_for_label }}">Description</label>
+                    {{ form.description }}
+                    <div class="help-text">{{ form.description.help_text }}</div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="{{ form.city.id_for_label }}">City</label>
+                    {{ form.city }}
+                    <div class="help-text">{{ form.city.help_text }}</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.country.id_for_label }}">Country</label>
+                    {{ form.country }}
+                    <div class="help-text">{{ form.country.help_text }}</div>
+                </div>
+                
+                <h5 class="mt-4">Zone Location</h5>
+                <p class="text-muted">Click on the map to set the location for this zone</p>
+                
+                <div class="location-preview">
+                    <div id="location-display">No location selected</div>
+                </div>
+                
+                <div class="map-container">
+                    <div id="location-map"></div>
+                </div>
+                
+                {{ form.city_latitude }}
+                {{ form.city_longitude }}
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">Submit Zone</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize the map
+        const map = L.map('location-map').setView([39.0345, -94.5764], 13);
+        
+        // Add tile layer
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        // Create a marker that will be placed on click
+        let marker = null;
+        
+        // Get form fields
+        const latField = document.getElementById('{{ form.city_latitude.id_for_label }}');
+        const lngField = document.getElementById('{{ form.city_longitude.id_for_label }}');
+        const locationDisplay = document.getElementById('location-display');
+        
+        // Handle map clicks
+        map.on('click', function(e) {
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+            
+            // Update the form fields
+            latField.value = lat;
+            lngField.value = lng;
+            
+            // Update the display
+            locationDisplay.textContent = `Latitude: ${lat.toFixed(6)}, Longitude: ${lng.toFixed(6)}`;
+            
+            // Update or create the marker
+            if (marker) {
+                marker.setLatLng(e.latlng);
+            } else {
+                marker = L.marker(e.latlng).addTo(map);
+            }
+        });
+        
+        // If we have coordinates already (e.g., for editing), use them
+        if (latField.value && lngField.value) {
+            const lat = parseFloat(latField.value);
+            const lng = parseFloat(lngField.value);
+            const latlng = L.latLng(lat, lng);
+            
+            // Center the map
+            map.setView(latlng, 13);
+            
+            // Add a marker
+            marker = L.marker(latlng).addTo(map);
+            
+            // Update the display
+            locationDisplay.textContent = `Latitude: ${lat.toFixed(6)}, Longitude: ${lng.toFixed(6)}`;
+        }
+        
+        // Try to get the user's location to center the map initially
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                const userLat = position.coords.latitude;
+                const userLng = position.coords.longitude;
+                map.setView([userLat, userLng], 13);
+            }, function(error) {
+                console.log('Error getting location:', error);
+            });
+        }
+    });
+</script>
+{% endblock %} 

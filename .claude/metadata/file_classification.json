@@ -1,0 +1,72 @@
+{
+  "directory_classifications": {
+    "Atlantis Go": {
+      "purpose": "documentation",
+      "description": "Contains the model specification and design documents for the Atlantis Go implementation"
+    },
+    "docs": {
+      "purpose": "documentation",
+      "description": "Documentation for the project, including transformation plans"
+    },
+    "docs/transformation": {
+      "purpose": "documentation",
+      "description": "Documents detailing the transformation plan for each phase of implementation"
+    },
+    "studious_engine": {
+      "purpose": "implementation",
+      "description": "Core codebase that will be transformed into the Atlantis Go implementation"
+    },
+    ".claude": {
+      "purpose": "metadata",
+      "description": "Claude-specific optimization metadata for improved AI assistance"
+    },
+    "venv": {
+      "purpose": "environment",
+      "description": "Python virtual environment for the project"
+    }
+  },
+  "file_classifications": {
+    "inspect_tech_tree.py": {
+      "purpose": "utility",
+      "description": "Utility script for inspecting the technology tree"
+    },
+    "test_tech_tree.py": {
+      "purpose": "test",
+      "description": "Test script for the technology tree component"
+    }
+  },
+  "generic_patterns": {
+    "**/models.py": {
+      "purpose": "implementation",
+      "description": "Django model definitions"
+    },
+    "**/views.py": {
+      "purpose": "interface",
+      "description": "Django views for frontend interactions"
+    },
+    "**/urls.py": {
+      "purpose": "interface",
+      "description": "URL routing configuration"
+    },
+    "**/serializers.py": {
+      "purpose": "interface",
+      "description": "API serializers for data transformation"
+    },
+    "**/services.py": {
+      "purpose": "implementation",
+      "description": "Business logic services"
+    },
+    "**/test_*.py": {
+      "purpose": "test",
+      "description": "Unit or integration tests"
+    },
+    "**/*_test.py": {
+      "purpose": "test",
+      "description": "Unit or integration tests"
+    },
+    "**/*.md": {
+      "purpose": "documentation",
+      "description": "Markdown documentation"
+    }
+  }
+} 

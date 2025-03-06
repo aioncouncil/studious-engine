@@ -1,0 +1,85 @@
+{% extends "game_app_base.html" %}
+{% load static %}
+
+{% block title %}Innovations - EudaimoniaGo{% endblock %}
+
+{% block inner %}
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h1 class="display-4 page-heading">Innovations</h1>
+      <p class="lead">Discover and develop innovative solutions to in-game challenges.</p>
+    </div>
+    <div class="col-md-4 d-flex align-items-center justify-content-md-end">
+      <div class="btn-group">
+        <a href="{% url 'innovations:tech_tree' %}" class="btn btn-outline-primary me-2">
+          <i class="fas fa-sitemap"></i> Tech Tree
+        </a>
+        <a href="{% url 'innovations:innovation_create' %}" class="btn btn-eudaimonia">
+          <i class="fas fa-lightbulb"></i> New Innovation
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Innovation Categories -->
+  <div class="mb-4">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex flex-wrap gap-2">
+          <button class="btn btn-eudaimonia active">All</button>
+          <button class="btn btn-outline-primary">Technological</button>
+          <button class="btn btn-outline-primary">Social</button>
+          <button class="btn btn-outline-primary">Environmental</button>
+          <button class="btn btn-outline-primary">Educational</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Innovation List -->
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for innovation in innovations %}
+      <div class="col">
+        <div class="card h-100">
+          <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">{{ innovation.name }}</h5>
+              <span class="badge bg-primary">{{ innovation.category }}</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="card-text">{{ innovation.description }}</p>
+            
+            <!-- Progress and Impact -->
+            <div class="mb-3">
+              <label class="form-label small">Development Progress</label>
+              <div class="progress">
+                <div class="progress-bar" role="progressbar" style="width: {{ innovation.progress }}%;" aria-valuenow="{{ innovation.progress }}" aria-valuemin="0" aria-valuemax="100">
+                  {{ innovation.progress }}%
+                </div>
+              </div>
+            </div>
+            
+            <div class="d-grid gap-2">
+              <a href="{% url 'innovations:innovation_detail' innovation.id %}" class="btn btn-eudaimonia">View Details</a>
+            </div>
+          </div>
+          <div class="card-footer">
+            <small class="text-muted">Impact: {{ innovation.impact_score }} • Collaborators: {{ innovation.collaborators_count }}</small>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body text-center">
+            <i class="fas fa-lightbulb fa-3x mb-3 text-muted"></i>
+            <h5>No Innovations Yet</h5>
+            <p>Start your innovation journey by combining powers and experiences.</p>
+            <a href="{% url 'innovations:innovation_create' %}" class="btn btn-eudaimonia">Create Your First Innovation</a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %} 

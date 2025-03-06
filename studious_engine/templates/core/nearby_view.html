@@ -1,0 +1,458 @@
+{% comment %}
+[CLAUDE:OPTIMIZATION_LAYER:START]
+This template is part of the core_user_system component
+See .claude/README.md for more information
+[CLAUDE:OPTIMIZATION_LAYER:END]
+{% endcomment %}
+
+{% extends "game_app_base.html" %}
+{% load static %}
+
+{% block title %}Nearby Activities - EudaimoniaGo{% endblock %}
+
+{% block css %}
+{{ block.super }}
+<style>
+  /* Variables for consistent styling */
+  :root {
+    --primary-blue: #3273dc;
+    --primary-teal: #5ca297;
+    --secondary-color: #96d6c8;
+    --text-dark: #444;
+    --text-muted: #999;
+    --bg-gradient: linear-gradient(145deg, 
+      #e7f0ff 0%, 
+      #f0f5ff 15%, 
+      #f7faff 30%, 
+      #fafcff 60%, 
+      #ffffff 85%);
+  }
+
+  body {
+    background-color: #f0f5ff;
+    background-image: var(--bg-gradient);
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center;
+  }
+
+  /* Navigation Tabs Styling - similar to profile page */
+  .nearby-nav-container {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: transparent;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    padding: 35px 0 5px;
+  }
+  
+  .nearby-nav-container.scrolled {
+    background-color: rgba(240, 245, 255, 0.95);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  }
+  
+  .nearby-nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px 0;
+    width: 100%;
+    max-width: 350px;
+    margin: 0 auto;
+    position: relative;
+  }
+  
+  .nav-tab {
+    flex: 1;
+    text-align: center;
+    font-size: 15px;
+    letter-spacing: 1.2px;
+    font-weight: 500;
+    color: rgba(120, 120, 120, 0.7);
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    transition: color 0.2s ease;
+  }
+  
+  .nav-tab:hover { color: rgba(80, 80, 80, 0.9); }
+  .nav-tab.active { color: #333; }
+  
+  .nav-tab.active:after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 25%;
+    width: 50%;
+    height: 3px;
+    background-color: #3478e3;
+    border-radius: 3px;
+    transition: all 0.2s ease;
+  }
+  
+  .nav-tab-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    font-size: 17px;
+  }
+
+  /* Page header */
+  .page-header {
+    text-align: center;
+    margin: 25px 0 20px;
+  }
+
+  .page-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 5px;
+  }
+
+  .page-subtitle {
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+
+  /* Floating X Button - same as profile page */
+  .floating-x-button {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #5dc2b8 0%, #39a2b1 100%);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    animation: pulse 2s infinite;
+  }
+  
+  @keyframes pulse {
+    0% { box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2); }
+    50% { box-shadow: 0 6px 25px rgba(83, 194, 184, 0.3); }
+    100% { box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2); }
+  }
+  
+  .floating-x-button:hover, .floating-x-button:focus {
+    background: linear-gradient(145deg, #52b7ad 0%, #34a095 100%);
+    transform: translateX(-50%) scale(1.05);
+  }
+  
+  .floating-x-button:active {
+    transform: translateX(-50%) scale(0.95);
+  }
+  
+  .floating-x-button .x-icon {
+    color: white;
+    font-size: 32px;
+    font-weight: 200;
+  }
+
+  /* Nearby items container */
+  .nearby-container {
+    padding: 15px;
+    margin-bottom: 70px;
+  }
+
+  .nearby-item {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    margin-bottom: 15px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+  }
+
+  .nearby-icon {
+    width: 50px;
+    height: 50px;
+    min-width: 50px;
+    border-radius: 50%;
+    background-color: #e0f0ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+  }
+
+  .nearby-icon i {
+    color: var(--primary-blue);
+    font-size: 24px;
+  }
+
+  .nearby-details {
+    flex-grow: 1;
+  }
+
+  .nearby-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 5px;
+  }
+
+  .nearby-distance {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+  }
+
+  .nearby-description {
+    font-size: 14px;
+    color: var(--text-dark);
+  }
+
+  .nearby-direction {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-blue);
+    height: 40px;
+    width: 40px;
+    min-width: 40px;
+    border-radius: 50%;
+    background-color: rgba(50, 115, 220, 0.1);
+    margin-left: 10px;
+  }
+
+  .nearby-direction i {
+    font-size: 20px;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 576px) {
+    .nearby-nav {
+      max-width: 300px;
+    }
+    
+    .nearby-title {
+      font-size: 16px;
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .nearby-nav {
+      max-width: 400px;
+    }
+  }
+</style>
+{% endblock %}
+
+{# Override status bar to hide it on this page #}
+{% block body %}
+<div class="app-content">
+  {# Status bar removed #}
+  
+  <!-- Navigation Tabs -->
+  <div class="nearby-nav-container" id="nearbyNavContainer">
+    <div class="nearby-nav">
+      <div class="nav-tab active">
+        <div class="nav-tab-content">NEARBY</div>
+      </div>
+      <div class="nav-tab">
+        <div class="nav-tab-content">FIELD</div>
+      </div>
+      <div class="nav-tab">
+        <div class="nav-tab-content">SPECIAL</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating X button that links back to map -->
+  <a href="{% url 'core:map' %}" class="floating-x-button">
+    <span class="x-icon">✕</span>
+  </a>
+
+  <!-- Main content area -->
+  <div class="app-content-inner">
+    {% block inner %}
+    <div class="container-fluid">
+      <!-- Page Header -->
+      <div class="page-header">
+        <h1 class="page-title">Nearby Activities</h1>
+        <p class="page-subtitle">Discover opportunities in your vicinity</p>
+      </div>
+      
+      <!-- Nearby Items List -->
+      <div class="nearby-container">
+        <!-- Example nearby items - these would be dynamically generated -->
+        <div class="nearby-item">
+          <div class="nearby-icon">
+            <i class="fas fa-landmark"></i>
+          </div>
+          <div class="nearby-details">
+            <h3 class="nearby-title">UMKC Main Library</h3>
+            <p class="nearby-distance">150m away</p>
+            <p class="nearby-description">Research hub with resources and study spaces</p>
+          </div>
+          <div class="nearby-direction">
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+        
+        <div class="nearby-item">
+          <div class="nearby-icon">
+            <i class="fas fa-flask"></i>
+          </div>
+          <div class="nearby-details">
+            <h3 class="nearby-title">Chemistry Lab</h3>
+            <p class="nearby-distance">200m away</p>
+            <p class="nearby-description">Learn about chemical reactions and experiments</p>
+          </div>
+          <div class="nearby-direction">
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+        
+        <div class="nearby-item">
+          <div class="nearby-icon">
+            <i class="fas fa-tree"></i>
+          </div>
+          <div class="nearby-details">
+            <h3 class="nearby-title">Campus Garden</h3>
+            <p class="nearby-distance">300m away</p>
+            <p class="nearby-description">Explore botanical specimens and natural habitats</p>
+          </div>
+          <div class="nearby-direction">
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+        
+        <div class="nearby-item">
+          <div class="nearby-icon">
+            <i class="fas fa-running"></i>
+          </div>
+          <div class="nearby-details">
+            <h3 class="nearby-title">Athletic Center</h3>
+            <p class="nearby-distance">350m away</p>
+            <p class="nearby-description">Fitness activities and sports facilities</p>
+          </div>
+          <div class="nearby-direction">
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endblock inner %}
+  </div>
+  
+  {# Bottom navigation bar removed #}
+</div>
+{% endblock body %}
+
+{% block javascript %}
+{{ block.super }}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // DOM element references
+    const navContainer = document.getElementById('nearbyNavContainer');
+    const navTabs = document.querySelectorAll('.nav-tab');
+    const xButton = document.querySelector('.floating-x-button');
+    
+    // Handle scrolling to change background color
+    window.addEventListener('scroll', function() {
+      navContainer.classList.toggle('scrolled', window.scrollY > 10);
+    });
+    
+    // Handle tab switching with animation
+    navTabs.forEach(tab => {
+      tab.addEventListener('click', function() {
+        // Only proceed if not already active
+        if (!this.classList.contains('active')) {
+          // Store references
+          const contentContainer = document.querySelector('.container-fluid');
+          
+          // Update tab states
+          navTabs.forEach(t => {
+            t.classList.remove('active');
+            t.style.transition = 'all 0.3s ease';
+          });
+          this.classList.add('active');
+          
+          // Handle content display based on selected tab
+          handleTabContentChange(this.querySelector('.nav-tab-content').textContent, contentContainer);
+        }
+      });
+    });
+    
+    // Add subtle pulse animation to floating X button
+    if (xButton) {
+      xButton.addEventListener('mouseenter', () => xButton.style.transform = 'translateX(-50%) scale(1.05)');
+      xButton.addEventListener('mouseleave', () => xButton.style.transform = 'translateX(-50%)');
+      xButton.addEventListener('mousedown', () => xButton.style.transform = 'translateX(-50%) scale(0.95)');
+      xButton.addEventListener('mouseup', () => xButton.style.transform = 'translateX(-50%) scale(1.05)');
+    }
+    
+    // Function to handle content change when tabs are switched
+    function handleTabContentChange(tabName, contentContainer) {
+      // Fade out current content
+      contentContainer.style.opacity = 0;
+      contentContainer.style.transition = 'opacity 0.2s ease';
+      
+      setTimeout(() => {
+        // Store original content if not already stored for NEARBY tab
+        if (tabName !== 'NEARBY' && !contentContainer.dataset.nearbyContent) {
+          contentContainer.dataset.nearbyContent = contentContainer.innerHTML;
+        }
+        
+        if (tabName === 'FIELD') {
+          // Show field research content placeholder
+          contentContainer.innerHTML = `
+            <div class="page-header">
+              <h1 class="page-title">Field Research</h1>
+              <p class="page-subtitle">Complete tasks to earn rewards</p>
+            </div>
+            <div class="nearby-container">
+              <div style="text-align: center; padding: 40px 20px;">
+                <i class="fas fa-binoculars fa-4x" style="color: #96d6c8; margin-bottom: 20px;"></i>
+                <h3 style="margin-bottom: 15px;">No field research available</h3>
+                <p class="text-muted">Visit more locations to unlock field research tasks</p>
+              </div>
+            </div>
+          `;
+        } else if (tabName === 'SPECIAL') {
+          // Show special research content placeholder
+          contentContainer.innerHTML = `
+            <div class="page-header">
+              <h1 class="page-title">Special Research</h1>
+              <p class="page-subtitle">Exclusive limited-time challenges</p>
+            </div>
+            <div class="nearby-container">
+              <div style="text-align: center; padding: 40px 20px;">
+                <i class="fas fa-star fa-4x" style="color: #ffc107; margin-bottom: 20px;"></i>
+                <h3 style="margin-bottom: 15px;">No special research available</h3>
+                <p class="text-muted">Check back later for special events and challenges</p>
+              </div>
+            </div>
+          `;
+        } else if (tabName === 'NEARBY' && contentContainer.dataset.nearbyContent) {
+          // Restore original nearby content
+          contentContainer.innerHTML = contentContainer.dataset.nearbyContent;
+        }
+        
+        // Fade in new content
+        contentContainer.style.opacity = 1;
+      }, 200);
+    }
+  });
+</script>
+{% endblock javascript %}
+
+{% block modal %}
+  <!-- Global game modals can go here -->
+{% endblock modal %} 

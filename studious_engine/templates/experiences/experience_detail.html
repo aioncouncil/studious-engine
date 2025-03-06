@@ -1,0 +1,231 @@
+{% comment %}
+[CLAUDE:OPTIMIZATION_LAYER:START]
+This template is part of the experience_system component
+See .claude/README.md for more information
+[CLAUDE:OPTIMIZATION_LAYER:END]
+{% endcomment %}
+
+{% extends "game_app_base.html" %}
+{% load static %}
+{% load experience_tags %}
+
+{% block title %}{{ experience.name }} - EudaimoniaGo{% endblock %}
+
+{% block inner %}
+  <div class="container-fluid py-3">
+    <div class="card mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+          <h1 class="display-5">{{ experience.name }}</h1>
+          <div class="badges">
+            <span class="badge {% if experience.experience_type == 'quest' %}bg-primary{% elif experience.experience_type == 'challenge' %}bg-success{% elif experience.experience_type == 'collaboration' %}bg-info{% else %}bg-warning{% endif %}">
+              {{ experience.get_experience_type_display }}
+            </span>
+            <span class="badge bg-secondary">{{ experience.get_matrix_position_display }}</span>
+            <span class="badge bg-danger">
+              <i class="fas fa-signal"></i> Level {{ experience.minimum_rank }}
+            </span>
+          </div>
+        </div>
+        <div>
+          <h4><i class="fas fa-star text-warning"></i> {{ experience.experience_reward }} XP</h4>
+          <small class="text-muted"><i class="fas fa-clock"></i> {{ experience.duration_minutes }} minutes</small>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row mb-4">
+          <div class="col-md-8">
+            <h5>Description</h5>
+            <p>{{ experience.description }}</p>
+          </div>
+          <div class="col-md-4">
+            {% if is_participating %}
+              <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                  <h5 class="mb-0">Your Progress</h5>
+                </div>
+                <div class="card-body">
+                  <h6>Status: {{ player_experience.get_status_display }}</h6>
+                  <div class="progress mb-3">
+                    <div class="{% progress_bar_class player_experience.progress %}" style="width: {{ player_experience.progress }}%;" role="progressbar" aria-valuenow="{{ player_experience.progress }}" aria-valuemin="0" aria-valuemax="100">
+                      {{ player_experience.progress }}%
+                    </div>
+                  </div>
+                  <div class="d-grid">
+                    <a href="#update-progress" class="btn btn-eudaimonia" data-bs-toggle="modal" data-bs-target="#progressModal">
+                      Update Progress
+                    </a>
+                  </div>
+                </div>
+              </div>
+            {% else %}
+              <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                  <h5 class="mb-0">Join this Experience</h5>
+                </div>
+                <div class="card-body">
+                  <p>Start this experience to track your progress and earn rewards!</p>
+                  <div class="d-grid">
+                    <a href="{% url 'experiences:join_experience' experience.id %}" class="btn btn-eudaimonia">
+                      Start Now
+                    </a>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-6">
+            <div class="card mb-4">
+              <div class="card-header">
+                <h5 class="mb-0">Structure</h5>
+              </div>
+              <div class="card-body">
+                <dl>
+                  <dt>Definition</dt>
+                  <dd>{{ experience.definition }}</dd>
+                  
+                  <dt>Purpose</dt>
+                  <dd>{{ experience.end }}</dd>
+                  
+                  <dt>Components</dt>
+                  <dd>{{ experience.parts }}</dd>
+                  
+                  <dt>Materials</dt>
+                  <dd>{{ experience.matter }}</dd>
+                  
+                  <dt>Tools Required</dt>
+                  <dd>{{ experience.instrument }}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card mb-4">
+              <div class="card-header">
+                <h5 class="mb-0">Requirements</h5>
+              </div>
+              <div class="card-body">
+                <h6>Associated Zones</h6>
+                {% if zones %}
+                  <div class="mb-3">
+                    {% for zone in zones %}
+                      <span class="badge bg-info me-1">{{ zone.name }}</span>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <p class="text-muted">This experience is not tied to any specific zone.</p>
+                {% endif %}
+                
+                <h6>Required Powers</h6>
+                {% if required_powers %}
+                  <div class="mb-3">
+                    {% for power in required_powers %}
+                      <span class="badge bg-warning me-1">{{ power.name }}</span>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <p class="text-muted">No specific powers required.</p>
+                {% endif %}
+                
+                <h6>Prerequisite Experiences</h6>
+                {% if experience.prerequisite_experiences.all %}
+                  <ul>
+                    {% for prereq in experience.prerequisite_experiences.all %}
+                      <li><a href="{% url 'experiences:experience_detail' prereq.id %}">{{ prereq.name }}</a></li>
+                    {% endfor %}
+                  </ul>
+                {% else %}
+                  <p class="text-muted">No prerequisites needed.</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <div class="d-flex justify-content-between align-items-center">
+          <a href="{% url 'experiences:experience_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Experiences
+          </a>
+          {% if is_participating %}
+            <div class="btn-group">
+              <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#abandonModal">
+                Abandon
+              </button>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    
+    {% if is_participating %}
+    <!-- Progress Update Modal -->
+    <div class="modal fade" id="progressModal" tabindex="-1" aria-labelledby="progressModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="progressModalLabel">Update Your Progress</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form method="post" action="{% url 'experiences:update_experience' experience.id %}">
+              {% csrf_token %}
+              <div class="mb-3">
+                <label for="status" class="form-label">Current Status</label>
+                <select class="form-select" id="status" name="status">
+                  <option value="pull" {% if player_experience.status == 'pull' %}selected{% endif %}>Pull - Identified</option>
+                  <option value="think" {% if player_experience.status == 'think' %}selected{% endif %}>Think - Planning</option>
+                  <option value="do" {% if player_experience.status == 'do' %}selected{% endif %}>Do - Implementing</option>
+                  <option value="review" {% if player_experience.status == 'review' %}selected{% endif %}>Review - Evaluating</option>
+                  <option value="completed" {% if player_experience.status == 'completed' %}selected{% endif %}>Completed</option>
+                </select>
+              </div>
+              
+              <div class="mb-3">
+                <label for="progress" class="form-label">Progress: <span id="progressValue">{{ player_experience.progress }}</span>%</label>
+                <input type="range" class="form-range" min="0" max="100" step="5" id="progress" name="progress" value="{{ player_experience.progress }}" 
+                  oninput="document.getElementById('progressValue').textContent = this.value">
+              </div>
+              
+              <div class="mb-3">
+                <label for="reflection" class="form-label">Reflection Notes</label>
+                <textarea class="form-control" id="reflection" name="reflection_notes" rows="3">{{ player_experience.reflection_notes }}</textarea>
+              </div>
+              
+              <div class="d-grid">
+                <button type="submit" class="btn btn-eudaimonia">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Abandon Modal -->
+    <div class="modal fade" id="abandonModal" tabindex="-1" aria-labelledby="abandonModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="abandonModalLabel">Abandon Experience?</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>Are you sure you want to abandon this experience? Your progress will be saved, but the experience will be marked as abandoned.</p>
+            <form method="post" action="{% url 'experiences:update_experience' experience.id %}">
+              {% csrf_token %}
+              <input type="hidden" name="status" value="abandoned">
+              <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-danger">Yes, Abandon Experience</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+{% endblock %} 

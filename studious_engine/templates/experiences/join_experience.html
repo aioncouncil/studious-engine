@@ -1,0 +1,96 @@
+{% comment %}
+[CLAUDE:OPTIMIZATION_LAYER:START]
+This template is part of the experience_system component
+See .claude/README.md for more information
+[CLAUDE:OPTIMIZATION_LAYER:END]
+{% endcomment %}
+
+{% extends "game_app_base.html" %}
+{% load static %}
+
+{% block title %}Join Experience - EudaimoniaGo{% endblock %}
+
+{% block inner %}
+  <div class="container-fluid py-3">
+    <div class="card">
+      <div class="card-header bg-primary text-white">
+        <h1 class="display-5">Join Experience</h1>
+      </div>
+      <div class="card-body">
+        {% if success %}
+          <div class="text-center py-5">
+            <i class="fas fa-check-circle fa-5x text-success mb-4"></i>
+            <h2>Successfully Joined!</h2>
+            <p class="lead">You have joined the experience <strong>{{ experience.name }}</strong>.</p>
+            <div class="mt-4">
+              <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="redirect_to_detail" value="true">
+                <button type="submit" class="btn btn-eudaimonia btn-lg">Continue to Experience</button>
+              </form>
+            </div>
+          </div>
+        {% else %}
+          <div class="row">
+            <div class="col-md-8">
+              <h2>{{ experience.name }}</h2>
+              <p class="lead mb-4">{{ experience.description }}</p>
+              
+              <div class="mb-4">
+                <h5>What you'll gain:</h5>
+                <ul class="list-group mb-3">
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Experience Points
+                    <span class="badge bg-primary rounded-pill">{{ experience.experience_reward }} XP</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Happiness Points
+                    <span class="badge bg-success rounded-pill">{{ experience.happiness_reward }} HP</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Estimated Duration
+                    <span class="badge bg-info rounded-pill">{{ experience.duration_minutes }} minutes</span>
+                  </li>
+                </ul>
+              </div>
+              
+              <form method="post">
+                {% csrf_token %}
+                <div class="d-grid gap-2">
+                  <button type="submit" class="btn btn-eudaimonia btn-lg">Join Experience</button>
+                  <a href="{% url 'experiences:experience_detail' experience.id %}" class="btn btn-outline-secondary">
+                    Back to Details
+                  </a>
+                </div>
+              </form>
+            </div>
+            
+            <div class="col-md-4">
+              <div class="card mb-3">
+                <div class="card-header">
+                  <h5 class="mb-0">Type & Category</h5>
+                </div>
+                <div class="card-body">
+                  <p><strong>Type:</strong> {{ experience.get_experience_type_display }}</p>
+                  <p><strong>Matrix Position:</strong> {{ experience.get_matrix_position_display }}</p>
+                  <p><strong>Art Type:</strong> {{ experience.get_art_type_display }}</p>
+                  <p><strong>Good Type:</strong> {{ experience.get_good_type_display }}</p>
+                </div>
+              </div>
+              
+              <div class="card">
+                <div class="card-header">
+                  <h5 class="mb-0">Requirements</h5>
+                </div>
+                <div class="card-body">
+                  <p><strong>Minimum Rank:</strong> {{ experience.minimum_rank }}</p>
+                  <p><strong>Difficulty:</strong> {{ experience.difficulty }}/10</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock %} 

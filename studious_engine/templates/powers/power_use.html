@@ -1,0 +1,105 @@
+{% extends "game_base.html" %}
+{% load static %}
+
+{% block title %}Use {{ power.name }} - Powers - EudaimoniaGo{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'powers:power_list' %}">Powers</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'powers:power_detail' power.id %}">{{ power.name }}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Use Power</li>
+    </ol>
+  </nav>
+
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+      <div class="card">
+        <div class="card-header text-center">
+          <h2 class="mb-0">Use {{ power.name }}</h2>
+          <p class="text-muted">Level {{ power.level }} {{ power.get_power_type_display }}</p>
+        </div>
+        <div class="card-body">
+          <p class="lead text-center mb-4">Select a target for your power:</p>
+          
+          <form id="powerUseForm" method="post" action="{% url 'powers:power_use' power.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="target_id" id="targetIdInput">
+            <input type="hidden" name="target_type" id="targetTypeInput">
+            
+            <div class="row">
+              {% for target in targets %}
+                <div class="col-md-6 mb-3">
+                  <div class="card h-100 target-card" data-target-id="{{ target.id }}" data-target-type="{{ target.type }}">
+                    <div class="card-body">
+                      <h5 class="card-title">{{ target.name }}</h5>
+                      <span class="badge bg-info">{{ target.type|title }}</span>
+                      <p class="card-text mt-2">
+                        {% if target.type == 'zone' %}
+                          Apply this power to enhance this zone.
+                        {% elif target.type == 'experience' %}
+                          Use this power to boost your experience.
+                        {% elif target.type == 'innovation' %}
+                          Direct this power toward an innovation project.
+                        {% endif %}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+            
+            <div class="mt-4">
+              <h4>Power Effects</h4>
+              <ul class="list-group mb-4">
+                <li class="list-group-item">Enhance target's performance by {{ power.level }}0%</li>
+                <li class="list-group-item">Gain {{ power.level }}0 experience points on successful use</li>
+                {% if power.level > 2 %}
+                  <li class="list-group-item text-success">Bonus: Chance to inspire nearby players</li>
+                {% endif %}
+              </ul>
+            </div>
+            
+            <div class="text-center mt-4">
+              <button type="submit" class="btn btn-primary btn-lg" id="useButton" disabled>
+                Use Power
+              </button>
+              <a href="{% url 'powers:power_detail' power.id %}" class="btn btn-secondary btn-lg ms-2">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% block javascript %}
+{{ block.super }}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const targetCards = document.querySelectorAll('.target-card');
+    const targetIdInput = document.getElementById('targetIdInput');
+    const targetTypeInput = document.getElementById('targetTypeInput');
+    const useButton = document.getElementById('useButton');
+    
+    targetCards.forEach(card => {
+      card.addEventListener('click', function() {
+        // Remove active class from all cards
+        targetCards.forEach(c => c.classList.remove('border-primary', 'border-3'));
+        
+        // Add active class to selected card
+        this.classList.add('border-primary', 'border-3');
+        
+        // Update hidden inputs
+        targetIdInput.value = this.dataset.targetId;
+        targetTypeInput.value = this.dataset.targetType;
+        
+        // Enable the use button
+        useButton.disabled = false;
+      });
+    });
+  });
+</script>
+{% endblock %}
+{% endblock %} 

@@ -1,0 +1,84 @@
+{
+  "components": {
+    "core_user_system": {
+      "description": "Core user functionality including profiles, preferences, and virtue metrics",
+      "dependencies": [],
+      "provides_for": ["art_system", "experience_system", "zone_system", "economic_system"]
+    },
+    "art_system": {
+      "description": "Pokédex-like system for collecting, practicing and mastering creative endeavors",
+      "dependencies": ["core_user_system"],
+      "provides_for": ["experience_system", "tech_tree_system"]
+    },
+    "experience_system": {
+      "description": "Engine for creating, discovering and participating in experiences",
+      "dependencies": ["core_user_system", "art_system"],
+      "provides_for": ["zone_system"]
+    },
+    "zone_system": {
+      "description": "Geographic and functional areas for activities and governance",
+      "dependencies": ["core_user_system", "experience_system"],
+      "provides_for": ["economic_system", "meta_governance_system"]
+    },
+    "economic_system": {
+      "description": "Resources, marketplace, and economic layers (Port, Laws, Republic)",
+      "dependencies": ["core_user_system", "zone_system"],
+      "provides_for": ["meta_governance_system"]
+    },
+    "tech_tree_system": {
+      "description": "Technology tree linking arts progression",
+      "dependencies": ["art_system"],
+      "provides_for": ["zone_system"]
+    },
+    "meta_governance_system": {
+      "description": "Governance and role management across zones",
+      "dependencies": ["zone_system", "economic_system"],
+      "provides_for": []
+    },
+    "ai_guide_system": {
+      "description": "AI-driven guidance and recommendations",
+      "dependencies": ["core_user_system", "art_system", "experience_system"],
+      "provides_for": []
+    },
+    "physics_simulation_system": {
+      "description": "Physics simulations for educational components",
+      "dependencies": ["experience_system"],
+      "provides_for": []
+    },
+    "innovation_process_system": {
+      "description": "Problem-solving and innovation workflows",
+      "dependencies": ["core_user_system", "zone_system"],
+      "provides_for": []
+    }
+  },
+  "implementation_phases": {
+    "phase1": {
+      "name": "Core Infrastructure",
+      "components": ["core_user_system"]
+    },
+    "phase2": {
+      "name": "Art System",
+      "components": ["art_system"]
+    },
+    "phase3": {
+      "name": "Experience Engine",
+      "components": ["experience_system"]
+    },
+    "phase4": {
+      "name": "Zone System",
+      "components": ["zone_system"]
+    },
+    "phase5": {
+      "name": "Economic System",
+      "components": ["economic_system"]
+    },
+    "phase6": {
+      "name": "AI & Meta-Governance",
+      "components": ["ai_guide_system", "meta_governance_system"]
+    },
+    "phase7": {
+      "name": "Extended Game Systems",
+      "components": ["physics_simulation_system", "innovation_process_system"]
+    }
+  }
+} 

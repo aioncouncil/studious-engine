@@ -1,0 +1,138 @@
+{
+  "component": "art_system",
+  "description": "The Art System serves as the 'Pokédex' of Atlantis Go, allowing users to collect, categorize, practice, and master different types of human creative endeavors.",
+  "key_models": [
+    {
+      "name": "Art",
+      "description": "Base model representing a creative practice that can be learned and mastered",
+      "relationships": [
+        {"type": "many-to-many", "with": "Art", "as": "parent_arts", "description": "Arts that are prerequisites or related to this art"},
+        {"type": "one-to-many", "with": "ArtParts", "as": "parts", "description": "Components or aspects of an art that must be practiced"},
+        {"type": "one-to-many", "with": "ArtStage", "as": "stages", "description": "Different learning stages for an art"},
+        {"type": "many-to-one", "with": "ArtTaxonomy", "as": "taxonomy", "description": "Categorization of the art"}
+      ],
+      "key_fields": [
+        "id", "name", "description", "icon", "banner_image", "difficulty_level", 
+        "creation_date", "taxonomy_id", "required_virtues", "improved_virtues", 
+        "tech_tree_level", "is_unlocked_default", "rank_required", "economic_layer_required", 
+        "practice_method", "average_mastery_time_days"
+      ],
+      "intent": "Model the concept of a learnable creative practice or skill"
+    },
+    {
+      "name": "ArtParts",
+      "description": "Components or aspects of an art that must be practiced and mastered",
+      "relationships": [
+        {"type": "many-to-one", "with": "Art", "as": "art", "description": "The art this part belongs to"}
+      ],
+      "key_fields": [
+        "id", "art_id", "name", "description", "order_index", "practice_method",
+        "practice_description", "validation_method", "estimated_hours",
+        "resources_required", "media_references"
+      ],
+      "intent": "Break down the learning process for an art into concrete parts"
+    },
+    {
+      "name": "ArtMastery",
+      "description": "Tracks a user's mastery of a specific art",
+      "relationships": [
+        {"type": "many-to-one", "with": "User", "as": "user", "description": "The user whose mastery is being tracked"},
+        {"type": "many-to-one", "with": "Art", "as": "art", "description": "The art being mastered"},
+        {"type": "many-to-one", "with": "ArtPart", "as": "current_part", "description": "The currently active part being practiced"}
+      ],
+      "key_fields": [
+        "id", "user_id", "art_id", "discovery_date", "mastery_level", 
+        "last_practiced", "practice_streak", "is_featured", "practice_history",
+        "completed_parts", "current_part", "public_portfolio", "mastery_achievements"
+      ],
+      "intent": "Track user progress in mastering an art over time"
+    },
+    {
+      "name": "ArtStage",
+      "description": "Represents different learning stages for an art",
+      "relationships": [
+        {"type": "many-to-one", "with": "Art", "as": "art", "description": "The art this stage belongs to"}
+      ],
+      "key_fields": [
+        "id", "art_id", "name", "description", "order_index",
+        "mastery_threshold", "stage_badge", "virtue_bonuses", "unlock_requirements"
+      ],
+      "intent": "Define the progression path within an art from novice to mastery"
+    },
+    {
+      "name": "UserArtStageProgress",
+      "description": "Tracks a user's progress through art stages",
+      "relationships": [
+        {"type": "many-to-one", "with": "User", "as": "user", "description": "The user whose progress is being tracked"},
+        {"type": "many-to-one", "with": "ArtStage", "as": "art_stage", "description": "The art stage being tracked"}
+      ],
+      "key_fields": [
+        "id", "user_id", "art_stage_id", "reached_date", "is_current",
+        "completion_percentage", "notable_achievements"
+      ],
+      "intent": "Track progress within stages of an art's mastery path"
+    },
+    {
+      "name": "ArtTaxonomy",
+      "description": "Categorization system for arts",
+      "relationships": [
+        {"type": "one-to-many", "with": "Art", "as": "arts", "description": "Arts in this taxonomy category"},
+        {"type": "many-to-one", "with": "ArtTaxonomy", "as": "parent", "description": "Parent taxonomy category"}
+      ],
+      "key_fields": [
+        "id", "name", "description", "parent_id", "level", "path", "icon"
+      ],
+      "intent": "Organize arts into a hierarchical classification system"
+    },
+    {
+      "name": "TechTree",
+      "description": "Technology tree linking arts progression",
+      "relationships": [
+        {"type": "many-to-many", "with": "Art", "as": "required_arts", "description": "Arts required to unlock this tech tree node"},
+        {"type": "many-to-many", "with": "Art", "as": "unlocks_arts", "description": "Arts unlocked by this tech tree node"}
+      ],
+      "key_fields": [
+        "id", "name", "description", "level", "required_arts", "unlocks_arts",
+        "required_resources", "required_zone_level", "zone_type_filter"
+      ],
+      "intent": "Define the progression and dependency relationships between arts"
+    },
+    {
+      "name": "UserTechTreeProgress",
+      "description": "Tracks a user's progress through the tech tree",
+      "relationships": [
+        {"type": "many-to-one", "with": "User", "as": "user", "description": "The user whose progress is being tracked"},
+        {"type": "many-to-one", "with": "TechTree", "as": "tech_tree", "description": "The tech tree node being tracked"}
+      ],
+      "key_fields": [
+        "id", "user_id", "tech_tree_id", "unlocked_date", "progress_percentage", "missing_requirements"
+      ],
+      "intent": "Track user progress in unlocking tech tree nodes"
+    }
+  ],
+  "semantic_relationships": [
+    {
+      "type": "progression_system",
+      "description": "The Art System implements a progression system where users discover arts, practice them through parts, advance through stages, and unlock new arts via the tech tree.",
+      "models": ["Art", "ArtParts", "ArtStage", "ArtMastery", "UserArtStageProgress", "TechTree", "UserTechTreeProgress"]
+    },
+    {
+      "type": "classification_system",
+      "description": "Arts are organized in a taxonomic hierarchy for categorization and discovery.",
+      "models": ["Art", "ArtTaxonomy"]
+    },
+    {
+      "type": "user_tracking_system",
+      "description": "User progress, mastery, and achievements are tracked across multiple models.",
+      "models": ["ArtMastery", "UserArtStageProgress", "UserTechTreeProgress"]
+    },
+    {
+      "type": "game_mechanic_system",
+      "description": "The system implements game mechanics including unlocking, progression, achievements, and rewards.",
+      "models": ["ArtMastery", "ArtStage", "TechTree"]
+    }
+  ],
+  "implementation_status": "Missing - The Art System is completely missing from the current EudaimoniaGo implementation and needs to be created from scratch.",
+  "development_phase": "Phase 2",
+  "dependency_on_core_user_system": "The Art System depends on the User model from the Core User System to track user progress and mastery."
+} 

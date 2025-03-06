@@ -1,0 +1,238 @@
+{% comment %}
+[CLAUDE:OPTIMIZATION_LAYER:START]
+This template is part of the experience_system component
+See .claude/README.md for more information
+[CLAUDE:OPTIMIZATION_LAYER:END]
+{% endcomment %}
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Submit a New Experience{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+<style>
+    .map-container {
+        height: 400px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    #location-map {
+        height: 100%;
+        width: 100%;
+    }
+    
+    .location-preview {
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 4px;
+        margin-bottom: 20px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .help-text {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+    
+    .experience-type-info {
+        display: none;
+        margin-top: 10px;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">Submit a New Experience</h1>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">What are Experiences?</h5>
+            <p>Experiences are activities that players can engage in to learn, grow, and earn rewards.
+            They can be quests, challenges, collaborations, or other types of structured activities.</p>
+            <ul>
+                <li><strong>Quests</strong>: Individual tasks with clear goals and rewards</li>
+                <li><strong>Challenges</strong>: Difficult tasks that test skills and knowledge</li>
+                <li><strong>Collaborations</strong>: Activities that require multiple players to work together</li>
+                <li><strong>Innovations</strong>: Creative projects that develop new ideas or solutions</li>
+                <li><strong>Reflections</strong>: Activities focused on mindfulness and personal growth</li>
+            </ul>
+        </div>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="{{ form.name.id_for_label }}">Experience Name</label>
+                    {{ form.name }}
+                    <div class="help-text">{{ form.name.help_text }}</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.description.id_for_label }}">Description</label>
+                    {{ form.description }}
+                    <div class="help-text">{{ form.description.help_text }}</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.experience_type.id_for_label }}">Experience Type</label>
+                    {{ form.experience_type }}
+                    <div class="help-text">{{ form.experience_type.help_text }}</div>
+                    
+                    <!-- Type-specific information -->
+                    <div id="quest-info" class="experience-type-info">
+                        <p><strong>Quests</strong> are individual tasks with clear goals and rewards. They typically involve exploring, collecting, or completing specific objectives.</p>
+                    </div>
+                    <div id="challenge-info" class="experience-type-info">
+                        <p><strong>Challenges</strong> are difficult tasks that test skills and knowledge. They often have higher difficulty but offer greater rewards.</p>
+                    </div>
+                    <div id="collaboration-info" class="experience-type-info">
+                        <p><strong>Collaborations</strong> require multiple players to work together. They promote teamwork and social interaction.</p>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.difficulty.id_for_label }}">Difficulty (1-10)</label>
+                    {{ form.difficulty }}
+                    <div class="help-text">{{ form.difficulty.help_text }}</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.duration_minutes.id_for_label }}">Duration (minutes)</label>
+                    {{ form.duration_minutes }}
+                    <div class="help-text">{{ form.duration_minutes.help_text }}</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.associated_zones.id_for_label }}">Associated Zones (Optional)</label>
+                    {{ form.associated_zones }}
+                    <div class="help-text">Select zones that this experience is associated with, if any</div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <h5>Experience Location</h5>
+                <p class="text-muted">Click on the map to set the location for this experience</p>
+                
+                <div class="location-preview">
+                    <div id="location-display">No location selected</div>
+                </div>
+                
+                <div class="map-container">
+                    <div id="location-map"></div>
+                </div>
+                
+                {{ form.latitude }}
+                {{ form.longitude }}
+            </div>
+        </div>
+        
+        <div class="form-group mt-4">
+            <button type="submit" class="btn btn-primary">Submit Experience</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize the map
+        const map = L.map('location-map').setView([39.0345, -94.5764], 13);
+        
+        // Add tile layer
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        // Create a marker that will be placed on click
+        let marker = null;
+        
+        // Get form fields
+        const latField = document.getElementById('{{ form.latitude.id_for_label }}');
+        const lngField = document.getElementById('{{ form.longitude.id_for_label }}');
+        const locationDisplay = document.getElementById('location-display');
+        
+        // Handle map clicks
+        map.on('click', function(e) {
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+            
+            // Update the form fields
+            latField.value = lat;
+            lngField.value = lng;
+            
+            // Update the display
+            locationDisplay.textContent = `Latitude: ${lat.toFixed(6)}, Longitude: ${lng.toFixed(6)}`;
+            
+            // Update or create the marker
+            if (marker) {
+                marker.setLatLng(e.latlng);
+            } else {
+                marker = L.marker(e.latlng).addTo(map);
+            }
+        });
+        
+        // If we have coordinates already (e.g., for editing), use them
+        if (latField.value && lngField.value) {
+            const lat = parseFloat(latField.value);
+            const lng = parseFloat(lngField.value);
+            const latlng = L.latLng(lat, lng);
+            
+            // Center the map
+            map.setView(latlng, 13);
+            
+            // Add a marker
+            marker = L.marker(latlng).addTo(map);
+            
+            // Update the display
+            locationDisplay.textContent = `Latitude: ${lat.toFixed(6)}, Longitude: ${lng.toFixed(6)}`;
+        }
+        
+        // Try to get the user's location to center the map initially
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                const userLat = position.coords.latitude;
+                const userLng = position.coords.longitude;
+                map.setView([userLat, userLng], 13);
+            }, function(error) {
+                console.log('Error getting location:', error);
+            });
+        }
+        
+        // Show type-specific information when the type is changed
+        const typeSelect = document.getElementById('{{ form.experience_type.id_for_label }}');
+        const typeInfos = document.querySelectorAll('.experience-type-info');
+        
+        typeSelect.addEventListener('change', function() {
+            // Hide all type info divs
+            typeInfos.forEach(div => div.style.display = 'none');
+            
+            // Show the selected type's info
+            const selectedType = this.value;
+            const infoDiv = document.getElementById(selectedType + '-info');
+            if (infoDiv) {
+                infoDiv.style.display = 'block';
+            }
+        });
+        
+        // Trigger change event to show the initial selection's info
+        typeSelect.dispatchEvent(new Event('change'));
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Create Physics Simulation | Atlantis Go{% endblock %}
+
+{% block css %}
+<style>
+  .simulation-type-card {
+    height: 120px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid transparent;
+  }
+  
+  .simulation-type-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  }
+  
+  .simulation-type-card.selected {
+    border-color: var(--bs-primary);
+    background-color: rgba(var(--bs-primary-rgb), 0.05);
+  }
+  
+  .simulation-type-card .icon {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    color: #666;
+  }
+  
+  .simulation-preview-canvas {
+    width: 100%;
+    height: 300px;
+    border-radius: 8px;
+    background-color: #f5f5f5;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+  }
+  
+  .properties-section {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'physics:simulation_list' %}">Physics Simulations</a></li>
+      <li class="breadcrumb-item active">Create Simulation</li>
+    </ol>
+  </nav>
+  
+  <h1 class="mb-4">Create Physics Simulation</h1>
+  
+  <form method="post" id="simulation-form">
+    {% csrf_token %}
+    
+    <div class="properties-section mb-4">
+      <h4 class="mb-3">Basic Properties</h4>
+      
+      <div class="mb-3">
+        <label for="name" class="form-label">Simulation Name</label>
+        <input type="text" class="form-control" id="name" name="name" required>
+      </div>
+      
+      <div class="mb-3">
+        <label class="form-label">Simulation Type</label>
+        <div class="row row-cols-2 row-cols-md-4 g-3">
+          {% for type_value, type_display in simulation_types %}
+          <div class="col">
+            <div class="card simulation-type-card h-100" data-type="{{ type_value }}">
+              <div class="card-body text-center">
+                {% if type_value == 'particle' %}
+                  <i class="fas fa-dot-circle icon"></i>
+                {% elif type_value == 'rigid_body' %}
+                  <i class="fas fa-cube icon"></i>
+                {% elif type_value == 'fluid' %}
+                  <i class="fas fa-water icon"></i>
+                {% elif type_value == 'cloth' %}
+                  <i class="fas fa-tshirt icon"></i>
+                {% elif type_value == 'gravity' %}
+                  <i class="fas fa-globe icon"></i>
+                {% elif type_value == 'electromagnetic' %}
+                  <i class="fas fa-bolt icon"></i>
+                {% else %}
+                  <i class="fas fa-atom icon"></i>
+                {% endif %}
+                <p class="mb-0">{{ type_display }}</p>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+          <input type="hidden" name="type" id="selected-type" required>
+        </div>
+      </div>
+      
+      <div class="mb-3">
+        <label for="iteration-rate" class="form-label">Iteration Rate (Hz)</label>
+        <input type="range" class="form-range" id="iteration-rate" name="iteration_rate" min="10" max="120" step="1" value="60">
+        <div class="d-flex justify-content-between">
+          <span>10 Hz</span>
+          <span id="iteration-rate-display">60 Hz</span>
+          <span>120 Hz</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="simulation-preview-canvas" id="preview-canvas">
+      <div class="d-flex justify-content-center align-items-center h-100">
+        <p class="text-muted">Select a simulation type to see preview</p>
+      </div>
+    </div>
+    
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+      <a href="{% url 'physics:simulation_list' %}" class="btn btn-outline-secondary me-md-2">Cancel</a>
+      <button type="submit" class="btn btn-primary">Create Simulation</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Handle simulation type selection
+    const typeCards = document.querySelectorAll('.simulation-type-card');
+    const selectedTypeInput = document.getElementById('selected-type');
+    
+    typeCards.forEach(card => {
+      card.addEventListener('click', function() {
+        // Remove selected class from all cards
+        typeCards.forEach(c => c.classList.remove('selected'));
+        // Add selected class to clicked card
+        this.classList.add('selected');
+        // Update hidden input value
+        selectedTypeInput.value = this.dataset.type;
+        
+        // Update preview
+        updatePreview(this.dataset.type);
+      });
+    });
+    
+    // Handle iteration rate slider
+    const iterationRateSlider = document.getElementById('iteration-rate');
+    const iterationRateDisplay = document.getElementById('iteration-rate-display');
+    
+    iterationRateSlider.addEventListener('input', function() {
+      iterationRateDisplay.textContent = `${this.value} Hz`;
+    });
+    
+    // Update preview canvas based on selected type
+    function updatePreview(type) {
+      const previewCanvas = document.getElementById('preview-canvas');
+      
+      // Clear previous content
+      previewCanvas.innerHTML = '';
+      
+      // Add placeholder text based on type
+      let message = `Preview for ${type} simulation`;
+      
+      previewCanvas.innerHTML = `
+        <div class="d-flex justify-content-center align-items-center h-100">
+          <p class="text-info">${message}</p>
+        </div>
+      `;
+      
+      // In a real implementation, you'd initialize a canvas and render
+      // a simple simulation of the selected type here
+    }
+    
+    // Form validation
+    const form = document.getElementById('simulation-form');
+    form.addEventListener('submit', function(e) {
+      if (!selectedTypeInput.value) {
+        e.preventDefault();
+        alert('Please select a simulation type');
+      }
+    });
+  });
+</script>
+{% endblock %} 

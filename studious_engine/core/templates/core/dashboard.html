@@ -1,0 +1,286 @@
+{% comment %}
+[CLAUDE:OPTIMIZATION_LAYER:START]
+This template is part of the core_user_system component
+See .claude/README.md for more information
+[CLAUDE:OPTIMIZATION_LAYER:END]
+{% endcomment %}
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}EudaimoniaGo Dashboard{% endblock title %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h1>Welcome to EudaimoniaGo</h1>
+      <h3>Hello, {{ player.user.username }}!</h3>
+      <p class="lead">Rank: {{ player.rank }} | Experience: {{ player.experience_points }}</p>
+    </div>
+    <div class="col-md-4 text-end">
+      <a href="{% url 'core:map' %}" class="btn btn-primary btn-lg">Open Map</a>
+    </div>
+  </div>
+  
+  <!-- Happiness Metrics -->
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <h4>Happiness Metrics</h4>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <!-- Soul Metrics -->
+            <div class="col-md-4">
+              <h5>Soul</h5>
+              <div class="progress mb-2">
+                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ happiness.wisdom }}%" aria-valuenow="{{ happiness.wisdom }}" aria-valuemin="0" aria-valuemax="100">Wisdom: {{ happiness.wisdom }}</div>
+              </div>
+              <div class="progress mb-2">
+                <div class="progress-bar bg-success" role="progressbar" style="width: {{ happiness.courage }}%" aria-valuenow="{{ happiness.courage }}" aria-valuemin="0" aria-valuemax="100">Courage: {{ happiness.courage }}</div>
+              </div>
+              <div class="progress mb-2">
+                <div class="progress-bar bg-info" role="progressbar" style="width: {{ happiness.temperance }}%" aria-valuenow="{{ happiness.temperance }}" aria-valuemin="0" aria-valuemax="100">Temperance: {{ happiness.temperance }}</div>
+              </div>
+              <div class="progress mb-2">
+                <div class="progress-bar bg-warning" role="progressbar" style="width: {{ happiness.justice }}%" aria-valuenow="{{ happiness.justice }}" aria-valuemin="0" aria-valuemax="100">Justice: {{ happiness.justice }}</div>
+              </div>
+              <p>Average: {{ happiness.soul_average|floatformat:1 }}</p>
+            </div>
+            
+            <!-- Body Metrics -->
+            <div class="col-md-4">
+              <h5>Body</h5>
+              <div class="progress mb-2">
+                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ happiness.strength }}%" aria-valuenow="{{ happiness.strength }}" aria-valuemin="0" aria-valuemax="100">Strength: {{ happiness.strength }}</div>
+              </div>
+              <div class="progress mb-2">
+                <div class="progress-bar bg-success" role="progressbar" style="width: {{ happiness.wealth }}%" aria-valuenow="{{ happiness.wealth }}" aria-valuemin="0" aria-valuemax="100">Wealth: {{ happiness.wealth }}</div>
+              </div>
+              <div class="progress mb-2">
+                <div class="progress-bar bg-info" role="progressbar" style="width: {{ happiness.beauty }}%" aria-valuenow="{{ happiness.beauty }}" aria-valuemin="0" aria-valuemax="100">Beauty: {{ happiness.beauty }}</div>
+              </div>
+              <div class="progress mb-2">
+                <div class="progress-bar bg-warning" role="progressbar" style="width: {{ happiness.health }}%" aria-valuenow="{{ happiness.health }}" aria-valuemin="0" aria-valuemax="100">Health: {{ happiness.health }}</div>
+              </div>
+              <p>Average: {{ happiness.body_average|floatformat:1 }}</p>
+            </div>
+            
+            <!-- Environment Metrics -->
+            <div class="col-md-4">
+              <h5>Environment</h5>
+              <div class="progress mb-2">
+                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ happiness.resources }}%" aria-valuenow="{{ happiness.resources }}" aria-valuemin="0" aria-valuemax="100">Resources: {{ happiness.resources }}</div>
+              </div>
+              <div class="progress mb-2">
+                <div class="progress-bar bg-success" role="progressbar" style="width: {{ happiness.friendships }}%" aria-valuenow="{{ happiness.friendships }}" aria-valuemin="0" aria-valuemax="100">Friendships: {{ happiness.friendships }}</div>
+              </div>
+              <div class="progress mb-2">
+                <div class="progress-bar bg-info" role="progressbar" style="width: {{ happiness.honors }}%" aria-valuenow="{{ happiness.honors }}" aria-valuemin="0" aria-valuemax="100">Honors: {{ happiness.honors }}</div>
+              </div>
+              <div class="progress mb-2">
+                <div class="progress-bar bg-warning" role="progressbar" style="width: {{ happiness.glory }}%" aria-valuenow="{{ happiness.glory }}" aria-valuemin="0" aria-valuemax="100">Glory: {{ happiness.glory }}</div>
+              </div>
+              <p>Average: {{ happiness.environment_average|floatformat:1 }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Quick Access Tiles -->
+  <div class="row mb-4">
+    <div class="col-md-3 mb-3">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <i class="fas fa-compass fa-3x mb-3 text-primary"></i>
+          <h5 class="card-title">Experiences</h5>
+          <p class="card-text">Engage in quests, challenges, and collaborations</p>
+          <a href="{% url 'experiences:experience_list' %}" class="btn btn-primary">View Experiences</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <i class="fas fa-bolt fa-3x mb-3 text-success"></i>
+          <h5 class="card-title">Powers</h5>
+          <p class="card-text">View your mastered powers and skills</p>
+          <a href="{% url 'experiences:power_list' %}" class="btn btn-success">View Powers</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <i class="fas fa-palette fa-3x mb-3 text-info"></i>
+          <h5 class="card-title">Arts</h5>
+          <p class="card-text">Discover and master the arts of human flourishing</p>
+          <a href="{% url 'core:arts_pokedex' %}" class="btn btn-info">View Arts</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <i class="fas fa-project-diagram fa-3x mb-3 text-danger"></i>
+          <h5 class="card-title">Tech Tree</h5>
+          <p class="card-text">Unlock new knowledge through learning paths</p>
+          <a href="{% url 'core:tech_tree' %}" class="btn btn-danger">View Tech Tree</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <i class="fas fa-map-marker-alt fa-3x mb-3 text-warning"></i>
+          <h5 class="card-title">Zones</h5>
+          <p class="card-text">Explore zones and their think/production tanks</p>
+          <a href="#" class="btn btn-warning">View Zones</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <i class="fas fa-lightbulb fa-3x mb-3 text-purple"></i>
+          <h5 class="card-title">Innovations</h5>
+          <p class="card-text">Contribute to the Vitruvian Innovation Loop</p>
+          <a href="#" class="btn btn-purple">Innovations</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <i class="fas fa-store fa-3x mb-3 text-secondary"></i>
+          <h5 class="card-title">Market</h5>
+          <p class="card-text">Visit the market to purchase virtual items</p>
+          <a href="{% url 'core:market' %}" class="btn btn-secondary">Visit Market</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <i class="fas fa-user fa-3x mb-3 text-primary"></i>
+          <h5 class="card-title">Profile</h5>
+          <p class="card-text">View and update your player profile</p>
+          <a href="{% url 'core:player_profile' %}" class="btn btn-primary">My Profile</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Activity Feed -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h4>Recent Activity</h4>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          {% if mastery_summary %}
+          <div class="mb-4">
+            <h5 class="mb-3">Art Mastery Progress</h5>
+            <div class="d-flex justify-content-between mb-1">
+              <span>Overall Mastery:</span>
+              <span>{{ mastery_summary.mastery_percentage|floatformat:1 }}%</span>
+            </div>
+            <div class="progress mb-3">
+              <div class="progress-bar bg-info" role="progressbar" 
+                   style="width: {{ mastery_summary.mastery_percentage }}%" 
+                   aria-valuenow="{{ mastery_summary.mastery_percentage }}" 
+                   aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            
+            <div class="mb-2">
+              <div class="d-flex justify-content-between">
+                <span>Total Arts Discovered:</span>
+                <span>{{ mastery_summary.total_arts }}</span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span>Arts In Progress:</span>
+                <span>{{ mastery_summary.arts_in_progress }}</span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span>Completed Arts:</span>
+                <span>{{ mastery_summary.completed_arts }}</span>
+              </div>
+            </div>
+            
+            <a href="{% url 'core:arts_pokedex' %}" class="btn btn-info btn-sm">View Art Collection</a>
+            <a href="{% url 'core:art_mastery_dashboard' %}" class="btn btn-primary btn-sm">Mastery Dashboard</a>
+            <a href="{% url 'core:art_mastery_stats' %}" class="btn btn-outline-secondary btn-sm">View Detailed Stats</a>
+          </div>
+          {% endif %}
+          
+          {% if recently_practiced_arts %}
+          <div class="mb-4">
+            <h5 class="mb-3">Recently Practiced Arts</h5>
+            <div class="list-group">
+              {% for session in recently_practiced_arts %}
+                <div class="list-group-item">
+                  <div class="d-flex w-100 justify-content-between">
+                    <h6 class="mb-1">{{ session.art.name }}</h6>
+                    <small>{{ session.practiced_at|date }}</small>
+                  </div>
+                  <p class="mb-1">{{ session.part.name }} - {{ session.duration_minutes }} min</p>
+                  {% if session.notes %}
+                    <small>{{ session.notes }}</small>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <h5 class="mb-3">Recent Campus Activities</h5>
+          <div class="timeline">
+            <div class="timeline-item">
+              <div class="timeline-item-marker"></div>
+              <div class="timeline-item-content">
+                <p class="mb-0"><strong>Started new experience:</strong> Campus Exploration Challenge</p>
+                <small class="text-muted">2 hours ago</small>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-item-marker"></div>
+              <div class="timeline-item-content">
+                <p class="mb-0"><strong>Mastered the power:</strong> Critical Thinking</p>
+                <small class="text-muted">Yesterday</small>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-item-marker"></div>
+              <div class="timeline-item-content">
+                <p class="mb-0"><strong>Joined zone:</strong> Philosophy Commons</p>
+                <small class="text-muted">3 days ago</small>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-item-marker"></div>
+              <div class="timeline-item-content">
+                <p class="mb-0"><strong>Completed challenge:</strong> Library Research Quest</p>
+                <small class="text-muted">1 week ago</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

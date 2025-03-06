@@ -1,0 +1,116 @@
+{% comment %}
+[CLAUDE:OPTIMIZATION_LAYER:START]
+This template is part of the zone_system component
+See .claude/README.md for more information
+[CLAUDE:OPTIMIZATION_LAYER:END]
+{% endcomment %}
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ sector.name }} - EudaimoniaGo{% endblock title %}
+
+{% block content %}
+<div class="container py-5">
+  <!-- Sector Header -->
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h1>{{ sector.name }}</h1>
+      <p class="lead">{{ sector.description }}</p>
+      {% if sector.is_governing %}
+        <div class="badge bg-primary mb-3 p-2">Currently Governing Sector</div>
+      {% endif %}
+    </div>
+    <div class="col-md-4 text-end">
+      <a href="{% url 'zones:sector_list' %}" class="btn btn-secondary">Back to Sectors</a>
+    </div>
+  </div>
+  
+  <!-- Sector Stats -->
+  <div class="row mb-5">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <h4>Sector Information</h4>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4">
+              <h5>Sector Number</h5>
+              <p class="fs-2 fw-bold">{{ sector.get_number_display }}</p>
+            </div>
+            <div class="col-md-4">
+              <h5>Zones</h5>
+              <p class="fs-2 fw-bold">{{ sector.zones|length }}</p>
+            </div>
+            <div class="col-md-4">
+              <h5>Rank</h5>
+              <p class="fs-2 fw-bold">{{ sector.rank }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Zones List -->
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <h2>Zones in this Sector</h2>
+    </div>
+  </div>
+  
+  <div class="row">
+    {% for zone in sector.zones %}
+    <div class="col-md-4 mb-4">
+      <div class="card h-100">
+        <div class="card-header">
+          <h5>{{ zone.name }}</h5>
+        </div>
+        <div class="card-body">
+          <p class="card-text">{{ zone.description|truncatechars:150 }}</p>
+          
+          {% if zone.player_contributions %}
+          <div class="mb-3">
+            <h6>Your Involvement:</h6>
+            <div class="progress mb-2">
+              <div class="progress-bar" data-progress="{{ zone.player_contribution_percentage }}">
+                {{ zone.player_contribution_percentage }}%
+              </div>
+            </div>
+          </div>
+          {% endif %}
+          
+          <div class="d-grid gap-2">
+            <a href="{% url 'zones:zone_detail' zone.id %}" class="btn btn-primary">Visit Zone</a>
+          </div>
+        </div>
+        <div class="card-footer text-muted">
+          <small>Area: {{ zone.area }}</small>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-md-12">
+      <p>No zones available in this sector yet.</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock content %}
+
+{% block javascript %}
+{{ block.super }}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Set progress bar width based on data-progress attribute
+    const progressBars = document.querySelectorAll('.progress-bar');
+    progressBars.forEach(function(bar) {
+      const progress = bar.getAttribute('data-progress');
+      if (progress) {
+        bar.style.width = progress + '%';
+      }
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends "game_app_base.html" %}
+{% load static %}
+
+{% block title %}EudaimoniaGo - Your Campus Adventure{% endblock %}
+
+{% block inner %}
+<div class="row justify-content-center">
+  <div class="col-md-10 col-lg-8">
+    <div class="card shadow-sm border-0 rounded-3">
+      <div class="card-body p-4">
+        <div class="text-center mb-4">
+          <img src="{% static 'images/eudaimonia-logo.png' %}" alt="EudaimoniaGo Logo" height="80" class="mb-3">
+          <h1 class="display-5 fw-bold text-gradient">Welcome to EudaimoniaGo</h1>
+          <p class="lead text-muted">
+            Transform your university experience through an innovative blend of real-world exploration and digital gameplay.
+          </p>
+        </div>
+        
+        <div class="row mt-5 g-4">
+          <div class="col-md-6">
+            <div class="p-3">
+              <h2 class="h4 fw-bold"><i class="fas fa-gamepad text-primary me-2"></i>Game Features</h2>
+              <ul class="list-group list-group-flush mt-3">
+                <li class="list-group-item border-0 ps-0 d-flex align-items-center">
+                  <i class="fas fa-map-marked-alt text-primary me-3"></i>
+                  <div>
+                    <strong>Interactive Campus Map</strong>
+                    <p class="text-muted mb-0 small">Explore your university in a whole new way</p>
+                  </div>
+                </li>
+                <li class="list-group-item border-0 ps-0 d-flex align-items-center">
+                  <i class="fas fa-bolt text-primary me-3"></i>
+                  <div>
+                    <strong>Powers & Abilities</strong>
+                    <p class="text-muted mb-0 small">Develop your character with unique skills</p>
+                  </div>
+                </li>
+                <li class="list-group-item border-0 ps-0 d-flex align-items-center">
+                  <i class="fas fa-map text-primary me-3"></i>
+                  <div>
+                    <strong>Campus Zones</strong>
+                    <p class="text-muted mb-0 small">Discover special areas with unique challenges</p>
+                  </div>
+                </li>
+                <li class="list-group-item border-0 ps-0 d-flex align-items-center">
+                  <i class="fas fa-lightbulb text-primary me-3"></i>
+                  <div>
+                    <strong>Campus Innovations</strong>
+                    <p class="text-muted mb-0 small">Create real improvements for your university</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="col-md-6">
+            <div class="card bg-light border-0 rounded-3 h-100">
+              <div class="card-body p-4">
+                <h2 class="h4 fw-bold mb-4"><i class="fas fa-rocket text-primary me-2"></i>Get Started</h2>
+                <p>Ready to begin your campus adventure? Jump into the game dashboard to start exploring!</p>
+                
+                <div class="d-grid gap-2 mt-4">
+                  <a href="{% url 'core:dashboard' %}" class="btn btn-primary">
+                    <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                  </a>
+                  {% if not request.user.is_authenticated %}
+                  <a href="{% url 'account_login' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                  </a>
+                  {% else %}
+                  <a href="{% url 'core:player_profile' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-user me-2"></i>My Profile
+                  </a>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+

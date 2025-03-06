@@ -1,0 +1,74 @@
+{% comment %}
+[CLAUDE:OPTIMIZATION_LAYER:START]
+This template is part of the zone_system component
+See .claude/README.md for more information
+[CLAUDE:OPTIMIZATION_LAYER:END]
+{% endcomment %}
+
+{% extends "game_app_base.html" %}
+{% load static %}
+
+{% block title %}Sectors - EudaimoniaGo{% endblock %}
+
+{% block inner %}
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h1 class="display-4 page-heading">Campus Sectors</h1>
+      <p class="lead">Explore the different sectors of campus, each with unique zones and experiences.</p>
+    </div>
+    <div class="col-md-4 d-flex align-items-center justify-content-md-end">
+      <div class="btn-group">
+        <a href="{% url 'core:map' %}" class="btn btn-eudaimonia">
+          <i class="fas fa-map-marked-alt"></i> View Map
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sector List -->
+  <div class="row row-cols-1 row-cols-md-2 g-4">
+    {% for sector in object_list %}
+      <div class="col">
+        <div class="card h-100">
+          <div class="card-header">
+            <h5 class="mb-0">{{ sector.name }}</h5>
+          </div>
+          <div class="card-body">
+            <p class="card-text">{{ sector.description }}</p>
+            
+            <div class="mb-3">
+              <p class="mb-1"><i class="fas fa-map-pin"></i> <strong>Zones:</strong> {{ sector.zone_count }}</p>
+              <p class="mb-1"><i class="fas fa-bolt"></i> <strong>Experiences:</strong> {{ sector.experience_count }}</p>
+              <p class="mb-1"><i class="fas fa-users"></i> <strong>Population:</strong> {{ sector.active_player_count }} active players</p>
+            </div>
+            
+            <div class="progress mb-3" style="height: 10px;">
+              <div class="progress-bar" role="progressbar" style="width: {{ sector.completion_percentage }}%;" aria-valuenow="{{ sector.completion_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <p class="text-center mb-3"><small>{{ sector.completion_percentage }}% explored</small></p>
+            
+            <div class="d-grid gap-2">
+              <a href="{% url 'zones:sector_detail' sector.id %}" class="btn btn-eudaimonia">Explore Sector</a>
+            </div>
+          </div>
+          <div class="card-footer text-muted">
+            <small>
+              <i class="fas fa-crown"></i> {{ sector.achievement_count }} Achievements Available
+            </small>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body text-center">
+            <i class="fas fa-globe fa-3x mb-3 text-muted"></i>
+            <h5>No Sectors Available</h5>
+            <p>There are currently no sectors available on campus.</p>
+            <a href="{% url 'core:dashboard' %}" class="btn btn-eudaimonia">Return to Dashboard</a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %} 

@@ -1,0 +1,534 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if form.instance.id %}Edit{% else %}Create{% endif %} Innovation | Atlantis Go{% endblock title %}
+
+{% block extra_css %}
+<style>
+  .form-section {
+    display: none;
+  }
+  
+  .form-section.active {
+    display: block;
+  }
+  
+  .form-navigation {
+    margin-top: 20px;
+  }
+  
+  .tab-indicator {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    position: relative;
+  }
+  
+  .tab-indicator::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #dee2e6;
+    z-index: 0;
+    transform: translateY(-50%);
+  }
+  
+  .step {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #f8f9fa;
+    border: 2px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .step.active {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white;
+  }
+  
+  .step.completed {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: white;
+  }
+  
+  .step-label {
+    position: absolute;
+    top: 45px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 0.8rem;
+  }
+  
+  .progress-bar {
+    height: 5px;
+  }
+  
+  .type-card {
+    cursor: pointer;
+    transition: all 0.3s;
+    height: 100%;
+  }
+  
+  .type-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  }
+  
+  .type-card.selected {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+  }
+  
+  .type-card .card-header {
+    transition: all 0.3s;
+  }
+  
+  .type-card.selected .card-header {
+    background-color: #007bff;
+    color: white;
+  }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">{% if form.instance.id %}Edit{% else %}Create{% endif %} Innovation Process</h4>
+        </div>
+        <div class="card-body">
+          <!-- Progress indicator -->
+          <div class="tab-indicator mb-4">
+            <div class="step active" id="step1">
+              1
+              <span class="step-label">Basics</span>
+            </div>
+            <div class="step" id="step2">
+              2
+              <span class="step-label">Problem</span>
+            </div>
+            <div class="step" id="step3">
+              3
+              <span class="step-label">Solution</span>
+            </div>
+            <div class="step" id="step4">
+              4
+              <span class="step-label">Validation</span>
+            </div>
+          </div>
+          
+          <!-- Progress bar -->
+          <div class="progress mb-4">
+            <div class="progress-bar" id="formProgress" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100" style="width: 25%;">25%</div>
+          </div>
+          
+          <form id="innovationForm" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Basic information section -->
+            <div class="form-section active" id="section1">
+              <h5>Basic Information</h5>
+              <p class="text-muted">Let's start with the basic details of your innovation.</p>
+              
+              <div class="mb-3">
+                <label for="id_name" class="form-label">Innovation Name</label>
+                {{ form.name|as_crispy_field }}
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label">Innovation Type</label>
+                <div class="row mb-3">
+                  {% for type_code, type_name in form.fields.innovation_type.choices %}
+                  <div class="col-md-4 mb-3">
+                    <div class="card type-card {% if form.instance.innovation_type == type_code %}selected{% endif %}" data-type="{{ type_code }}">
+                      <div class="card-header text-center">
+                        {% if type_code == 'product' %}
+                          <i class="fas fa-box fa-2x mb-2"></i>
+                        {% elif type_code == 'process' %}
+                          <i class="fas fa-cogs fa-2x mb-2"></i>
+                        {% elif type_code == 'service' %}
+                          <i class="fas fa-concierge-bell fa-2x mb-2"></i>
+                        {% elif type_code == 'social' %}
+                          <i class="fas fa-users fa-2x mb-2"></i>
+                        {% elif type_code == 'governance' %}
+                          <i class="fas fa-landmark fa-2x mb-2"></i>
+                        {% elif type_code == 'educational' %}
+                          <i class="fas fa-graduation-cap fa-2x mb-2"></i>
+                        {% endif %}
+                        <h6 class="mb-0">{{ type_name }}</h6>
+                      </div>
+                      <div class="card-body">
+                        <small class="text-muted">
+                          {% if type_code == 'product' %}
+                            A tangible innovation that can be manufactured or created
+                          {% elif type_code == 'process' %}
+                            A new way of doing or creating something
+                          {% elif type_code == 'service' %}
+                            An offering that provides value through action
+                          {% elif type_code == 'social' %}
+                            Changes to social structures or human relationships
+                          {% elif type_code == 'governance' %}
+                            New approaches to governance or decision making
+                          {% elif type_code == 'educational' %}
+                            Innovation in learning or knowledge transfer
+                          {% endif %}
+                        </small>
+                      </div>
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+                {{ form.innovation_type }}
+              </div>
+              
+              <div class="mb-3">
+                <label for="id_zone" class="form-label">Zone</label>
+                {{ form.zone|as_crispy_field }}
+                <small class="text-muted">The zone where this innovation will take place or be implemented.</small>
+              </div>
+            </div>
+            
+            <!-- Problem statement section -->
+            <div class="form-section" id="section2">
+              <h5>Problem Statement</h5>
+              <p class="text-muted">Define the problem this innovation aims to solve.</p>
+              
+              <div class="mb-3">
+                <label for="id_problem_statement" class="form-label">Problem Statement</label>
+                {{ form.problem_statement|as_crispy_field }}
+                <small class="text-muted">Clearly describe the problem, its impact, and who it affects.</small>
+              </div>
+              
+              <!-- Additional fields for problem context -->
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="problem_scope" class="form-label">Problem Scope</label>
+                    <select class="form-select" id="problem_scope" name="problem_scope">
+                      <option value="individual">Individual</option>
+                      <option value="community">Community</option>
+                      <option value="zone">Zone-wide</option>
+                      <option value="city">City-wide</option>
+                      <option value="global">Global</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="problem_urgency" class="form-label">Problem Urgency</label>
+                    <select class="form-select" id="problem_urgency" name="problem_urgency">
+                      <option value="low">Low - Can be addressed over time</option>
+                      <option value="medium">Medium - Should be addressed soon</option>
+                      <option value="high">High - Requires immediate attention</option>
+                      <option value="critical">Critical - Crisis situation</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Solution section -->
+            <div class="form-section" id="section3">
+              <h5>Proposed Solution</h5>
+              <p class="text-muted">Describe your innovation solution and approach.</p>
+              
+              <div class="mb-3">
+                <label for="id_proposed_solution" class="form-label">Proposed Solution</label>
+                {{ form.proposed_solution|as_crispy_field }}
+                <small class="text-muted">Outline your approach to solving the problem.</small>
+              </div>
+              
+              <!-- Initial stage details -->
+              <h6 class="mt-4">Initial Stage: Order (Taxis)</h6>
+              <p class="text-muted small">In this first stage, identify the components and establish metrics.</p>
+              
+              <div class="mb-3">
+                <label for="initial_components" class="form-label">Initial Components</label>
+                <textarea class="form-control" id="initial_components" name="initial_components" rows="3" placeholder="List the key components of your solution"></textarea>
+                <small class="text-muted">What are the main building blocks or elements?</small>
+              </div>
+              
+              <div class="mb-3">
+                <label for="initial_metrics" class="form-label">Initial Metrics</label>
+                <textarea class="form-control" id="initial_metrics" name="initial_metrics" rows="3" placeholder="How will you measure success?"></textarea>
+                <small class="text-muted">How will you measure the success of your innovation?</small>
+              </div>
+            </div>
+            
+            <!-- Validation section -->
+            <div class="form-section" id="section4">
+              <h5>Validation Metrics</h5>
+              <p class="text-muted">Define how you'll validate the success of your innovation.</p>
+              
+              <div class="validation-metrics">
+                <div class="validation-metric-row mb-3">
+                  <div class="row">
+                    <div class="col-md-5">
+                      <input type="text" class="form-control" name="metric_names[]" placeholder="Metric Name (e.g. User Adoption)">
+                    </div>
+                    <div class="col-md-4">
+                      <select class="form-select" name="metric_types[]">
+                        <option value="percentage">Percentage</option>
+                        <option value="number">Number</option>
+                        <option value="boolean">Yes/No</option>
+                        <option value="rating">Rating (1-10)</option>
+                      </select>
+                    </div>
+                    <div class="col-md-3">
+                      <input type="number" class="form-control" name="metric_targets[]" placeholder="Target" min="0" max="100">
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="validation-metric-row mb-3">
+                  <div class="row">
+                    <div class="col-md-5">
+                      <input type="text" class="form-control" name="metric_names[]" placeholder="Metric Name">
+                    </div>
+                    <div class="col-md-4">
+                      <select class="form-select" name="metric_types[]">
+                        <option value="percentage">Percentage</option>
+                        <option value="number">Number</option>
+                        <option value="boolean">Yes/No</option>
+                        <option value="rating">Rating (1-10)</option>
+                      </select>
+                    </div>
+                    <div class="col-md-3">
+                      <input type="number" class="form-control" name="metric_targets[]" placeholder="Target" min="0" max="100">
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <button type="button" id="addMetricBtn" class="btn btn-sm btn-outline-secondary mb-3">
+                <i class="fas fa-plus"></i> Add Another Metric
+              </button>
+              
+              <div class="mb-3">
+                <label class="form-label">Participants to Invite (Optional)</label>
+                <select class="form-select" multiple name="initial_participants" id="initial_participants">
+                  {% for profile in available_participants %}
+                    <option value="{{ profile.id }}">{{ profile.user.username }}</option>
+                  {% endfor %}
+                </select>
+                <small class="text-muted">Hold Ctrl/Cmd to select multiple users</small>
+              </div>
+            </div>
+            
+            <!-- Form navigation -->
+            <div class="form-navigation d-flex justify-content-between mt-4">
+              <button type="button" id="prevBtn" class="btn btn-secondary" style="display: none;">
+                <i class="fas fa-arrow-left"></i> Previous
+              </button>
+              <div>
+                <button type="button" id="nextBtn" class="btn btn-primary">
+                  Next <i class="fas fa-arrow-right"></i>
+                </button>
+                <button type="submit" id="submitBtn" class="btn btn-success" style="display: none;">
+                  <i class="fas fa-paper-plane"></i> Create Innovation
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Current section
+    let currentSection = 1;
+    const totalSections = 4;
+    
+    // Form elements
+    const form = document.getElementById('innovationForm');
+    const sections = document.querySelectorAll('.form-section');
+    const nextBtn = document.getElementById('nextBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const progressBar = document.getElementById('formProgress');
+    const steps = document.querySelectorAll('.step');
+    
+    // Hide Django's innovation_type select and use our card UI instead
+    const hiddenTypeSelect = document.getElementById('id_innovation_type');
+    if (hiddenTypeSelect) {
+      hiddenTypeSelect.style.display = 'none';
+      
+      // Set up innovation type card selection
+      const typeCards = document.querySelectorAll('.type-card');
+      typeCards.forEach(card => {
+        card.addEventListener('click', function() {
+          // Remove selected class from all cards
+          typeCards.forEach(c => c.classList.remove('selected'));
+          
+          // Add selected class to clicked card
+          this.classList.add('selected');
+          
+          // Update the hidden select value
+          const typeValue = this.getAttribute('data-type');
+          hiddenTypeSelect.value = typeValue;
+        });
+      });
+    }
+    
+    // Navigation functions
+    function showSection(n) {
+      // Hide all sections
+      sections.forEach(section => {
+        section.classList.remove('active');
+      });
+      
+      // Show the current section
+      sections[n-1].classList.add('active');
+      
+      // Update buttons
+      if (n === 1) {
+        prevBtn.style.display = 'none';
+      } else {
+        prevBtn.style.display = 'block';
+      }
+      
+      if (n === totalSections) {
+        nextBtn.style.display = 'none';
+        submitBtn.style.display = 'block';
+        submitBtn.innerHTML = form.querySelector('input[name="id"]') ? 
+          '<i class="fas fa-save"></i> Update Innovation' : 
+          '<i class="fas fa-paper-plane"></i> Create Innovation';
+      } else {
+        nextBtn.style.display = 'block';
+        submitBtn.style.display = 'none';
+      }
+      
+      // Update progress bar
+      const progress = (n / totalSections) * 100;
+      progressBar.style.width = progress + '%';
+      progressBar.setAttribute('aria-valuenow', progress);
+      progressBar.textContent = Math.round(progress) + '%';
+      
+      // Update step indicators
+      steps.forEach((step, index) => {
+        if (index + 1 < n) {
+          step.classList.remove('active');
+          step.classList.add('completed');
+        } else if (index + 1 === n) {
+          step.classList.add('active');
+          step.classList.remove('completed');
+        } else {
+          step.classList.remove('active', 'completed');
+        }
+      });
+      
+      // Update current section tracker
+      currentSection = n;
+    }
+    
+    // Add event listeners for navigation
+    nextBtn.addEventListener('click', function() {
+      // Simple validation before proceeding
+      const currentSectionEl = document.getElementById('section' + currentSection);
+      const requiredFields = currentSectionEl.querySelectorAll('input[required], select[required], textarea[required]');
+      let isValid = true;
+      
+      requiredFields.forEach(field => {
+        if (!field.value) {
+          isValid = false;
+          field.classList.add('is-invalid');
+        } else {
+          field.classList.remove('is-invalid');
+        }
+      });
+      
+      if (isValid) {
+        showSection(currentSection + 1);
+      }
+    });
+    
+    prevBtn.addEventListener('click', function() {
+      showSection(currentSection - 1);
+    });
+    
+    // Add metric button
+    const addMetricBtn = document.getElementById('addMetricBtn');
+    if (addMetricBtn) {
+      addMetricBtn.addEventListener('click', function() {
+        const metricsContainer = document.querySelector('.validation-metrics');
+        const metricRow = document.querySelector('.validation-metric-row').cloneNode(true);
+        
+        // Clear input values
+        metricRow.querySelectorAll('input').forEach(input => {
+          input.value = '';
+        });
+        
+        metricsContainer.appendChild(metricRow);
+      });
+    }
+    
+    // Initialize form with first section
+    showSection(1);
+    
+    // Handle form submission
+    form.addEventListener('submit', function(event) {
+      // Additional processing here if needed
+      
+      // Build validation metrics JSON from inputs
+      const metricNames = Array.from(document.querySelectorAll('input[name="metric_names[]"]')).map(el => el.value);
+      const metricTargets = Array.from(document.querySelectorAll('input[name="metric_targets[]"]')).map(el => parseInt(el.value, 10) || 0);
+      
+      let validationMetrics = {};
+      for (let i = 0; i < metricNames.length; i++) {
+        if (metricNames[i]) {
+          validationMetrics[metricNames[i]] = metricTargets[i];
+        }
+      }
+      
+      // Add hidden field for validation metrics
+      const metricsInput = document.createElement('input');
+      metricsInput.type = 'hidden';
+      metricsInput.name = 'validation_metrics';
+      metricsInput.value = JSON.stringify(validationMetrics);
+      form.appendChild(metricsInput);
+      
+      // Create initial stage_progress data
+      const stageProgress = {
+        order: {
+          components: document.getElementById('initial_components').value,
+          metrics: document.getElementById('initial_metrics').value,
+          progress: 0,
+          completed: false
+        },
+        arrangement: { progress: 0, completed: false },
+        eurythmy: { progress: 0, completed: false },
+        symmetry: { progress: 0, completed: false },
+        propriety: { progress: 0, completed: false },
+        economy: { progress: 0, completed: false }
+      };
+      
+      // Add hidden field for stage_progress
+      const stageProgressInput = document.createElement('input');
+      stageProgressInput.type = 'hidden';
+      stageProgressInput.name = 'stage_progress';
+      stageProgressInput.value = JSON.stringify(stageProgress);
+      form.appendChild(stageProgressInput);
+    });
+  });
+</script>
+{% endblock extra_js %}

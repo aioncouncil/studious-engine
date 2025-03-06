@@ -1,0 +1,890 @@
+{% comment %}
+[CLAUDE:OPTIMIZATION_LAYER:START]
+This template is part of the core_user_system component
+See .claude/README.md for more information
+[CLAUDE:OPTIMIZATION_LAYER:END]
+{% endcomment %}
+
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}Art Mastery Dashboard | Atlantis Go{% endblock %}
+
+{% block css %}
+{{ block.super }}
+<style>
+  /* Main Dashboard Layout */
+  .dashboard-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .dashboard-header {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    border-radius: 12px;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .dashboard-header:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-image: url("{% static 'images/art-pattern.svg' %}");
+    background-size: cover;
+    opacity: 0.1;
+  }
+  
+  .dashboard-card {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+  }
+  
+  .dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .dashboard-card-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .dashboard-card-body {
+    padding: 1.5rem;
+  }
+  
+  /* Calendar and Practice Tracking */
+  .practice-calendar {
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+  
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background-color: #f9fafb;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  
+  .calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    padding: 0.5rem;
+  }
+  
+  .calendar-day-header {
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: #4b5563;
+    padding: 0.5rem 0;
+  }
+  
+  .calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+  
+  .calendar-day:hover {
+    background-color: #f3f4f6;
+  }
+  
+  .calendar-day.has-practice {
+    background-color: #dcfce7;
+  }
+  
+  .calendar-day.has-practice:hover {
+    background-color: #bbf7d0;
+  }
+  
+  .calendar-day.today {
+    border: 2px solid #3b82f6;
+  }
+  
+  .day-number {
+    font-weight: 600;
+    font-size: 0.875rem;
+  }
+  
+  .practice-count {
+    font-size: 0.625rem;
+    color: #059669;
+  }
+  
+  /* Mastery Chart */
+  .mastery-chart-container {
+    height: 320px;
+    position: relative;
+  }
+  
+  /* Practice Planner */
+  .practice-planner .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .practice-schedule-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background-color: #f9fafb;
+  }
+  
+  .practice-schedule-item:hover {
+    background-color: #f3f4f6;
+  }
+  
+  .art-thumbnail {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-right: 1rem;
+    background-color: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Art-Virtue Connection */
+  .connection-map {
+    position: relative;
+    height: 350px;
+    overflow: hidden;
+    border-radius: 8px;
+    background-color: #f9fafb;
+  }
+  
+  .virtue-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .virtue-badge.courage {
+    background-color: #fee2e2;
+    color: #b91c1c;
+  }
+  
+  .virtue-badge.wisdom {
+    background-color: #e0f2fe;
+    color: #0369a1;
+  }
+  
+  .virtue-badge.justice {
+    background-color: #fef3c7;
+    color: #92400e;
+  }
+  
+  .virtue-badge.temperance {
+    background-color: #dcfce7;
+    color: #166534;
+  }
+  
+  .virtue-badge.transcendence {
+    background-color: #f3e8ff;
+    color: #7e22ce;
+  }
+  
+  /* Recent Activities */
+  .activity-timeline {
+    position: relative;
+  }
+  
+  .activity-timeline:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 24px;
+    width: 2px;
+    background-color: #e5e7eb;
+  }
+  
+  .activity-item {
+    position: relative;
+    padding-left: 48px;
+    padding-bottom: 1.5rem;
+  }
+  
+  .activity-icon {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #3b82f6;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+  }
+  
+  .activity-content {
+    background-color: #f9fafb;
+    padding: 1rem;
+    border-radius: 8px;
+  }
+  
+  .activity-time {
+    font-size: 0.75rem;
+    color: #6b7280;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="dashboard-header mb-4">
+    <div class="row">
+      <div class="col-md-8">
+        <h1 class="mb-2">Art Mastery Dashboard</h1>
+        <p class="mb-0">Track your progress, plan your practice, and see how arts influence your virtues</p>
+      </div>
+      <div class="col-md-4 text-md-end">
+        <div class="d-flex justify-content-md-end align-items-center h-100">
+          <div class="bg-white bg-opacity-20 rounded-pill px-3 py-2">
+            <span class="fw-bold">{{ mastery_summary.total_arts }}</span> Arts Discovered | 
+            <span class="fw-bold">{{ mastery_summary.average_mastery|floatformat:1 }}</span> Average Mastery
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Quick Actions -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="dashboard-card">
+        <div class="dashboard-card-header">
+          <h5 class="mb-0">Quick Actions</h5>
+        </div>
+        <div class="dashboard-card-body">
+          <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'core:arts_pokedex' %}" class="btn btn-primary">
+              <i class="fas fa-palette me-1"></i> Art Collection
+            </a>
+            <a href="{% url 'core:tech_tree' %}" class="btn btn-success">
+              <i class="fas fa-project-diagram me-1"></i> Tech Tree
+            </a>
+            <button data-bs-toggle="modal" data-bs-target="#addPracticeModal" class="btn btn-info">
+              <i class="fas fa-clock me-1"></i> Log Practice
+            </button>
+            <a href="{% url 'core:art_mastery_stats' %}" class="btn btn-secondary">
+              <i class="fas fa-chart-bar me-1"></i> Detailed Statistics
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="dashboard-container">
+    <div class="row">
+      <!-- Mastery Overview -->
+      <div class="col-md-6 mb-4">
+        <div class="dashboard-card h-100">
+          <div class="dashboard-card-header">
+            <h5 class="mb-0">Mastery Overview</h5>
+            <a href="{% url 'core:art_mastery_stats' %}" class="btn btn-sm btn-outline-primary">View Detailed Stats</a>
+          </div>
+          <div class="dashboard-card-body">
+            <div class="mastery-chart-container">
+              <canvas id="masteryRadarChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Art-Virtue Connection -->
+      <div class="col-md-6 mb-4">
+        <div class="dashboard-card h-100">
+          <div class="dashboard-card-header">
+            <h5 class="mb-0">Art-Virtue Connection</h5>
+            <a href="{% url 'core:virtues' %}" class="btn btn-sm btn-outline-primary">View All Virtues</a>
+          </div>
+          <div class="dashboard-card-body">
+            <div class="connection-map mb-3" id="connectionMap">
+              <!-- JS will render the connection visualization here -->
+            </div>
+            <div>
+              <h6>Strongest Virtue Connections:</h6>
+              <div>
+                {% for virtue, arts in virtue_connections.items %}
+                <div class="mb-2">
+                  <span class="virtue-badge {{ virtue|lower }}">{{ virtue }}</span>
+                  <small>Influenced by {{ arts|length }} arts</small>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row">
+      <!-- Practice Calendar -->
+      <div class="col-md-7 mb-4">
+        <div class="dashboard-card h-100">
+          <div class="dashboard-card-header">
+            <h5 class="mb-0">Practice Calendar</h5>
+            <div>
+              <button class="btn btn-sm btn-outline-secondary me-1" id="previousMonth">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+              <span id="currentMonth" class="mx-2">March 2025</span>
+              <button class="btn btn-sm btn-outline-secondary ms-1" id="nextMonth">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+          <div class="dashboard-card-body">
+            <div class="practice-calendar">
+              <div class="calendar-header">
+                <span class="calendar-title">Practice Sessions</span>
+                <span class="practice-stats">
+                  This Month: <span class="fw-bold">{{ practice_summary.month_count }}</span> sessions
+                  ({{ practice_summary.month_hours }} hours)
+                </span>
+              </div>
+              <div class="calendar-days">
+                <div class="calendar-day-header">Sun</div>
+                <div class="calendar-day-header">Mon</div>
+                <div class="calendar-day-header">Tue</div>
+                <div class="calendar-day-header">Wed</div>
+                <div class="calendar-day-header">Thu</div>
+                <div class="calendar-day-header">Fri</div>
+                <div class="calendar-day-header">Sat</div>
+                
+                <!-- Calendar days will be generated by JS -->
+              </div>
+            </div>
+            
+            <div class="mt-3" id="selectedDayPractices">
+              <h6 class="mb-3">Today's Practice Sessions</h6>
+              {% if todays_practices %}
+                {% for practice in todays_practices %}
+                <div class="practice-schedule-item">
+                  <div class="art-thumbnail">
+                    <i class="fas fa-palette"></i>
+                  </div>
+                  <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between">
+                      <strong>{{ practice.art.name }}</strong>
+                      <span class="text-muted">{{ practice.duration_minutes }} min</span>
+                    </div>
+                    <div class="small text-muted">{{ practice.part.name }}</div>
+                  </div>
+                </div>
+                {% endfor %}
+              {% else %}
+                <div class="text-center py-3 text-muted">
+                  <i class="fas fa-calendar-day mb-2" style="font-size: 24px;"></i>
+                  <p class="mb-0">No practice sessions recorded for today</p>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Practice Planner -->
+      <div class="col-md-5 mb-4">
+        <div class="dashboard-card h-100">
+          <div class="dashboard-card-header">
+            <h5 class="mb-0">Practice Planner</h5>
+            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addPracticeModal">
+              <i class="fas fa-plus me-1"></i> Schedule Practice
+            </button>
+          </div>
+          <div class="dashboard-card-body">
+            <h6 class="mb-3">Recommended Practice Sessions</h6>
+            
+            {% if recommended_practices %}
+              {% for rec in recommended_practices %}
+              <div class="practice-schedule-item">
+                <div class="art-thumbnail" style="background-color: {% if rec.art.color %}{{ rec.art.color }}{% else %}#e5e7eb{% endif %};">
+                  <i class="fas fa-{% if rec.art.icon %}{{ rec.art.icon }}{% else %}palette{% endif %}"></i>
+                </div>
+                <div class="flex-grow-1">
+                  <div class="d-flex justify-content-between">
+                    <strong>{{ rec.art.name }}</strong>
+                    <span class="badge bg-primary">Priority: {{ rec.priority }}</span>
+                  </div>
+                  <div class="small">{{ rec.art.part.name }} ({{ rec.duration }} min)</div>
+                  <div class="mt-1">
+                    <small class="text-muted">
+                      <i class="fas fa-arrow-up text-success me-1"></i>
+                      Will improve: 
+                      {% for virtue in rec.improves_virtues %}
+                        <span class="virtue-badge {{ virtue|lower }}">{{ virtue }}</span>
+                      {% endfor %}
+                    </small>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            {% else %}
+              <div class="text-center py-3 text-muted">
+                <i class="fas fa-tasks mb-2" style="font-size: 24px;"></i>
+                <p class="mb-0">No recommended practices available</p>
+              </div>
+            {% endif %}
+            
+            <h6 class="mt-4 mb-3">Upcoming Scheduled Practices</h6>
+            
+            {% if scheduled_practices %}
+              {% for practice in scheduled_practices %}
+              <div class="practice-schedule-item">
+                <div class="art-thumbnail">
+                  <i class="fas fa-palette"></i>
+                </div>
+                <div class="flex-grow-1">
+                  <div class="d-flex justify-content-between">
+                    <strong>{{ practice.art.name }}</strong>
+                    <span class="text-muted">{{ practice.started_at|date:"M d, h:i a" }}</span>
+                  </div>
+                  <div class="small text-muted">{{ practice.part.name }} ({{ practice.duration_minutes }} min)</div>
+                </div>
+                <button class="btn btn-sm btn-outline-danger ms-2" title="Cancel">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              {% endfor %}
+            {% else %}
+              <div class="text-center py-3 text-muted">
+                <i class="fas fa-clock mb-2" style="font-size: 24px;"></i>
+                <p class="mb-0">No scheduled practice sessions</p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row">
+      <!-- Most Practiced Arts -->
+      <div class="col-md-5 mb-4">
+        <div class="dashboard-card h-100">
+          <div class="dashboard-card-header">
+            <h5 class="mb-0">Top Arts</h5>
+            <a href="{% url 'core:arts_pokedex' %}" class="btn btn-sm btn-outline-primary">View All Arts</a>
+          </div>
+          <div class="dashboard-card-body">
+            <div class="row row-cols-1 row-cols-md-2 g-3">
+              {% for mastery in top_masteries %}
+              <div class="col">
+                <div class="practice-schedule-item">
+                  <div class="art-thumbnail">
+                    <i class="fas fa-palette"></i>
+                  </div>
+                  <div class="flex-grow-1">
+                    <strong>{{ mastery.art.name }}</strong>
+                    <div class="progress mt-1" style="height: 6px;">
+                      <div class="progress-bar" role="progressbar" 
+                           style="width: {% if mastery.mastery_level %}{{ mastery.mastery_level|floatformat:0 }}{% else %}0{% endif %}%;" 
+                           aria-valuenow="{% if mastery.mastery_level %}{{ mastery.mastery_level|floatformat:0 }}{% else %}0{% endif %}" 
+                           aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-1">
+                      <small>Level {{ mastery.mastery_level }}</small>
+                      <small>{{ mastery.total_hours }} hours</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Recent Activity -->
+      <div class="col-md-7 mb-4">
+        <div class="dashboard-card h-100">
+          <div class="dashboard-card-header">
+            <h5 class="mb-0">Recent Activity</h5>
+            <a href="#" class="btn btn-sm btn-outline-primary">View All Activity</a>
+          </div>
+          <div class="dashboard-card-body">
+            <div class="activity-timeline">
+              {% for activity in recent_activities %}
+              <div class="activity-item">
+                <div class="activity-icon">
+                  <i class="fas fa-{{ activity.icon }}"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="d-flex justify-content-between">
+                    <strong>{{ activity.title }}</strong>
+                    <span class="activity-time">{{ activity.timestamp|timesince }} ago</span>
+                  </div>
+                  <p class="mb-0">{{ activity.description }}</p>
+                  {% if activity.related_virtues %}
+                  <div class="mt-2">
+                    {% for virtue in activity.related_virtues %}
+                    <span class="virtue-badge {{ virtue|lower }}">{{ virtue }}</span>
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Practice Modal -->
+<div class="modal fade" id="addPracticeModal" tabindex="-1" aria-labelledby="addPracticeModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addPracticeModalLabel">Schedule Practice Session</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="practiceScheduleForm">
+          <div class="mb-3">
+            <label for="artSelect" class="form-label">Select Art</label>
+            <select class="form-select" id="artSelect" required>
+              <option value="">Choose an art...</option>
+              {% for art in user_arts %}
+              <option value="{{ art.id }}">{{ art.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          
+          <div class="mb-3">
+            <label for="partSelect" class="form-label">Select Part</label>
+            <select class="form-select" id="partSelect" required disabled>
+              <option value="">Choose a part...</option>
+              <!-- Parts will be populated based on selected art -->
+            </select>
+          </div>
+          
+          <div class="mb-3">
+            <label for="practiceDate" class="form-label">Date</label>
+            <input type="date" class="form-control" id="practiceDate" required>
+          </div>
+          
+          <div class="mb-3">
+            <label for="practiceTime" class="form-label">Time</label>
+            <input type="time" class="form-control" id="practiceTime" required>
+          </div>
+          
+          <div class="mb-3">
+            <label for="practiceDuration" class="form-label">Duration (minutes)</label>
+            <input type="number" class="form-control" id="practiceDuration" min="5" max="240" value="30" required>
+          </div>
+          
+          <div class="mb-3">
+            <label for="practiceNotes" class="form-label">Notes (optional)</label>
+            <textarea class="form-control" id="practiceNotes" rows="3"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="schedulePracticeBtn">Schedule Practice</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Mastery Radar Chart
+    const masteryChartCtx = document.getElementById('masteryRadarChart').getContext('2d');
+    const masteryData = {
+      labels: [
+        {% for cat in mastery_categories %}
+          "{{ cat.name }}",
+        {% endfor %}
+      ],
+      datasets: [{
+        label: 'Your Mastery',
+        data: [
+          {% for cat in mastery_categories %}
+            {% if cat.average_mastery %}{{ cat.average_mastery }}{% else %}0{% endif %},
+          {% endfor %}
+        ],
+        fill: true,
+        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+        borderColor: 'rgb(59, 130, 246)',
+        pointBackgroundColor: 'rgb(59, 130, 246)',
+        pointBorderColor: '#fff',
+        pointHoverBackgroundColor: '#fff',
+        pointHoverBorderColor: 'rgb(59, 130, 246)'
+      }]
+    };
+    
+    const masteryChart = new Chart(masteryChartCtx, {
+      type: 'radar',
+      data: masteryData,
+      options: {
+        scales: {
+          r: {
+            min: 0,
+            max: 5,
+            ticks: {
+              stepSize: 1
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          }
+        }
+      }
+    });
+    
+    // Practice Calendar
+    function generateCalendar(year, month) {
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      const daysInMonth = lastDay.getDate();
+      const startingDay = firstDay.getDay(); // 0 = Sunday
+      
+      // Update current month display
+      const monthNames = ["January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"];
+      document.getElementById('currentMonth').textContent = `${monthNames[month]} ${year}`;
+      
+      // Clear previous calendar days
+      const calendarDaysContainer = document.querySelector('.calendar-days');
+      
+      // Add day headers (already in HTML)
+      
+      // Add empty cells for days before the first day of the month
+      for (let i = 0; i < startingDay; i++) {
+        const emptyDay = document.createElement('div');
+        emptyDay.className = 'calendar-day empty';
+        calendarDaysContainer.appendChild(emptyDay);
+      }
+      
+      // Add cells for each day of the month
+      const today = new Date();
+      const currentDate = today.getDate();
+      const currentMonth = today.getMonth();
+      const currentYear = today.getFullYear();
+      
+      // Sample practice data (would come from backend)
+      const practiceDays = {% if practice_days %}{{ practice_days|safe }}{% else %}{}{% endif %};
+      
+      for (let i = 1; i <= daysInMonth; i++) {
+        const dayCell = document.createElement('div');
+        dayCell.className = 'calendar-day';
+        
+        // Check if this is today
+        if (i === currentDate && month === currentMonth && year === currentYear) {
+          dayCell.classList.add('today');
+        }
+        
+        // Check if has practice
+        const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+        if (practiceDays[dateString]) {
+          dayCell.classList.add('has-practice');
+          
+          // Add day number
+          const dayNumber = document.createElement('div');
+          dayNumber.className = 'day-number';
+          dayNumber.textContent = i;
+          dayCell.appendChild(dayNumber);
+          
+          // Add practice count
+          const practiceCount = document.createElement('div');
+          practiceCount.className = 'practice-count';
+          practiceCount.textContent = `${practiceDays[dateString]} sessions`;
+          dayCell.appendChild(practiceCount);
+        } else {
+          // Just add day number
+          const dayNumber = document.createElement('div');
+          dayNumber.className = 'day-number';
+          dayNumber.textContent = i;
+          dayCell.appendChild(dayNumber);
+        }
+        
+        // Add click handler
+        dayCell.addEventListener('click', function() {
+          // Handle day selection - in a real implementation, this would load
+          // practice sessions for the selected day via AJAX
+          alert(`Selected: ${monthNames[month]} ${i}, ${year}`);
+        });
+        
+        calendarDaysContainer.appendChild(dayCell);
+      }
+    }
+    
+    // Initialize calendar with current month
+    const today = new Date();
+    generateCalendar(today.getFullYear(), today.getMonth());
+    
+    // Handle month navigation
+    document.getElementById('previousMonth').addEventListener('click', function() {
+      const currentMonth = document.getElementById('currentMonth').textContent;
+      const [monthName, year] = currentMonth.split(' ');
+      const monthNames = ["January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"];
+      let monthIndex = monthNames.indexOf(monthName);
+      let yearValue = parseInt(year);
+      
+      monthIndex--;
+      if (monthIndex < 0) {
+        monthIndex = 11;
+        yearValue--;
+      }
+      
+      // Clear calendar days
+      const calendarDaysContainer = document.querySelector('.calendar-days');
+      // Keep the day headers (first 7 children)
+      const dayHeaders = Array.from(calendarDaysContainer.children).slice(0, 7);
+      calendarDaysContainer.innerHTML = '';
+      dayHeaders.forEach(header => calendarDaysContainer.appendChild(header));
+      
+      generateCalendar(yearValue, monthIndex);
+    });
+    
+    document.getElementById('nextMonth').addEventListener('click', function() {
+      const currentMonth = document.getElementById('currentMonth').textContent;
+      const [monthName, year] = currentMonth.split(' ');
+      const monthNames = ["January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"];
+      let monthIndex = monthNames.indexOf(monthName);
+      let yearValue = parseInt(year);
+      
+      monthIndex++;
+      if (monthIndex > 11) {
+        monthIndex = 0;
+        yearValue++;
+      }
+      
+      // Clear calendar days
+      const calendarDaysContainer = document.querySelector('.calendar-days');
+      // Keep the day headers (first 7 children)
+      const dayHeaders = Array.from(calendarDaysContainer.children).slice(0, 7);
+      calendarDaysContainer.innerHTML = '';
+      dayHeaders.forEach(header => calendarDaysContainer.appendChild(header));
+      
+      generateCalendar(yearValue, monthIndex);
+    });
+    
+    // Art-Virtue Connection Map
+    // This would require D3.js for a proper implementation
+    // Here's a simple placeholder visualization
+    function initConnectionMap() {
+      const containerWidth = document.getElementById('connectionMap').clientWidth;
+      const containerHeight = document.getElementById('connectionMap').clientHeight;
+      
+      const svg = d3.select("#connectionMap")
+        .append("svg")
+        .attr("width", containerWidth)
+        .attr("height", containerHeight);
+      
+      // This is just a placeholder - in a real implementation,
+      // this would create a network graph showing connections between
+      // arts and virtues
+      svg.append("text")
+        .attr("x", containerWidth / 2)
+        .attr("y", containerHeight / 2)
+        .attr("text-anchor", "middle")
+        .text("Art-Virtue Connection Map Would Render Here")
+        .style("font-size", "16px")
+        .style("fill", "#6b7280");
+    }
+    
+    // Initialize connection map
+    initConnectionMap();
+    
+    // Practice modal functionality
+    document.getElementById('artSelect').addEventListener('change', function() {
+      const artId = this.value;
+      const partSelect = document.getElementById('partSelect');
+      
+      if (artId) {
+        // In a real implementation, this would load parts via AJAX
+        partSelect.disabled = false;
+        
+        // Simulate loading parts
+        partSelect.innerHTML = '<option value="">Choose a part...</option>';
+        
+        // Sample parts (would come from backend)
+        const parts = [
+          { id: 'part1', name: 'Definition' },
+          { id: 'part2', name: 'End' },
+          { id: 'part3', name: 'Parts' },
+          { id: 'part4', name: 'Matter' },
+          { id: 'part5', name: 'Instrument' }
+        ];
+        
+        parts.forEach(part => {
+          const option = document.createElement('option');
+          option.value = part.id;
+          option.textContent = part.name;
+          partSelect.appendChild(option);
+        });
+      } else {
+        partSelect.disabled = true;
+        partSelect.innerHTML = '<option value="">Choose a part...</option>';
+      }
+    });
+    
+    document.getElementById('schedulePracticeBtn').addEventListener('click', function() {
+      const form = document.getElementById('practiceScheduleForm');
+      
+      // Check if form is valid
+      if (form.checkValidity()) {
+        // In a real implementation, this would submit the form via AJAX
+        alert('Practice scheduled successfully!');
+        
+        // Close modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('addPracticeModal'));
+        modal.hide();
+      } else {
+        // Trigger validation
+        form.reportValidity();
+      }
+    });
+  });
+</script>
+{% endblock %} 

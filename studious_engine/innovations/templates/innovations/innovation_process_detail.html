@@ -1,0 +1,417 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ innovation.name }} | Innovation Process{% endblock title %}
+
+{% block extra_css %}
+<style>
+  .stage-card {
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+  }
+  
+  .stage-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .stage-indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 8px;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+  }
+  
+  .stage-order { background-color: #4285F4; }
+  .stage-arrangement { background-color: #34A853; }
+  .stage-eurythmy { background-color: #FBBC05; }
+  .stage-symmetry { background-color: #EA4335; }
+  .stage-propriety { background-color: #8E44AD; }
+  .stage-economy { background-color: #16A085; }
+  
+  .stage-completed {
+    opacity: 0.7;
+  }
+  
+  .stage-current {
+    border: 3px solid #4285F4;
+  }
+  
+  .stage-locked {
+    opacity: 0.5;
+    filter: grayscale(0.8);
+  }
+  
+  .stage-icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .progress-indicator {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+    position: relative;
+  }
+  
+  .completion-badge {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #4CAF50;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .participant-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid white;
+    margin-left: -15px;
+  }
+  
+  .participant-avatar:first-child {
+    margin-left: 0;
+  }
+  
+  .floating-action-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Back Button & Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <a href="{% url 'innovations:innovation_list' %}" class="btn btn-outline-secondary">
+      <i class="fas fa-arrow-left"></i> All Innovations
+    </a>
+    <div>
+      <span class="badge rounded-pill 
+        {% if innovation.status == 'in_progress' %}bg-primary
+        {% elif innovation.status == 'completed' %}bg-success
+        {% else %}bg-danger{% endif %}">
+        {{ innovation.get_status_display }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Innovation Header -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <h1 class="card-title mb-0">{{ innovation.name }}</h1>
+      <p class="text-muted">{{ innovation.get_innovation_type_display }} • Initiated by {{ innovation.initiator.user.username }}</p>
+      
+      <!-- Progress Bar -->
+      <div class="progress mb-3" style="height: 8px;">
+        <div class="progress-bar bg-success" role="progressbar" 
+             style="width: {{ innovation.calculate_overall_progress }}%;" 
+             aria-valuenow="{{ innovation.calculate_overall_progress }}" 
+             aria-valuemin="0" aria-valuemax="100"></div>
+      </div>
+      
+      <div class="row align-items-center">
+        <div class="col-md-9">
+          <p class="mb-2">{{ innovation.problem_statement }}</p>
+          <div class="d-flex align-items-center mt-3">
+            <!-- Participants -->
+            <div class="d-flex align-items-center me-4">
+              <i class="fas fa-users text-muted me-2"></i>
+              <div class="d-flex participant-avatars">
+                {% for participant in innovation.participants.all|slice:":5" %}
+                  <img src="{{ participant.avatar.url|default:'https://via.placeholder.com/40' }}" 
+                       alt="{{ participant.user.username }}" 
+                       class="participant-avatar" 
+                       data-bs-toggle="tooltip" 
+                       title="{{ participant.user.username }}">
+                {% endfor %}
+                {% if innovation.participants.count > 5 %}
+                  <div class="participant-avatar bg-light d-flex align-items-center justify-content-center">
+                    +{{ innovation.participants.count|add:"-5" }}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <!-- Zone -->
+            <div class="me-4">
+              <i class="fas fa-map-marker-alt text-muted me-1"></i>
+              <span>{{ innovation.zone.name }}</span>
+            </div>
+            
+            <!-- Created Date -->
+            <div>
+              <i class="far fa-calendar-alt text-muted me-1"></i>
+              <span>{{ innovation.created_at|date:"M d, Y" }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 text-center">
+          <!-- Current Stage Visual -->
+          <div class="progress-indicator">
+            <div class="progress-circular" data-progress="{{ innovation.calculate_overall_progress }}">
+              <svg viewBox="0 0 36 36" class="circular-chart">
+                <path class="circle-bg"
+                  d="M18 2.0845
+                    a 15.9155 15.9155 0 0 1 0 31.831
+                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                  stroke="#eee"
+                  stroke-width="2"
+                  fill="none"/>
+                <path class="circle"
+                  stroke-dasharray="{{ innovation.calculate_overall_progress }}, 100"
+                  d="M18 2.0845
+                    a 15.9155 15.9155 0 0 1 0 31.831
+                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                  stroke="#4285F4"
+                  stroke-width="2"
+                  fill="none"/>
+                <text x="18" y="20" class="percentage">{{ innovation.calculate_overall_progress }}%</text>
+              </svg>
+              <div class="text-center mt-2">
+                <span class="badge bg-primary">{{ innovation.get_current_stage_display }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vitruvian Process Stages -->
+  <h2 class="mb-3">Innovation Journey</h2>
+  <div class="row">
+    {% for stage, stage_data in innovation.stage_progress.items %}
+      <div class="col-md-6 mb-4">
+        <div class="card stage-card
+          {% if stage == innovation.current_stage %}stage-current
+          {% elif stage_data.completed %}stage-completed
+          {% else %}stage-locked{% endif %}">
+          
+          <div class="stage-indicator stage-{{ stage }}"></div>
+          
+          <div class="card-body pt-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h3 class="card-title">
+                {% if stage == 'order' %}
+                  <i class="fas fa-sitemap stage-icon"></i> Order
+                {% elif stage == 'arrangement' %}
+                  <i class="fas fa-th stage-icon"></i> Arrangement
+                {% elif stage == 'eurythmy' %}
+                  <i class="fas fa-sync stage-icon"></i> Eurythmy
+                {% elif stage == 'symmetry' %}
+                  <i class="fas fa-balance-scale stage-icon"></i> Symmetry
+                {% elif stage == 'propriety' %}
+                  <i class="fas fa-check-double stage-icon"></i> Propriety
+                {% elif stage == 'economy' %}
+                  <i class="fas fa-coins stage-icon"></i> Economy
+                {% endif %}
+              </h3>
+              
+              {% if stage_data.completed %}
+                <div class="completion-badge">
+                  <i class="fas fa-check"></i>
+                </div>
+              {% else %}
+                <div class="progress" style="width: 100px; height: 8px;">
+                  <div class="progress-bar bg-info" role="progressbar" 
+                       style="width: {{ stage_data.progress }}%;" 
+                       aria-valuenow="{{ stage_data.progress }}" 
+                       aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+              {% endif %}
+            </div>
+            
+            <div class="stage-content">
+              {% if stage == 'order' %}
+                <h6>Identified Components</h6>
+                <ul class="list-group list-group-flush mb-3">
+                  {% for component in stage_data.components %}
+                    <li class="list-group-item">{{ component }}</li>
+                  {% empty %}
+                    <li class="list-group-item text-muted">No components identified yet</li>
+                  {% endfor %}
+                </ul>
+                
+                <h6>Established Metrics</h6>
+                <ul class="list-group list-group-flush">
+                  {% for metric in stage_data.metrics %}
+                    <li class="list-group-item">{{ metric }}</li>
+                  {% empty %}
+                    <li class="list-group-item text-muted">No metrics established yet</li>
+                  {% endfor %}
+                </ul>
+              {% elif stage == 'arrangement' %}
+                <h6>Ground Plan</h6>
+                <p>{{ stage_data.ground_plan|default:"Not defined yet" }}</p>
+                
+                <h6>Elevation</h6>
+                <p>{{ stage_data.elevation|default:"Not defined yet" }}</p>
+                
+                <h6>Perspective</h6>
+                <p>{{ stage_data.perspective|default:"Not defined yet" }}</p>
+              {% elif stage == 'eurythmy' %}
+                <h6>Component Optimizations</h6>
+                <ul class="list-group list-group-flush">
+                  {% for optimization in stage_data.optimizations %}
+                    <li class="list-group-item">{{ optimization }}</li>
+                  {% empty %}
+                    <li class="list-group-item text-muted">No optimizations yet</li>
+                  {% endfor %}
+                </ul>
+              {% elif stage == 'symmetry' %}
+                <h6>Standard Unit</h6>
+                <p>{{ stage_data.standard|default:"Not defined yet" }}</p>
+                
+                <h6>Component Relations</h6>
+                <ul class="list-group list-group-flush">
+                  {% for relation in stage_data.relations %}
+                    <li class="list-group-item">{{ relation }}</li>
+                  {% empty %}
+                    <li class="list-group-item text-muted">No relations defined yet</li>
+                  {% endfor %}
+                </ul>
+              {% elif stage == 'propriety' %}
+                <h6>Principles</h6>
+                <ul class="list-group list-group-flush mb-3">
+                  {% for principle in stage_data.principles %}
+                    <li class="list-group-item">{{ principle }}</li>
+                  {% empty %}
+                    <li class="list-group-item text-muted">No principles defined yet</li>
+                  {% endfor %}
+                </ul>
+                
+                <h6>Justification</h6>
+                <p>{{ stage_data.justification|default:"Not defined yet" }}</p>
+              {% elif stage == 'economy' %}
+                <h6>Resource Management</h6>
+                <div class="card mb-3">
+                  <div class="card-body">
+                    {% if stage_data.resources %}
+                      <table class="table table-sm">
+                        <thead>
+                          <tr>
+                            <th>Resource</th>
+                            <th>Quantity</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for resource, quantity in stage_data.resources.items %}
+                            <tr>
+                              <td>{{ resource }}</td>
+                              <td>{{ quantity }}</td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    {% else %}
+                      <p class="text-muted">No resources defined yet</p>
+                    {% endif %}
+                  </div>
+                </div>
+                
+                <h6>Implementation Plan</h6>
+                <p>{{ stage_data.implementation_plan|default:"Not defined yet" }}</p>
+              {% endif %}
+              
+              {% if stage == innovation.current_stage and not stage_data.completed %}
+                <div class="mt-3">
+                  <a href="{% url 'innovations:contribute_stage' innovation.id stage %}" class="btn btn-primary">
+                    Contribute to this stage
+                  </a>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  
+  <!-- Validation Metrics -->
+  {% if innovation.validation_metrics %}
+    <div class="card mt-4">
+      <div class="card-header">
+        <h3>Validation Metrics</h3>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          {% for metric_name, metric_value in innovation.validation_metrics.items %}
+            <div class="col-md-4 mb-3">
+              <div class="card h-100">
+                <div class="card-body">
+                  <h5 class="card-title">{{ metric_name }}</h5>
+                  <div class="progress mb-2">
+                    <div class="progress-bar bg-success" role="progressbar" 
+                         style="width: {{ metric_value }}%;" 
+                         aria-valuenow="{{ metric_value }}" 
+                         aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                  <h4 class="text-center">{{ metric_value }}%</h4>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+  
+  <!-- Action buttons -->
+  {% if innovation.status == 'in_progress' %}
+    {% if user.profile == innovation.initiator or user.profile in innovation.participants.all %}
+      <div class="mt-4 d-flex justify-content-between">
+        {% if user.profile == innovation.initiator and innovation.stage_progress|get:innovation.current_stage|get:'completed' %}
+          <a href="{% url 'innovations:advance_stage' innovation.id %}" class="btn btn-success">
+            Advance to Next Stage
+          </a>
+        {% elif user.profile in innovation.participants.all %}
+          <a href="{% url 'innovations:leave_innovation' innovation.id %}" class="btn btn-outline-danger">
+            Leave Innovation Process
+          </a>
+        {% endif %}
+        
+        {% if user.profile not in innovation.participants.all and user.profile != innovation.initiator %}
+          <a href="{% url 'innovations:join_innovation' innovation.id %}" class="btn btn-primary floating-action-button">
+            <i class="fas fa-plus"></i>
+          </a>
+        {% endif %}
+      </div>
+    {% endif %}
+  {% endif %}
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Enable tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+  });
+</script>
+{% endblock extra_js %} 

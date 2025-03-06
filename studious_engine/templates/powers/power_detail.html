@@ -1,0 +1,145 @@
+{% extends "game_app_base.html" %}
+{% load static %}
+
+{% block title %}{{ power.name }} - EudaimoniaGo{% endblock %}
+
+{% block inner %}
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h1 class="display-4 page-heading">{{ power.name }}</h1>
+      <p class="lead">{{ power.description }}</p>
+    </div>
+    <div class="col-md-4 d-flex align-items-center justify-content-md-end">
+      <div class="btn-group">
+        <a href="{% url 'powers:power_list' %}" class="btn btn-outline-secondary">
+          <i class="fas fa-arrow-left"></i> Back to Powers
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Power Details -->
+    <div class="col-md-8">
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Power Details</h5>
+          <span class="badge {% if power.power_type == 'ability' %}bg-primary{% else %}bg-info{% endif %}">
+            {{ power.get_power_type_display }}
+          </span>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <p><i class="fas fa-bolt"></i> <strong>Energy Cost:</strong> {{ power.energy_cost }}</p>
+              <p><i class="fas fa-clock"></i> <strong>Cooldown:</strong> {{ power.cooldown_time }} minutes</p>
+              <p><i class="fas fa-trophy"></i> <strong>Unlocked at Level:</strong> {{ power.unlock_level }}</p>
+            </div>
+            <div class="col-md-6">
+              <p><i class="fas fa-star"></i> <strong>Current Level:</strong> {{ power.current_level }}</p>
+              <p><i class="fas fa-arrow-up"></i> <strong>Max Level:</strong> {{ power.max_level }}</p>
+              <p><i class="fas fa-calendar"></i> <strong>Discovered:</strong> {{ power.discovery_date|date:"F j, Y" }}</p>
+            </div>
+          </div>
+
+          <hr>
+          
+          <div class="mb-4">
+            <h5>Effect</h5>
+            <p>{{ power.effect_description }}</p>
+          </div>
+
+          <div class="mb-3">
+            <h5>Current Stats</h5>
+            <div class="row">
+              {% for stat in power.stats %}
+                <div class="col-md-4 mb-2">
+                  <div class="card">
+                    <div class="card-body py-2 text-center">
+                      <p class="mb-0"><strong>{{ stat.name }}</strong></p>
+                      <h4>{{ stat.value }}</h4>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% if power.upgrade_available %}
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="mb-0">Available Upgrade</h5>
+          </div>
+          <div class="card-body">
+            <div class="row align-items-center">
+              <div class="col-md-8">
+                <h5>Level {{ power.next_level }}</h5>
+                <p>{{ power.upgrade_description }}</p>
+                <div class="mb-3">
+                  <p><i class="fas fa-coins"></i> <strong>Cost:</strong> {{ power.upgrade_cost }} coins</p>
+                  <p><i class="fas fa-arrow-up"></i> <strong>Stat Increase:</strong> {{ power.upgrade_stat_increase }}</p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <a href="{% url 'powers:power_upgrade' power.id %}" class="btn btn-eudaimonia btn-lg d-block">Upgrade Power</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Usage & History -->
+    <div class="col-md-4">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Use Power</h5>
+        </div>
+        <div class="card-body">
+          {% if power.can_use %}
+            <p>This power is ready to use!</p>
+            <a href="{% url 'powers:power_use' power.id %}" class="btn btn-eudaimonia btn-lg d-block mb-3">
+              <i class="fas fa-bolt"></i> Use Now
+            </a>
+            <p class="mb-0"><small>Energy cost: {{ power.energy_cost }}</small></p>
+          {% else %}
+            <div class="alert alert-warning">
+              <p><i class="fas fa-exclamation-circle"></i> Power on cooldown</p>
+              <p class="mb-0">Available again in {{ power.cooldown_remaining }}</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Usage History</h5>
+        </div>
+        <div class="card-body">
+          {% if power.usage_history %}
+            <ul class="list-group list-group-flush">
+              {% for usage in power.usage_history %}
+                <li class="list-group-item py-3">
+                  <div class="d-flex justify-content-between">
+                    <div>
+                      <p class="mb-0"><strong>{{ usage.location }}</strong></p>
+                      <small class="text-muted">{{ usage.date|date:"F j, Y, g:i a" }}</small>
+                    </div>
+                    <span class="badge bg-success">+{{ usage.experience }}XP</span>
+                  </div>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-center text-muted py-3">
+              <i class="fas fa-history fa-2x mb-2"></i><br>
+              No usage history yet
+            </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %} 

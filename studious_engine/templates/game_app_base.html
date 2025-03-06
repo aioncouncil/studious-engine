@@ -1,0 +1,329 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block css %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/eudaimonia.css' %}">
+<style>
+  /* App-specific styles inspired by Pokémon Go */
+  body {
+    background-color: var(--light-color);
+    min-height: 100vh;
+    position: relative;
+    padding: 0;
+    margin: 0;
+    overflow-x: hidden;
+  }
+  
+  .app-content {
+    min-height: 100vh;
+    padding-bottom: 65px; /* Height of the bottom nav */
+  }
+  
+  /* Override the container class to be full width */
+  .container {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  /* Status bar for player stats */
+  .status-bar {
+    background: linear-gradient(135deg, rgba(10,10,10,0.8) 0%, rgba(60,60,70,0.8) 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: white;
+    padding: 8px 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+  
+  .status-bar .player-info {
+    display: flex;
+    align-items: center;
+  }
+  
+  .status-bar .player-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    margin-right: 10px;
+    border: 2px solid white;
+  }
+  
+  .status-bar .player-level {
+    font-weight: bold;
+    background: rgba(255,255,255,0.2);
+    border-radius: 12px;
+    padding: 3px 8px;
+    font-size: 12px;
+    margin-left: 5px;
+  }
+  
+  .status-bar .resources {
+    display: flex;
+    gap: 15px;
+    position: relative;
+  }
+  
+  .status-bar .resource {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .status-bar .resource i {
+    font-size: 16px;
+  }
+  
+  /* Bottom navigation */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, rgba(10,10,10,0.85) 0%, rgba(60,60,70,0.85) 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+    z-index: 1000;
+  }
+  
+  .bottom-nav .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    font-size: 11px;
+    transition: all 0.2s ease;
+  }
+  
+  .bottom-nav .nav-item.active {
+    color: white;
+  }
+  
+  .bottom-nav .nav-item i {
+    font-size: 24px;
+    margin-bottom: 3px;
+  }
+  
+  .bottom-nav .nav-center-button {
+    transform: translateY(-15px);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+  }
+  
+  .bottom-nav .nav-center-button i {
+    font-size: 28px;
+    margin: 0;
+    color: white;
+  }
+  
+  /* Content section */
+  .app-content-inner {
+    padding: 15px;
+  }
+  
+  /* More options menu */
+  .more-menu-button {
+    position: relative;
+    cursor: pointer;
+  }
+  
+  .more-menu {
+    position: absolute;
+    top: 100%;
+    right: 15px;
+    background: rgba(30,30,40,0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 12px;
+    width: 180px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.3);
+    z-index: 1010;
+    padding: 10px 0;
+    display: none;
+    margin-top: 10px;
+  }
+  
+  /* New style for top-positioned more menu */
+  .top-more-menu {
+    box-shadow: 0 2px 15px rgba(0,0,0,0.3);
+  }
+  
+  .more-menu.show {
+    display: block;
+    animation: fadeInUp 0.3s ease;
+  }
+  
+  .more-menu .more-menu-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 15px;
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+  }
+  
+  .more-menu .more-menu-item i {
+    width: 20px;
+    margin-right: 10px;
+    font-size: 16px;
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Prevent clicks on menu from closing it */
+  .more-menu-button,
+  .more-menu {
+    z-index: 1001;
+  }
+  
+  /* Ensure links are clickable */
+  .more-menu-item {
+    display: block;
+    position: relative;
+    z-index: 1005;
+  }
+</style>
+{% endblock css %}
+
+{% block javascript %}
+{{ block.super }}
+<script defer src="{% static 'js/eudaimonia.js' %}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get the more button and menu
+    const moreButton = document.querySelector('.more-menu-button');
+    const moreMenu = document.querySelector('.more-menu.top-more-menu');
+    
+    if (moreButton && moreMenu) {
+      // Toggle menu on click
+      moreButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        moreMenu.classList.toggle('show');
+      });
+      
+      // Close menu when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!moreButton.contains(e.target) && !moreMenu.contains(e.target)) {
+          moreMenu.classList.remove('show');
+        }
+      });
+    }
+  });
+</script>
+{% endblock javascript %}
+
+{% block navbar %}
+<!-- Intentionally empty to remove navbar -->
+{% endblock navbar %}
+
+{% block body %}
+<div class="app-content">
+  <!-- Status bar with player info -->
+  <div class="status-bar">
+    <div class="player-info">
+      {% if request.user.is_authenticated %}
+        {% if request.user.profile.avatar %}
+          <img src="{{ request.user.profile.avatar.url }}" class="player-avatar" alt="Avatar">
+        {% else %}
+          <div class="player-avatar d-flex align-items-center justify-content-center bg-primary">
+            <i class="fas fa-user"></i>
+          </div>
+        {% endif %}
+        <span>{{ request.user.username }}</span>
+        <span class="player-level">LVL {{ request.user.profile.level|default:"1" }}</span>
+      {% else %}
+        <span>Guest User</span>
+      {% endif %}
+    </div>
+    
+    <div class="resources">
+      {% if request.user.is_authenticated %}
+        <div class="resource">
+          <i class="fas fa-bolt"></i>
+          <span>{{ request.user.profile.energy|default:"0" }}</span>
+        </div>
+        <div class="resource">
+          <i class="fas fa-coins"></i>
+          <span>{{ request.user.profile.coins|default:"0" }}</span>
+        </div>
+      {% endif %}
+      <!-- Added More section to the top header -->
+      <div class="resource more-menu-button">
+        <i class="fas fa-ellipsis-h"></i>
+        <span>More</span>
+      </div>
+      <div class="more-menu top-more-menu">
+        <a href="{% url 'zones:sector_list' %}" class="more-menu-item">
+          <i class="fas fa-map"></i> Zones
+        </a>
+        <a href="{% url 'innovations:innovation_list' %}" class="more-menu-item">
+          <i class="fas fa-lightbulb"></i> Innovations
+        </a>
+        <a href="{% url 'innovations:tech_tree' %}" class="more-menu-item">
+          <i class="fas fa-project-diagram"></i> Tech Tree
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main content area -->
+  <div class="app-content-inner">
+    {% block inner %}{% endblock %}
+  </div>
+  
+  <!-- Bottom navigation bar -->
+  <div class="bottom-nav">
+    <a href="{% url 'core:dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+      <i class="fas fa-home"></i>
+      <span>Home</span>
+    </a>
+    <a href="{% url 'core:map' %}" class="nav-item {% if request.resolver_match.url_name == 'map' %}active{% endif %}">
+      <i class="fas fa-map-marked-alt"></i>
+      <span>Map</span>
+    </a>
+    <a href="{% url 'experiences:experience_list' %}" class="nav-center-button">
+      <i class="fas fa-compass"></i>
+    </a>
+    <a href="{% url 'core:arts_pokedex' %}" class="nav-item {% if 'arts' in request.path %}active{% endif %}">
+      <i class="fas fa-palette"></i>
+      <span>Arts</span>
+    </a>
+    <a href="{% url 'core:player_profile' %}" class="nav-item {% if request.resolver_match.url_name == 'player_profile' %}active{% endif %}">
+      <i class="fas fa-user"></i>
+      <span>Profile</span>
+    </a>
+  </div>
+</div>
+{% endblock body %}
+
+{% block modal %}
+  <!-- Global game modals can go here -->
+{% endblock modal %} 

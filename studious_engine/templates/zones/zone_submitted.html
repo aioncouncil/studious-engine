@@ -1,0 +1,34 @@
+{% comment %}
+[CLAUDE:OPTIMIZATION_LAYER:START]
+This template is part of the zone_system component
+See .claude/README.md for more information
+[CLAUDE:OPTIMIZATION_LAYER:END]
+{% endcomment %}
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Zone Submitted{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+    <div class="card mx-auto" style="max-width: 600px;">
+        <div class="card-body">
+            <h1 class="card-title mb-4 text-success">
+                <i class="fas fa-check-circle"></i> Zone Submitted!
+            </h1>
+            
+            <p class="lead">Thank you for contributing to EudaimoniaGo!</p>
+            
+            <p>Your zone has been submitted for review. Our team will evaluate it and approve it if it meets our community guidelines.</p>
+            
+            <p class="text-muted">You will receive a notification when your zone is approved.</p>
+            
+            <div class="mt-4">
+                <a href="{% url 'zones:submit_zone' %}" class="btn btn-primary mr-3">Submit Another Zone</a>
+                <a href="{% url 'zones:sector_list' %}" class="btn btn-outline-secondary">View All Zones</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

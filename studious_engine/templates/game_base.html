@@ -1,0 +1,196 @@
+{% extends "game_app_base.html" %}
+{% load static %}
+
+{% block css %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/eudaimonia.css' %}">
+<style>
+  /* Additional game-specific styles */
+  body {
+    background-color: var(--light-color);
+    min-height: 100vh;
+    position: relative;
+  }
+  
+  /* Refined navbar styling */
+  .navbar {
+    padding: 1rem 1.5rem;
+  }
+  
+  .navbar-dark.bg-primary {
+    background: rgba(28, 28, 30, 0.8) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  
+  .navbar-brand img {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    transition: transform 0.3s ease;
+  }
+  
+  .navbar-brand:hover img {
+    transform: scale(1.05);
+  }
+  
+  .nav-item {
+    margin: 0 5px;
+  }
+  
+  .nav-link {
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+  }
+  
+  .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .nav-link.active {
+    background-color: rgba(255, 255, 255, 0.15);
+    font-weight: 500;
+  }
+  
+  /* Badge refinements */
+  .badge {
+    padding: 0.5rem 0.75rem;
+    border-radius: 12px;
+    font-weight: 500;
+  }
+  
+  .badge.bg-light {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  
+  .badge.bg-success {
+    background: linear-gradient(135deg, var(--secondary-color) 0%, rgba(52, 199, 89, 0.8) 100%) !important;
+  }
+  
+  /* Dropdown adjustments */
+  .dropdown-toggle {
+    border-radius: 12px;
+    padding: 0.5rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  
+  /* Page content adjustments */
+  .content-section {
+    padding-top: 2rem;
+    padding-bottom: 4rem;
+  }
+  
+  .page-heading {
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 1.5rem;
+    color: var(--dark-color);
+  }
+</style>
+{% endblock css %}
+
+{% block javascript %}
+{{ block.super }}
+<script defer src="{% static 'js/eudaimonia.js' %}"></script>
+{% endblock javascript %}
+
+{% block navbar %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="{% url 'core:dashboard' %}">
+      <img src="{% static 'images/eudaimonia-logo.png' %}" alt="EudaimoniaGo" height="32">
+      <span class="ms-2">EudaimoniaGo</span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#gameNavbar" aria-controls="gameNavbar" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    
+    <div class="collapse navbar-collapse" id="gameNavbar">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.namespace == 'core' and request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'core:dashboard' %}">
+            <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.namespace == 'core' and request.resolver_match.url_name == 'map' %}active{% endif %}" href="{% url 'core:map' %}">
+            <i class="fas fa-map-marked-alt me-1"></i> Map
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.namespace == 'experiences' and request.resolver_match.url_name == 'experience_list' %}active{% endif %}" href="{% url 'experiences:experience_list' %}">
+            <i class="fas fa-star me-1"></i> Experiences
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.namespace == 'powers' and request.resolver_match.url_name == 'power_list' %}active{% endif %}" href="{% url 'powers:power_list' %}">
+            <i class="fas fa-bolt me-1"></i> Powers
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.namespace == 'zones' %}active{% endif %}" href="{% url 'zones:sector_list' %}">
+            <i class="fas fa-map me-1"></i> Zones
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.namespace == 'innovations' %}active{% endif %}" href="{% url 'innovations:innovation_list' %}">
+            <i class="fas fa-lightbulb me-1"></i> Innovations
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.namespace == 'core' and request.resolver_match.url_name == 'store' %}active{% endif %}" href="{% url 'core:store' %}">
+            <i class="fas fa-shopping-cart me-1"></i> Market
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.namespace == 'innovations' and request.resolver_match.url_name == 'tech_tree' %}active{% endif %}" href="{% url 'innovations:tech_tree' %}">
+            <i class="fas fa-project-diagram me-1"></i> Tech Tree
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.namespace == 'core' and request.resolver_match.url_name == 'arts_pokedex' %}active{% endif %}" href="{% url 'core:arts_pokedex' %}">
+            <i class="fas fa-palette me-1"></i> Arts
+          </a>
+        </li>
+      </ul>
+      
+      <div class="d-flex align-items-center">
+        {% if request.user.is_authenticated %}
+          <span class="badge bg-light text-white me-2">Rank: {{ request.user.profile.rank }}</span>
+          <span class="badge bg-success me-3">XP: {{ request.user.profile.experience_points }}</span>
+          <div class="dropdown">
+            <button class="btn btn-outline-light dropdown-toggle" type="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+              {{ request.user.username }}
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+              <li><a class="dropdown-item" href="{% url 'core:player_profile' %}"><i class="fas fa-user me-2"></i>My Profile</a></li>
+              <li><a class="dropdown-item" href="{% url 'users:detail' request.user.username %}"><i class="fas fa-cog me-2"></i>Account Settings</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="{% url 'account_logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Sign Out</a></li>
+            </ul>
+          </div>
+        {% else %}
+          <a href="{% url 'account_login' %}" class="btn btn-outline-light me-2">Sign In</a>
+          <a href="{% url 'account_signup' %}" class="btn btn-eudaimonia">Join Now</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>
+{% endblock navbar %}
+
+{% block inner %}
+{% block content %}
+<div class="container content-section py-4">
+  {% block base_inner %}{% endblock %}
+</div>
+{% endblock content %}
+{% endblock inner %}
+
+{% block modal %}
+{{ block.super }}
+{% endblock modal %}

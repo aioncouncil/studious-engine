@@ -1,0 +1,99 @@
+[
+  {
+    "level": 1,
+    "nodes": [
+      {
+        "id": "0cf8f285-3e46-47ce-b765-719c4f68ce5c",
+        "name": "Communication",
+        "description": "Basic communication skills and technologies",
+        "completed": false,
+        "percent_complete": 0,
+        "prerequisites": [],
+        "available": true
+      },
+      {
+        "id": "244aba00-fbc7-4ff8-a7d4-2c0fcd8e08eb",
+        "name": "Personal Development",
+        "description": "A tech tree focused on developing personal skills and virtues.",
+        "completed": true,
+        "percent_complete": 100,
+        "prerequisites": [],
+        "available": true
+      },
+      {
+        "id": "faa6023a-414d-43aa-a614-9a42bae6f400",
+        "name": "Community Building",
+        "description": "A tech tree focused on developing community and social skills.",
+        "completed": false,
+        "percent_complete": 25,
+        "prerequisites": [],
+        "available": true
+      },
+      {
+        "id": "cffd7c0f-5d57-4eba-98eb-238a04169322",
+        "name": "Philosophical Inquiry",
+        "description": "A tech tree focused on developing philosophical understanding and wisdom.",
+        "completed": false,
+        "percent_complete": 0,
+        "prerequisites": [],
+        "available": true
+      }
+    ]
+  },
+  {
+    "level": 2,
+    "nodes": [
+      {
+        "id": "134b73e7-f243-4056-aa3c-a327a5312413",
+        "name": "Social Dynamics",
+        "description": "Understanding group behavior and social structures",
+        "completed": false,
+        "percent_complete": 0,
+        "prerequisites": [
+          "0cf8f285-3e46-47ce-b765-719c4f68ce5c"
+        ],
+        "available": true
+      },
+      {
+        "id": "7ed9c409-1884-4f15-8f1a-78cad9ae6ffe",
+        "name": "Critical Thinking",
+        "description": "Advanced reasoning and analytical skills",
+        "completed": true,
+        "percent_complete": 30,
+        "prerequisites": [
+          "244aba00-fbc7-4ff8-a7d4-2c0fcd8e08eb"
+        ],
+        "available": true
+      },
+      {
+        "id": "109dde03-55c8-41ff-8622-6af25ed1a61a",
+        "name": "Leadership",
+        "description": "Guiding groups toward shared objectives",
+        "completed": false,
+        "percent_complete": 0,
+        "prerequisites": [
+          "244aba00-fbc7-4ff8-a7d4-2c0fcd8e08eb",
+          "134b73e7-f243-4056-aa3c-a327a5312413"
+        ],
+        "available": true
+      }
+    ]
+  },
+  {
+    "level": 3,
+    "nodes": [
+      {
+        "id": "0ae30937-0f2b-4387-8cb4-4da3fb655bb4",
+        "name": "Systems Thinking",
+        "description": "Understanding complex interconnected systems",
+        "completed": false,
+        "percent_complete": 0,
+        "prerequisites": [
+          "7ed9c409-1884-4f15-8f1a-78cad9ae6ffe",
+          "134b73e7-f243-4056-aa3c-a327a5312413"
+        ],
+        "available": true
+      }
+    ]
+  }
+]

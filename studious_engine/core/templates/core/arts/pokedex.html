@@ -1,0 +1,505 @@
+{% comment %}
+[CLAUDE:OPTIMIZATION_LAYER:START]
+This template is part of the core_user_system component
+See .claude/README.md for more information
+[CLAUDE:OPTIMIZATION_LAYER:END]
+{% endcomment %}
+
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}Eudaimonia Arts{% endblock %}
+
+{% block css %}
+{{ block.super }}
+<style>
+  .art-card {
+    border-radius: 10px;
+    transition: transform 0.3s;
+    height: 100%;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .art-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+  }
+  
+  .art-card .card-header {
+    background: linear-gradient(135deg, #4a90e2, #2563eb);
+    color: white;
+    font-weight: bold;
+  }
+  
+  .art-card .mastery-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    z-index: 10;
+  }
+  
+  .mastery-level-0 {
+    background-color: #d1d5db;
+  }
+  
+  .mastery-level-1 {
+    background-color: #34d399;
+  }
+  
+  .mastery-level-2 {
+    background-color: #60a5fa;
+  }
+  
+  .mastery-level-3 {
+    background-color: #a78bfa;
+  }
+  
+  .mastery-level-4 {
+    background-color: #f472b6;
+  }
+  
+  .mastery-level-5 {
+    background-color: #fbbf24;
+  }
+  
+  .taxonomy-filter {
+    margin-bottom: 1.5rem;
+  }
+  
+  .difficulty-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  
+  .difficulty-1 {
+    background-color: #dcfce7;
+    color: #166534;
+  }
+  
+  .difficulty-2 {
+    background-color: #e0f2fe;
+    color: #0369a1;
+  }
+  
+  .difficulty-3 {
+    background-color: #f3e8ff;
+    color: #7e22ce;
+  }
+  
+  .difficulty-4 {
+    background-color: #fce7f3;
+    color: #be185d;
+  }
+  
+  .difficulty-5 {
+    background-color: #fef3c7;
+    color: #92400e;
+  }
+  
+  .search-container {
+    position: relative;
+    margin-bottom: 1.5rem;
+  }
+  
+  .search-container input {
+    padding-left: 2.5rem;
+  }
+  
+  .search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+  }
+  
+  .filters-container {
+    margin-bottom: 1.5rem;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row mb-4">
+    <div class="col-12">
+      <h1 class="text-center mb-2">Eudaimonia Arts</h1>
+      <p class="text-center text-muted">Discover and master the arts of human flourishing</p>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3">
+      <!-- Filters sidebar -->
+      <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">Filters</h5>
+        </div>
+        <div class="card-body">
+          <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="art-search" class="form-control" placeholder="Search arts...">
+          </div>
+          
+          <h6 class="mt-3 mb-2">Categories</h6>
+          <div class="taxonomy-filter">
+            <select id="taxonomy-filter" class="form-select">
+              <option value="">All Categories</option>
+              {% for taxonomy in taxonomies %}
+                <option value="{{ taxonomy.id }}">{{ taxonomy.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          
+          <h6 class="mt-3 mb-2">Difficulty</h6>
+          <div class="form-check">
+            <input class="form-check-input difficulty-filter" type="checkbox" value="1" id="difficulty-1" checked>
+            <label class="form-check-label" for="difficulty-1">
+              <span class="difficulty-badge difficulty-1">Beginner</span>
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input difficulty-filter" type="checkbox" value="2" id="difficulty-2" checked>
+            <label class="form-check-label" for="difficulty-2">
+              <span class="difficulty-badge difficulty-2">Intermediate</span>
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input difficulty-filter" type="checkbox" value="3" id="difficulty-3" checked>
+            <label class="form-check-label" for="difficulty-3">
+              <span class="difficulty-badge difficulty-3">Advanced</span>
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input difficulty-filter" type="checkbox" value="4" id="difficulty-4" checked>
+            <label class="form-check-label" for="difficulty-4">
+              <span class="difficulty-badge difficulty-4">Expert</span>
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input difficulty-filter" type="checkbox" value="5" id="difficulty-5" checked>
+            <label class="form-check-label" for="difficulty-5">
+              <span class="difficulty-badge difficulty-5">Master</span>
+            </label>
+          </div>
+          
+          <h6 class="mt-3 mb-2">Other Filters</h6>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="" id="available-only" checked>
+            <label class="form-check-label" for="available-only">
+              Available to me
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="" id="show-mastered">
+            <label class="form-check-label" for="show-mastered">
+              Show mastered only
+            </label>
+          </div>
+          
+          <button id="apply-filters" class="btn btn-primary btn-sm w-100 mt-3">Apply Filters</button>
+          <button id="reset-filters" class="btn btn-outline-secondary btn-sm w-100 mt-2">Reset Filters</button>
+        </div>
+      </div>
+      
+      <!-- Mastery Progress -->
+      <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+          <h5 class="mb-0">Your Mastery</h5>
+        </div>
+        <div class="card-body">
+          <div class="d-flex justify-content-between mb-2">
+            <span>Arts Discovered:</span>
+            <span class="font-weight-bold">{{ mastery_summary.total_arts_discovered }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span>Arts Mastered:</span>
+            <span class="font-weight-bold">{{ mastery_summary.total_arts_mastered }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span>Average Mastery:</span>
+            <span class="font-weight-bold">{{ mastery_summary.average_mastery_level|floatformat:1 }}</span>
+          </div>
+          
+          <!-- Progress bar for overall mastery -->
+          <div class="mb-1">Overall Mastery</div>
+          <div class="progress mb-3" style="height: 20px;">
+            <div class="progress-bar bg-success" role="progressbar" style="width: {{ mastery_summary.mastery_percentage }}%;" 
+                 aria-valuenow="{{ mastery_summary.mastery_percentage }}" aria-valuemin="0" aria-valuemax="100">
+              {{ mastery_summary.mastery_percentage|floatformat:0 }}%
+            </div>
+          </div>
+          
+          <a href="{% url 'core:art_mastery_stats' %}" class="btn btn-sm btn-outline-success w-100 mt-2">
+            View Practice Stats
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-9">
+      <!-- Featured Arts Section -->
+      <div class="mb-4">
+        <h3 class="mb-3">Featured Arts</h3>
+        <div class="row row-cols-1 row-cols-md-3 g-4 mb-4" id="featured-arts">
+          {% for art in featured_arts %}
+            <div class="col">
+              <div class="card art-card">
+                {% if art.mastery %}
+                  <div class="mastery-badge mastery-level-{{ art.mastery.mastery_level }}">
+                    {{ art.mastery.mastery_level }}
+                  </div>
+                {% endif %}
+                <div class="card-header d-flex justify-content-between align-items-center">
+                  <h5 class="mb-0">{{ art.name }}</h5>
+                  <span class="difficulty-badge difficulty-{{ art.difficulty_level }}">
+                    {{ art.get_difficulty_level_display }}
+                  </span>
+                </div>
+                <div class="card-body">
+                  <p class="card-text">{{ art.description|truncatechars:100 }}</p>
+                  <p class="text-muted">
+                    <small>
+                      <i class="fas fa-sitemap me-1"></i> {{ art.taxonomy.name }}
+                    </small>
+                  </p>
+                </div>
+                <div class="card-footer d-flex justify-content-between align-items-center">
+                  <span>
+                    {% if art.mastery %}
+                      <span class="text-success">
+                        <i class="fas fa-book-reader me-1"></i> Level {{ art.mastery.mastery_level }}
+                      </span>
+                    {% else %}
+                      <span class="text-muted">
+                        <i class="fas fa-book me-1"></i> Not Started
+                      </span>
+                    {% endif %}
+                  </span>
+                  <a href="{% url 'core:art_detail' art.id %}" class="btn btn-primary btn-sm">
+                    View
+                  </a>
+                </div>
+              </div>
+            </div>
+          {% empty %}
+            <div class="col-12">
+              <div class="alert alert-info">
+                No featured arts available at the moment.
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      
+      <!-- All Arts Section -->
+      <div>
+        <h3 class="mb-3">All Arts</h3>
+        <div class="row row-cols-1 row-cols-md-3 g-4" id="all-arts">
+          {% for art in all_arts %}
+            <div class="col art-item" 
+                 data-difficulty="{{ art.difficulty_level }}"
+                 data-taxonomy="{{ art.taxonomy.id }}"
+                 data-mastered="{% if art.mastery and art.mastery.mastery_level >= 5 %}true{% else %}false{% endif %}">
+              <div class="card art-card">
+                {% if art.mastery %}
+                  <div class="mastery-badge mastery-level-{{ art.mastery.mastery_level }}">
+                    {{ art.mastery.mastery_level }}
+                  </div>
+                {% endif %}
+                <div class="card-header d-flex justify-content-between align-items-center">
+                  <h5 class="mb-0">{{ art.name }}</h5>
+                  <span class="difficulty-badge difficulty-{{ art.difficulty_level }}">
+                    {{ art.get_difficulty_level_display }}
+                  </span>
+                </div>
+                <div class="card-body">
+                  <p class="card-text">{{ art.description|truncatechars:100 }}</p>
+                  <p class="text-muted">
+                    <small>
+                      <i class="fas fa-sitemap me-1"></i> {{ art.taxonomy.name }}
+                    </small>
+                  </p>
+                </div>
+                <div class="card-footer d-flex justify-content-between align-items-center">
+                  <span>
+                    {% if art.mastery %}
+                      <span class="text-success">
+                        <i class="fas fa-book-reader me-1"></i> Level {{ art.mastery.mastery_level }}
+                      </span>
+                    {% else %}
+                      <span class="text-muted">
+                        <i class="fas fa-book me-1"></i> Not Started
+                      </span>
+                    {% endif %}
+                  </span>
+                  <a href="{% url 'core:art_detail' art.id %}" class="btn btn-primary btn-sm">
+                    View
+                  </a>
+                </div>
+              </div>
+            </div>
+          {% empty %}
+            <div class="col-12">
+              <div class="alert alert-info">
+                No arts available matching your filters.
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      
+      <!-- Pagination -->
+      <div class="mt-4 d-flex justify-content-center">
+        <nav aria-label="Page navigation">
+          <ul class="pagination">
+            {% if all_arts.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?page=1">First</a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?page={{ all_arts.previous_page_number }}">Previous</a>
+              </li>
+            {% endif %}
+            
+            {% for num in all_arts.paginator.page_range %}
+              {% if all_arts.number == num %}
+                <li class="page-item active">
+                  <span class="page-link">{{ num }}</span>
+                </li>
+              {% elif num > all_arts.number|add:'-3' and num < all_arts.number|add:'3' %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+              {% endif %}
+            {% endfor %}
+            
+            {% if all_arts.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ all_arts.next_page_number }}">Next</a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?page={{ all_arts.paginator.num_pages }}">Last</a>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+{{ block.super }}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Filter functionality
+    const searchInput = document.getElementById('art-search');
+    const taxonomyFilter = document.getElementById('taxonomy-filter');
+    const difficultyFilters = document.querySelectorAll('.difficulty-filter');
+    const availableOnlyCheckbox = document.getElementById('available-only');
+    const showMasteredCheckbox = document.getElementById('show-mastered');
+    const applyFiltersBtn = document.getElementById('apply-filters');
+    const resetFiltersBtn = document.getElementById('reset-filters');
+    const artItems = document.querySelectorAll('.art-item');
+    
+    function filterArts() {
+      const searchTerm = searchInput.value.toLowerCase();
+      const selectedTaxonomy = taxonomyFilter.value;
+      const selectedDifficulties = Array.from(difficultyFilters)
+        .filter(checkbox => checkbox.checked)
+        .map(checkbox => checkbox.value);
+      const availableOnly = availableOnlyCheckbox.checked;
+      const showMasteredOnly = showMasteredCheckbox.checked;
+      
+      artItems.forEach(item => {
+        const artName = item.querySelector('.card-header h5').textContent.toLowerCase();
+        const artDescription = item.querySelector('.card-body .card-text').textContent.toLowerCase();
+        const artTaxonomy = item.dataset.taxonomy;
+        const artDifficulty = item.dataset.difficulty;
+        const isMastered = item.dataset.mastered === 'true';
+        
+        const matchesSearch = artName.includes(searchTerm) || artDescription.includes(searchTerm);
+        const matchesTaxonomy = !selectedTaxonomy || artTaxonomy === selectedTaxonomy;
+        const matchesDifficulty = selectedDifficulties.includes(artDifficulty);
+        const matchesMastered = !showMasteredOnly || isMastered;
+        
+        if (matchesSearch && matchesTaxonomy && matchesDifficulty && matchesMastered) {
+          item.classList.remove('d-none');
+        } else {
+          item.classList.add('d-none');
+        }
+      });
+      
+      // Check if no items are visible
+      const visibleItems = document.querySelectorAll('.art-item:not(.d-none)');
+      const noResultsMessage = document.getElementById('no-results-message');
+      
+      if (visibleItems.length === 0) {
+        if (!noResultsMessage) {
+          const message = document.createElement('div');
+          message.id = 'no-results-message';
+          message.className = 'col-12 mt-3';
+          message.innerHTML = `
+            <div class="alert alert-info">
+              No arts match your current filters. Try adjusting your search criteria.
+            </div>
+          `;
+          document.getElementById('all-arts').appendChild(message);
+        }
+      } else if (noResultsMessage) {
+        noResultsMessage.remove();
+      }
+    }
+    
+    applyFiltersBtn.addEventListener('click', filterArts);
+    
+    resetFiltersBtn.addEventListener('click', function() {
+      searchInput.value = '';
+      taxonomyFilter.value = '';
+      difficultyFilters.forEach(checkbox => {
+        checkbox.checked = true;
+      });
+      availableOnlyCheckbox.checked = true;
+      showMasteredCheckbox.checked = false;
+      
+      filterArts();
+    });
+    
+    // Quick search as you type
+    searchInput.addEventListener('input', function() {
+      const searchTerm = this.value.toLowerCase();
+      
+      if (searchTerm.length >= 3 || searchTerm.length === 0) {
+        artItems.forEach(item => {
+          const artName = item.querySelector('.card-header h5').textContent.toLowerCase();
+          const artDescription = item.querySelector('.card-body .card-text').textContent.toLowerCase();
+          
+          if (artName.includes(searchTerm) || artDescription.includes(searchTerm)) {
+            item.classList.remove('search-hidden');
+          } else {
+            item.classList.add('search-hidden');
+          }
+        });
+      }
+    });
+  });
+</script>
+{% endblock %} 

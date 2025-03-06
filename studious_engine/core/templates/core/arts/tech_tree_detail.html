@@ -1,0 +1,262 @@
+{% comment %}
+[CLAUDE:OPTIMIZATION_LAYER:START]
+This template is part of the core_user_system component
+See .claude/README.md for more information
+[CLAUDE:OPTIMIZATION_LAYER:END]
+{% endcomment %}
+
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{{ tech_tree.name }} | Tech Tree | Eudaimonia Arts{% endblock %}
+
+{% block css %}
+{{ block.super }}
+<style>
+  .tech-tree-detail-container {
+    padding: 2rem;
+    background-color: #f8fafc;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+  }
+  
+  .tech-header {
+    background: linear-gradient(135deg, #4a90e2, #2563eb);
+    color: white;
+    border-radius: 10px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .tech-header h1 {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+  }
+  
+  .progress-container {
+    margin-top: 1rem;
+    background-color: #e2e8f0;
+    border-radius: 9999px;
+    height: 12px;
+    overflow: hidden;
+    width: 100%;
+  }
+  
+  .progress-bar {
+    height: 100%;
+    border-radius: 9999px;
+    background-color: #3b82f6;
+  }
+  
+  .prerequisites-list {
+    margin-top: 1rem;
+  }
+  
+  .prereq-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+  
+  .prereq-status {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .prereq-met {
+    background-color: #10b981;
+    color: white;
+  }
+  
+  .prereq-not-met {
+    background-color: #f59e0b;
+    color: white;
+  }
+  
+  .art-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: all 0.2s ease;
+  }
+  
+  .art-card:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+  
+  .mastery-indicator {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: white;
+  }
+  
+  .mastery-level-0 {
+    background-color: #d1d5db;
+  }
+  
+  .mastery-level-1 {
+    background-color: #34d399;
+  }
+  
+  .mastery-level-2 {
+    background-color: #60a5fa;
+  }
+  
+  .mastery-level-3 {
+    background-color: #818cf8;
+  }
+  
+  .mastery-level-4 {
+    background-color: #c084fc;
+  }
+  
+  .mastery-level-5 {
+    background-color: #f472b6;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row mb-4">
+    <div class="col-12">
+      <a href="{% url 'core:tech_tree' %}" class="btn btn-outline-secondary mb-4">
+        <i class="fas fa-arrow-left"></i> Back to Tech Tree
+      </a>
+    </div>
+  </div>
+  
+  <div class="tech-header">
+    <h1>{{ tech_tree.name }}</h1>
+    <p class="lead">{{ tech_tree.description }}</p>
+    
+    {% if progress %}
+    <div class="mt-3">
+      <div class="d-flex justify-content-between align-items-center">
+        <span>Progress: {{ progress.progress_percentage }}%</span>
+        {% if progress.progress_percentage >= 100 %}
+          <span class="badge bg-success">Completed</span>
+        {% else %}
+          <span class="badge bg-info">In Progress</span>
+        {% endif %}
+      </div>
+      <div class="progress-container">
+        <div class="progress-bar" data-progress="{{ progress.progress_percentage }}"></div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  
+  <div class="row">
+    <div class="col-md-6">
+      <div class="tech-tree-detail-container">
+        <h3>Prerequisites</h3>
+        {% if prerequisites %}
+          <ul class="list-unstyled prerequisites-list">
+            {% for prereq in prerequisites %}
+              <li class="prereq-item">
+                <div class="prereq-status {% if prereq.is_met %}prereq-met{% else %}prereq-not-met{% endif %}">
+                  {% if prereq.is_met %}
+                    <i class="fas fa-check"></i>
+                  {% else %}
+                    <i class="fas fa-times"></i>
+                  {% endif %}
+                </div>
+                <a href="{% url 'core:tech_tree_detail' tech_tree_id=prereq.tech_tree.id %}">
+                  {{ prereq.tech_tree.name }}
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p>No prerequisites required.</p>
+        {% endif %}
+      </div>
+    </div>
+    
+    <div class="col-md-6">
+      <div class="tech-tree-detail-container">
+        <h3>Details</h3>
+        <table class="table">
+          <tr>
+            <th>Level:</th>
+            <td>{{ tech_tree.level }}</td>
+          </tr>
+          <tr>
+            <th>Type:</th>
+            <td>{{ tech_tree.type }}</td>
+          </tr>
+          <tr>
+            <th>Achievement Points:</th>
+            <td>{{ tech_tree.achievement_points }}</td>
+          </tr>
+          <tr>
+            <th>Zone Type:</th>
+            <td>{{ tech_tree.get_zone_type_filter_display }}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  <div class="tech-tree-detail-container mt-4">
+    <h3>Related Arts</h3>
+    {% if related_arts %}
+      <div class="row">
+        {% for art in related_arts %}
+          <div class="col-md-6 col-lg-4">
+            <div class="art-card">
+              <h5>
+                <a href="{% url 'core:art_detail' art_id=art.id %}">{{ art.name }}</a>
+              </h5>
+              <p class="text-muted small">{{ art.category }}</p>
+              <p>{{ art.short_description|truncatewords:20 }}</p>
+              
+              {% if art.mastery %}
+                <div class="mastery-indicator mastery-level-{{ art.mastery.level }}">
+                  Level {{ art.mastery.level }}
+                </div>
+              {% else %}
+                <div class="mastery-indicator mastery-level-0">
+                  Undiscovered
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>No arts are associated with this tech tree node.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+{{ block.super }}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Set progress bar width based on data-progress attribute
+    const progressBars = document.querySelectorAll('.progress-bar');
+    progressBars.forEach(function(bar) {
+      const progress = bar.getAttribute('data-progress');
+      if (progress) {
+        bar.style.width = progress + '%';
+      }
+    });
+  });
+</script>
+{% endblock %} 

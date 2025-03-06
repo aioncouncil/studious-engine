@@ -1,0 +1,3815 @@
+{% comment %}
+[CLAUDE:OPTIMIZATION_LAYER:START]
+This template is part of the core_user_system component
+See .claude/README.md for more information
+[CLAUDE:OPTIMIZATION_LAYER:END]
+
+[CLAUDE:DEBUG:PATTERN:zone_geo]
+See .claude/debug/patterns/zone_geo.md for common issues and solutions
+{% endcomment %}
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campus Map - EudaimoniaGo</title>
+  
+  <!-- BALANCED MAP FIX - PRESERVES REFERENCES WHILE ADDING METHODS -->
+  <script>
+    // Create dummy objects to ensure references exist before they're used
+    window.map = window.map || {};
+    window.userMarker = window.userMarker || {};
+    
+    // Create a global helper to find, fix and expose the map
+    window.MapFixer = {
+      // Store all maps we find
+      foundMaps: [],
+      
+      // Method to fix a map instance
+      fixMap: function(mapInstance) {
+        if (!mapInstance) return null;
+        
+        // Add missing methods
+        if (typeof mapInstance.setBearing !== 'function') {
+          mapInstance.setBearing = function(bearing) {
+            return this; // For chaining
+          };
+        }
+        
+        // Store reference to window.map
+        window.map = mapInstance;
+        
+        // Save in our collection
+        if (this.foundMaps.indexOf(mapInstance) === -1) {
+          this.foundMaps.push(mapInstance);
+        }
+        
+        return mapInstance;
+      },
+      
+      // Method to search for map instances
+      findAndFixMaps: function() {
+        // 1. Check existing window.map
+        if (window.map && typeof window.map.setView === 'function') {
+          this.fixMap(window.map);
+        }
+        
+        // 2. Try to find Leaflet instances in the DOM
+        var containers = document.querySelectorAll('.leaflet-container');
+        for (var i = 0; i < containers.length; i++) {
+          var container = containers[i];
+          for (var key in container) {
+            if (key.startsWith('__leaflet') && container[key] && 
+                typeof container[key].setView === 'function') {
+              this.fixMap(container[key]);
+            }
+          }
+        }
+        
+        // 3. Try to find maps in window.L
+        if (window.L && window.L._leaflet_id) {
+          for (var id in window.L) {
+            if (typeof window.L[id] === 'object' && window.L[id] !== null &&
+                typeof window.L[id].setView === 'function') {
+              this.fixMap(window.L[id]);
+            }
+          }
+        }
+        
+        // Return the best map we found
+        return this.foundMaps.length > 0 ? this.foundMaps[0] : null;
+      }
+    };
+    
+    // Define minimal requirement functions
+    window.openContributionMenu = window.openContributionMenu || function() {
+      var menu = document.getElementById('contribution-menu');
+      var overlay = document.getElementById('menu-overlay');
+      if (menu) menu.classList.add('active');
+      if (overlay) overlay.classList.add('active');
+    };
+    
+    // Patch Leaflet Map prototype when it loads
+    (function watchLeaflet() {
+      if (window.L && L.Map) {
+        // Add setBearing to prototype if needed
+        if (typeof L.Map.prototype.setBearing !== 'function') {
+          L.Map.prototype.setBearing = function(bearing) {
+            return this; // For chaining
+          };
+        }
+        
+        // Also patch the map constructor to expose instances
+        var originalMap = L.map;
+        L.map = function() {
+          var mapInstance = originalMap.apply(this, arguments);
+          // Make sure new maps get fixed and exposed
+          window.MapFixer.fixMap(mapInstance);
+          return mapInstance;
+        };
+      } else {
+        // Keep checking until Leaflet loads
+        setTimeout(watchLeaflet, 100);
+      }
+    })();
+  </script>
+  
+  <link rel="stylesheet" href="{% static 'css/project.css' %}">
+    // ESSENTIAL FIX: Intercept and fix setBearing immediately
+    (function() {
+      // 1. Define setBearing on the global map object (if it exists)
+      if (window.map) {
+        window.map.setBearing = window.map.setBearing || function(bearing) {
+          console.log("Intercepted setBearing call with bearing:", bearing);
+          return window.map; // For chaining
+        };
+      }
+      
+      // 2. Use JavaScript's Object.defineProperty to monitor and intercept map access
+      var originalMap = window.map;
+      Object.defineProperty(window, 'map', {
+        get: function() {
+          return originalMap;
+        },
+        set: function(newMap) {
+          // When map is reassigned, ensure it has setBearing
+          if (newMap && typeof newMap.setBearing !== 'function') {
+            console.log("Adding setBearing to newly assigned map object");
+            newMap.setBearing = function(bearing) {
+              console.log("Called setBearing on new map with bearing:", bearing);
+              return newMap; // For chaining
+            };
+          }
+          originalMap = newMap;
+        },
+        configurable: true
+      });
+      
+      // 3. Fix Leaflet prototype when it loads
+      var leafletMapPatcher = setInterval(function() {
+        if (window.L && L.Map) {
+          // Add setBearing to Leaflet Map prototype
+          if (typeof L.Map.prototype.setBearing !== 'function') {
+            L.Map.prototype.setBearing = function(bearing) {
+              console.log("Called setBearing on L.Map prototype with bearing:", bearing);
+              return this; // For chaining
+            };
+          }
+          clearInterval(leafletMapPatcher);
+        }
+      }, 100);
+      
+      // 4. Define minimal requirement functions
+      window.openContributionMenu = window.openContributionMenu || function() {
+        var menu = document.getElementById('contribution-menu');
+        var overlay = document.getElementById('menu-overlay');
+        if (menu) menu.classList.add('active');
+        if (overlay) overlay.classList.add('active');
+      };
+    })();
+  </script>
+  
+  <link rel="stylesheet" href="{% static 'css/project.css' %}">
+  <link rel="stylesheet" href="{% static 'css/eudaimonia.css' %}">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin=""/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* CSS Variables for consistent styling */
+    :root {
+      --primary-color: #4a6cf7; /* Changed to match Atlantis Go blue */
+      --secondary-color: #28a745; /* Changed to match Atlantis Go green */
+      --shadow-sm: 0 2px 5px rgba(0,0,0,0.3);
+      --shadow-lg: 0 0 10px rgba(0,0,0,0.5);
+      --border-radius-sm: 20px;
+      --border-radius-lg: 50%;
+      --font-size-sm: 12px;
+      --font-size-md: 16px;
+      --font-size-lg: 22px;
+      --button-size: 48px;
+      --z-index-base: 1;
+      --z-index-controls: 1000;
+      --z-index-modal: 2000;
+    }
+    
+    /* Basic reset */
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      position: fixed;
+      font-family: 'Arial', sans-serif;
+    }
+    
+    /* Map container */
+    #map-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+      z-index: var(--z-index-base);
+    }
+    
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+    
+    /* Control buttons */
+    .control-button {
+      width: var(--button-size);
+      height: var(--button-size);
+      border-radius: var(--border-radius-lg);
+      background-color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      color: #3d3d3d;
+      font-size: var(--font-size-lg);
+    }
+    
+    /* Top right controls (2-3) */
+    .top-right-controls {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: var(--z-index-controls);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    /* Bottom Navigation Elements (Pokemon GO Style) */
+    
+    /* Player avatar (12) with level in bottom right */
+    #player-avatar {
+      position: fixed !important;
+      bottom: 20px !important;
+      left: 20px !important;
+      top: auto !important;
+      right: auto !important;
+      width: 120px;
+      height: 120px;
+      border-radius: var(--border-radius-lg);
+      background-color: white;
+      box-shadow: var(--shadow-sm);
+      z-index: var(--z-index-controls);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+    }
+    
+    .avatar-container {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #f0f0f0;
+      border: 3px solid var(--secondary-color);
+    }
+    
+    #player-title {
+      position: absolute;
+      bottom: -16px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #333;
+      font-size: 12px;
+      font-weight: bold;
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 2px 8px;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      white-space: nowrap;
+      text-align: center;
+      z-index: calc(var(--z-index-controls) + 1);
+      width: auto;
+      max-width: 120px;
+    }
+    
+    #player-level {
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      font-size: 14px;
+      font-weight: bold;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-sm);
+      border: 2px solid var(--secondary-color);
+      z-index: calc(var(--z-index-controls) + 1);
+    }
+    
+    /* Buddy pokemon (11) */
+    #buddy-pokemon {
+      position: fixed;
+      bottom: 20px;
+      left: 150px;
+      width: 60px;
+      height: 60px;
+      border-radius: var(--border-radius-lg);
+      background-color: white;
+      box-shadow: var(--shadow-sm);
+      z-index: var(--z-index-controls);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    
+    .buddy-glow {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: var(--border-radius-lg);
+      background: radial-gradient(circle, rgba(255,130,180,0.4) 0%, rgba(255,255,255,0) 70%);
+      animation: glow 3s infinite alternate;
+    }
+    
+    @keyframes glow {
+      0% {
+        opacity: 0.5;
+        transform: scale(0.9);
+      }
+      100% {
+        opacity: 0.8;
+        transform: scale(1.1);
+      }
+    }
+    
+    /* Main action button - Pokeball (opens menu) */
+    #main-action-button {
+      position: fixed;
+      bottom: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 70px;
+      height: 70px;
+      border-radius: var(--border-radius-lg);
+      background-color: transparent;
+      box-shadow: var(--shadow-lg);
+      z-index: var(--z-index-controls);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+    
+    /* Pokeball design */
+    .pokeball-design {
+      width: 60px;
+      height: 60px;
+      position: relative;
+      border-radius: 50%;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+    
+    .pokeball-top {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 50%;
+      background-color: #f21e1e;
+    }
+    
+    .pokeball-bottom {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 50%;
+      background-color: white;
+    }
+    
+    .pokeball-middle {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 20px;
+      height: 20px;
+      background-color: white;
+      border: 3px solid #333;
+      border-radius: 50%;
+      z-index: 1;
+    }
+    
+    .pokeball-middle:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background-color: #333;
+    }
+    
+    /* Contribute button styling */
+    #contribute-button {
+      position: fixed;
+      width: 140px;
+      height: 50px;
+      border-radius: var(--border-radius-lg);
+      box-shadow: var(--shadow-lg);
+      z-index: var(--z-index-controls);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      font-size: 20px;
+      color: white;
+    }
+    
+    #contribute-button .contribute-label {
+      display: inline-block;
+      margin-left: 8px;
+      font-size: 16px;
+      font-weight: bold;
+    }
+    
+    #main-action-button .contribute-label {
+      font-size: 10px;
+      font-weight: bold;
+      margin-top: 2px;
+      color: white;
+      text-transform: uppercase;
+    }
+    
+    /* Specialized Pokeball tooltip styling */
+    .pokeball-tooltip {
+      position: absolute;
+      top: -50px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 14px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      z-index: 3000;
+      visibility: hidden;
+    }
+    
+    #main-action-button:hover .pokeball-tooltip {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    /* Nearby panel (9) */
+    #nearby-panel {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      height: 50px;
+      background-color: white;
+      border-radius: 25px;
+      box-shadow: var(--shadow-sm);
+      z-index: var(--z-index-controls);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 15px;
+      cursor: pointer;
+    }
+    
+    .nearby-pokemon {
+      width: 35px;
+      height: 35px;
+      margin: 0 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .nearby-pokemon i {
+      font-size: 20px;
+      color: #666;
+    }
+    
+    /* Binoculars button (8) */
+    #binoculars-button {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      border-radius: var(--border-radius-lg);
+      background-color: white;
+      box-shadow: var(--shadow-sm);
+      z-index: var(--z-index-controls);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 24px;
+      color: #3d3d3d;
+    }
+    
+    /* Left controls (14-16) */
+    .left-controls {
+      position: fixed;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: var(--z-index-controls);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    /* Hidden form for updating location */
+    #location-form {
+      display: none;
+    }
+    
+    /* Map elements */
+    .player-marker {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.2);
+        opacity: 0.7;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    
+    .interaction-radius {
+      border: 2px solid white;
+      border-radius: var(--border-radius-lg);
+      opacity: 0.6;
+    }
+    
+    .interaction-radius-pink {
+      border: 2px solid var(--primary-color);
+      border-radius: var(--border-radius-lg);
+        opacity: 0.3;
+    }
+    
+    /* Tooltip styling */
+    .tooltip {
+      position: relative;
+    }
+    
+    .tooltip .tooltip-text {
+      visibility: hidden;
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      text-align: center;
+      border-radius: 6px;
+      padding: 5px 10px;
+      position: absolute;
+      z-index: var(--z-index-modal);
+      font-size: 14px;
+      font-weight: normal;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.3s, visibility 0.3s;
+      pointer-events: none;
+    }
+    
+    .tooltip:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
+    }
+    
+    /* Position variations for tooltips */
+    .tooltip .tooltip-text.top {
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    
+    .tooltip .tooltip-text.bottom {
+      top: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    
+    .tooltip .tooltip-text.left {
+      right: 125%;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    
+    .tooltip .tooltip-text.right {
+      left: 125%;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    
+    /* Modal */
+    .simple-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0,0,0,0.7);
+      z-index: var(--z-index-modal);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 80%;
+    }
+    
+    .close-button {
+      float: right;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    
+    /* Map popup styles */
+    .map-popup {
+      min-width: 150px;
+      font-family: 'Arial', sans-serif;
+    }
+
+    .map-popup h5 {
+      margin-top: 0;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .map-popup p {
+      margin: 4px 0;
+      font-size: 13px;
+    }
+
+    .zone-popup h5 {
+      color: var(--primary-color);
+    }
+
+    .experience-popup h5 {
+      color: #34A853;
+    }
+
+    /* Custom Leaflet control styles */
+    .leaflet-control-layers {
+      border-radius: 12px !important;
+      box-shadow: var(--shadow-sm) !important;
+    }
+
+    .leaflet-control-layers-list {
+      font-family: 'Arial', sans-serif;
+      font-size: 14px;
+    }
+
+    /* Pokeball menu - Main menu overlay */
+    .pokeball-menu {
+      position: fixed;
+      inset: 0; /* Shorthand for top, right, bottom, left */
+      height: 100%;
+      background: linear-gradient(180deg, rgba(230, 230, 250, 0.95) 0%, rgba(215, 215, 250, 0.95) 100%);
+      z-index: var(--z-index-modal);
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pokeball-menu.active {
+      display: flex;
+    }
+
+    /* Menu header styling */
+    .menu-header {
+      position: absolute;
+      top: 35px;
+      width: 100%;
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .menu-header h1 {
+      display: inline-block;
+      background-color: #7b68ee;
+      color: white;
+      font-size: 13px;
+      padding: 8px 25px;
+      border-radius: 30px;
+      margin: 0;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Dice-5 pattern grid layout */
+    .menu-grid {
+      display: grid;
+      /* Create a 5×5 grid with precise areas for the dice-5 pattern */
+      grid-template-areas: 
+        ". . . . ."
+        ". top-left . top-right ."
+        ". . center . ."
+        ". bottom-left . bottom-right ."
+        ". . . . .";
+      grid-template-columns: 5% 30% 30% 30% 5%;
+      grid-template-rows: 10% 25% 30% 25% 10%;
+      width: 100%;
+      max-width: 350px;
+      height: 380px;
+      margin: 0 auto;
+      position: relative;
+      top: 60px;
+    }
+    
+    /* Remove flex display since we're using grid */
+    .menu-row {
+      display: contents;
+    }
+    
+    /* Position menu items in grid */
+    #menu-lexicon { grid-area: top-left; }
+    #menu-battle { grid-area: top-right; }
+    #menu-shop { grid-area: center; }
+    #menu-art { grid-area: bottom-left; }
+    #menu-items { grid-area: bottom-right; }
+    
+    /* Menu item styling */
+    .menu-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    /* Menu icon circular button styling */
+    .menu-icon {
+      width: 66px;
+      height: 66px;
+      border-radius: 50%;
+      background-color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 10px;
+      position: relative;
+      border: 2px solid #9370db;
+    }
+
+    /* Locked item styling */
+    .menu-icon.locked {
+      position: relative;
+    }
+
+    .menu-icon.locked::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-color: rgba(45, 78, 95, 0.7);
+      border-radius: 50%;
+    }
+
+    /* Label styling for menu items */
+    .menu-label {
+      font-size: 14px;
+      color: #483d8b;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+
+    /* Close button styling */
+    .menu-close {
+      position: absolute;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      font-size: 24px;
+      color: #444;
+      border: 2px solid #9370db;
+      z-index: calc(var(--z-index-modal) + 1);
+    }
+    
+    /* Side navigation buttons - settings, news, events */
+    /* Base styles for side buttons */
+    .side-button {
+      position: fixed;
+      right: 20px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      z-index: var(--z-index-modal);
+      border: 2px solid #9370db;
+    }
+    
+    .side-button i {
+      color: #7b68ee;
+    }
+    
+    /* Side button positioning */
+    .settings-button {
+      top: 35px;
+    }
+    
+    .settings-button i {
+      font-size: 20px;
+    }
+    
+    .news-button {
+      top: 85px;
+    }
+    
+    .news-button i {
+      font-size: 18px;
+    }
+    
+    .events-button {
+      top: 135px;
+    }
+    
+    .events-button i {
+      font-size: 18px;
+    }
+
+    /* Side button labels */
+    .side-label {
+      position: fixed;
+      right: 65px;
+      font-size: 14px;
+      font-weight: bold;
+      color: #483d8b;
+      z-index: var(--z-index-modal);
+    }
+    
+    .settings-label {
+      top: 42px;
+    }
+    
+    .news-label {
+      top: 92px;
+    }
+    
+    .events-label {
+      top: 142px;
+    }
+
+    /* Search bar styling */
+    .search-container {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      max-width: 300px;
+      z-index: var(--z-index-controls);
+    }
+
+    .search-bar {
+      width: 100%;
+      height: 44px;
+      background-color: white;
+      border-radius: 22px;
+      display: flex;
+      align-items: center;
+      padding: 0 15px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .search-bar:focus-within {
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+      transform: translateY(-2px);
+    }
+
+    .search-icon {
+      color: #777;
+      font-size: 16px;
+      margin-right: 10px;
+    }
+
+    .search-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      height: 100%;
+      font-size: 14px;
+      color: #333;
+      background: transparent;
+    }
+
+    .search-input::placeholder {
+      color: #aaa;
+    }
+
+    .search-clear {
+      color: #ccc;
+      font-size: 16px;
+      cursor: pointer;
+      padding: 5px;
+      margin-left: 5px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .search-input:not(:placeholder-shown) + .search-clear {
+      opacity: 1;
+    }
+
+    /* Results container for search results */
+    .search-results {
+      position: absolute;
+      top: 50px;
+      left: 0;
+      width: 100%;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: var(--shadow-sm);
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      z-index: var(--z-index-controls);
+    }
+
+    .search-results.active {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .search-result-item {
+      padding: 12px 15px;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .search-result-item:last-child {
+      border-bottom: none;
+    }
+
+    .search-result-item:hover {
+      background-color: #f5f5f5;
+    }
+
+    .search-result-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 12px;
+    }
+
+    .search-result-icon i {
+      color: var(--primary-color);
+      font-size: 16px;
+    }
+
+    .search-result-info {
+      flex: 1;
+    }
+
+    .search-result-title {
+      font-size: 14px;
+      color: #333;
+      margin-bottom: 3px;
+    }
+
+    .search-result-subtitle {
+      font-size: 12px;
+      color: #888;
+    }
+
+    @media (max-width: 576px) {
+      .search-container {
+        width: 90%;
+        max-width: none;
+      }
+    }
+
+    /* Matrix Phase Indicator */
+    .matrix-phase {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-size: var(--font-size-md);
+      display: flex;
+      align-items: center;
+      z-index: var(--z-index-controls);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .matrix-phase .icon {
+      margin-right: 8px;
+      font-size: calc(var(--font-size-md) + 2px);
+    }
+
+    /* Happiness Meter (replacing XP bar) */
+    .happiness-meter {
+      position: fixed;
+      top: 20px;
+      right: 80px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 10px;
+      padding: 5px 10px;
+      display: flex;
+      align-items: center;
+      box-shadow: var(--shadow-sm);
+      z-index: var(--z-index-controls);
+    }
+
+    .happiness-meter .label {
+      margin-right: 5px;
+      font-weight: bold;
+      font-size: var(--font-size-sm);
+    }
+
+    .happiness-meter .progress {
+      width: 100px;
+      height: 8px;
+      margin-bottom: 0;
+      background-color: rgba(0,0,0,0.1);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .happiness-meter .progress-bar {
+      background-color: var(--secondary-color);
+      height: 100%;
+    }
+
+    /* Weather Display */
+    .weather {
+      position: fixed;
+      top: 70px;
+      right: 90px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 20px;
+      padding: 5px 10px;
+      display: flex;
+      align-items: center;
+      font-size: var(--font-size-sm);
+      box-shadow: var(--shadow-sm);
+      z-index: var(--z-index-controls);
+    }
+
+    .weather i {
+      margin-right: 5px;
+    }
+
+    /* Compass - adjust position to prevent overlap */
+    .compass {
+      position: fixed;
+      bottom: 20px;
+      right: 220px; /* Increased from 150px to further prevent overlap */
+      background: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      font-size: 18px;
+      color: #444;
+      z-index: 1000;
+      cursor: pointer;
+    }
+
+    /* Zone and Art Markers */
+    .zone-marker {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      color: white;
+      font-size: var(--font-size-md);
+    }
+
+    .arts-marker {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      color: white;
+      font-size: var(--font-size-md);
+      animation: marker-glow 2s infinite alternate;
+      box-shadow: 0 0 10px rgba(255,255,255,0.5);
+    }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity 0.3s ease-in-out;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+
+    /* Contribute Button - Commented out duplicate styles */
+    /*
+    #contribute-button {
+      position: fixed;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #8c43ff;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      padding: 10px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 9999;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #contribute-button i {
+      margin-right: 8px;
+    }
+    */
+
+    /* Contribution Menu Styles */
+    #contribution-menu {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      border-radius: 12px;
+      padding: 20px;
+      width: 80%;
+      max-width: 400px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      z-index: 10000;
+      display: none;
+    }
+
+    #contribution-menu h2 {
+      text-align: center;
+      margin-bottom: 15px;
+      color: #8c43ff;
+      font-weight: bold;
+    }
+
+    .menu-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 9999;
+      display: none;
+    }
+
+    .menu-option {
+      display: flex;
+      align-items: center;
+      padding: 12px 15px;
+      margin-bottom: 8px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .menu-option:hover {
+      background-color: #f0f0f0;
+    }
+
+    .menu-option i {
+      font-size: 24px;
+      margin-right: 15px;
+      color: #8c43ff;
+    }
+
+    .menu-option span {
+      font-weight: 500;
+      color: #333;
+    }
+
+    .menu-close {
+      text-align: center;
+      padding: 10px;
+      margin-top: 15px;
+      background-color: #8c43ff;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    @keyframes marker-glow {
+      from {
+        box-shadow: 0 0 5px rgba(255,255,255,0.5);
+      }
+      to {
+        box-shadow: 0 0 15px rgba(255,255,255,0.8);
+      }
+    }
+    
+    /* Make sure the pokeball design elements don't block clicks */
+    #main-action-button .pokeball-design * {
+      pointer-events: none;
+    }
+    
+    /* Add a z-index to ensure the button is clickable */
+    #main-action-button {
+      z-index: 1000;
+      cursor: pointer;
+    }
+  </style>
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
+</head>
+<body>
+  <!-- Map container -->
+  <div id="map-container">
+    <div id="map"></div>
+    
+    <!-- Add a very visible contribute button at the top of the page -->
+    <div id="contribute-button-new" style="position: fixed; top: 60px; left: 50%; transform: translateX(-50%); padding: 12px 20px; background-color: #8c43ff; color: white; font-weight: bold; font-size: 16px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); z-index: 9999; display: flex; align-items: center; cursor: pointer;">
+      <i class="fas fa-plus" style="margin-right: 8px; font-size: 18px;"></i>
+      <span>CONTRIBUTE</span>
+    </div>
+    
+    <!-- Atlantis Go Overlays -->
+    <div class="matrix-phase">
+      <i class="fas fa-sync icon"></i>
+      <span>Matrix Phase: Soul Out</span>
+    </div>
+    
+    <div class="happiness-meter">
+      <span class="label">Happiness:</span>
+      <div class="progress">
+        <div class="progress-bar" style="width: 75%;"></div>
+      </div>
+    </div>
+    
+    <div class="weather">
+      <i class="fas fa-sun"></i>
+      <span>Sunny, 72°F</span>
+    </div>
+    
+    <div id="compass" class="compass">
+      <i class="fas fa-compass"></i>
+    </div>
+  </div>
+  
+  <!-- Search bar -->
+  <div class="search-container">
+    <div class="search-bar">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" class="search-input" id="map-search" placeholder="Search locations, zones...">
+      <i class="fas fa-times search-clear" id="search-clear"></i>
+    </div>
+    <div class="search-results" id="search-results">
+      <!-- Search results will be populated by JavaScript -->
+    </div>
+  </div>
+  
+  <!-- Top right controls (2-3) -->
+  <div class="top-right-controls">
+    <div class="control-button tooltip" id="button-2">
+      <i class="fas fa-cog"></i>
+      <span class="tooltip-text left">Settings</span>
+    </div>
+    <div class="control-button tooltip" id="button-3">
+      <i class="fas fa-location-arrow"></i>
+      <span class="tooltip-text left">Center Map</span>
+    </div>
+  </div>
+  
+  <!-- Bottom Navigation Elements (Pokemon GO Style) -->
+  
+  <!-- Player avatar (12) with level in bottom right -->
+  <a href="{% url 'core:player_profile' %}">
+  <div id="player-avatar" class="button-12 tooltip">
+    <div class="avatar-container">
+      {% if request.user.profile.avatar %}
+        <img src="{{ request.user.profile.avatar.url }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+      {% else %}
+        <i class="fas fa-user-graduate fa-4x" style="color: #3273dc;"></i>
+      {% endif %}
+    </div>
+    <div id="player-level">{{ request.user.profile.level|default:"1" }}</div>
+    <div id="player-title">{{ request.user.profile.title|default:"Campus Explorer" }}</div>
+    <span class="tooltip-text top">Player Profile</span>
+  </div>
+  </a>
+  
+  <!-- Buddy pokemon (11) -->
+  <div id="buddy-pokemon" class="button-11 tooltip">
+    <div class="buddy-glow"></div>
+    <i class="fas fa-dog"></i>
+    <span class="tooltip-text top">Buddy Character</span>
+  </div>
+      
+  <!-- Main action button - Pokeball (opens menu) -->
+  <div id="main-action-button" class="button-10">
+    <div class="pokeball-design">
+      <div class="pokeball-top"></div>
+      <div class="pokeball-middle"></div>
+      <div class="pokeball-bottom"></div>
+    </div>
+  </div>
+  
+  <!-- Pokeball Menu -->
+  <div id="pokeball-menu" class="pokeball-menu">
+    <div class="menu-header">
+      <h1>CAMPUS EXPLORATION</h1>
+    </div>
+    
+    <!-- Settings, News, and Events buttons -->
+    <div class="settings-button side-button" id="menu-settings">
+      <i class="fas fa-cog"></i>
+    </div>
+    <div class="settings-label side-label">SETTINGS</div>
+    
+    <div class="news-button side-button" id="menu-news">
+      <i class="fas fa-bullhorn"></i>
+    </div>
+    <div class="news-label side-label">NEWS</div>
+    
+    <div class="events-button side-button" id="menu-events">
+      <i class="fas fa-ticket-alt"></i>
+    </div>
+    <div class="events-label side-label">EVENTS</div>
+    
+    <div class="menu-grid">
+      <!-- Dice-5 pattern menu layout -->
+      <div class="menu-item" id="menu-lexicon">
+        <div class="menu-icon">
+          <i class="fas fa-book-open" style="font-size: 28px; color: #7b68ee;"></i>
+        </div>
+        <div class="menu-label">LEXICON</div>
+      </div>
+      
+      <div class="menu-item" id="menu-battle">
+        <div class="menu-icon locked">
+          <i class="fas fa-lock" style="font-size: 22px; color: white; position: relative; z-index: 5;"></i>
+        </div>
+        <div class="menu-label">BATTLE</div>
+      </div>
+      
+      <div class="menu-item" id="menu-shop">
+        <div class="menu-icon">
+          <i class="fas fa-shopping-bag" style="font-size: 28px; color: #7b68ee;"></i>
+        </div>
+        <div class="menu-label">SHOP</div>
+      </div>
+      
+      <div class="menu-item" id="menu-art">
+        <div class="menu-icon">
+          <i class="fas fa-palette" style="font-size: 28px; color: #7b68ee;"></i>
+        </div>
+        <div class="menu-label">ART</div>
+      </div>
+      
+      <div class="menu-item" id="menu-items">
+        <div class="menu-icon">
+          <i class="fas fa-suitcase" style="font-size: 28px; color: #7b68ee;"></i>
+        </div>
+        <div class="menu-label">ITEMS</div>
+      </div>
+    </div>
+    
+    <div class="menu-close" id="menu-close">
+      <i class="fas fa-times"></i>
+    </div>
+  </div>
+    
+  <!-- Nearby panel (9) -->
+  <div id="nearby-panel" class="button-9 tooltip">
+    <div class="nearby-pokemon">
+      <i class="fas fa-question"></i>
+    </div>
+    <div class="nearby-pokemon">
+      <i class="fas fa-question"></i>
+    </div>
+    <div class="nearby-pokemon">
+      <i class="fas fa-question"></i>
+    </div>
+    <span class="tooltip-text top">Nearby Activities</span>
+  </div>
+  
+  <!-- Binoculars button (8) -->
+  <a href="{% url 'core:nearby' %}" id="binoculars-button" class="button-8 tooltip">
+    <i class="fas fa-binoculars"></i>
+    <span class="tooltip-text left">View Nearby</span>
+  </a>
+  
+  <!-- Left controls (14-16) -->
+  <!-- Left controls (14-16) are removed -->
+  
+  <!-- Hidden form for updating location -->
+  <form id="location-form" method="post" action="{% url 'core:update_location' %}">
+    {% csrf_token %}
+    <input type="hidden" id="latitude" name="latitude" value="{{ player_latitude }}">
+    <input type="hidden" id="longitude" name="longitude" value="{{ player_longitude }}">
+  </form>
+  
+  <!-- Simple example modal -->
+  <div class="simple-modal" id="example-modal">
+    <div class="modal-content">
+      <span class="close-button" id="close-modal">&times;</span>
+      <h2>Information</h2>
+      <p>Button clicked. This modal will be replaced with actual functionality.</p>
+    </div>
+  </div>
+  
+  <!-- Toast notification container -->
+  <div id="toast" class="toast"></div>
+
+  <!-- Contribute Button - Removing duplicate button -->
+  <!-- 
+  <button id="contribute-button">
+    <i class="fas fa-plus"></i>
+    CONTRIBUTE
+  </button>
+  -->
+
+  <!-- Contribution Menu Overlay -->
+  <div id="menu-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 9998; display: none;"></div>
+
+  <!-- Contribution Menu -->
+  <div id="contribution-menu" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: white; border-radius: 12px; padding: 20px; width: 80%; max-width: 400px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); z-index: 10000; display: none;">
+    <h2 style="text-align: center; margin-bottom: 15px; color: #8c43ff; font-weight: bold;">Contribute</h2>
+    <div class="menu-option" data-option="artCollection" style="display: flex; align-items: center; padding: 12px 15px; margin-bottom: 8px; background-color: #f8f9fa; border-radius: 8px; cursor: pointer; transition: background-color 0.2s;">
+      <i class="fas fa-palette" style="font-size: 24px; margin-right: 15px; color: #8c43ff;"></i>
+      <span style="font-weight: 500; color: #333;">Art Collection (Lexicon)</span>
+    </div>
+    <div class="menu-option" data-option="currentArts" style="display: flex; align-items: center; padding: 12px 15px; margin-bottom: 8px; background-color: #f8f9fa; border-radius: 8px; cursor: pointer; transition: background-color 0.2s;">
+      <i class="fas fa-brush" style="font-size: 24px; margin-right: 15px; color: #8c43ff;"></i>
+      <span style="font-weight: 500; color: #333;">Current Arts</span>
+    </div>
+    <div class="menu-option" data-option="experienceEngine" style="display: flex; align-items: center; padding: 12px 15px; margin-bottom: 8px; background-color: #f8f9fa; border-radius: 8px; cursor: pointer; transition: background-color 0.2s;">
+      <i class="fas fa-cogs" style="font-size: 24px; margin-right: 15px; color: #8c43ff;"></i>
+      <span style="font-weight: 500; color: #333;">Experience Engine</span>
+    </div>
+    <div class="menu-option" data-option="teamsSocial" style="display: flex; align-items: center; padding: 12px 15px; margin-bottom: 8px; background-color: #f8f9fa; border-radius: 8px; cursor: pointer; transition: background-color 0.2s;">
+      <i class="fas fa-users" style="font-size: 24px; margin-right: 15px; color: #8c43ff;"></i>
+      <span style="font-weight: 500; color: #333;">Teams & Social</span>
+    </div>
+    <div class="menu-option" data-option="shop" style="display: flex; align-items: center; padding: 12px 15px; margin-bottom: 8px; background-color: #f8f9fa; border-radius: 8px; cursor: pointer; transition: background-color 0.2s;">
+      <i class="fas fa-store" style="font-size: 24px; margin-right: 15px; color: #8c43ff;"></i>
+      <span style="font-weight: 500; color: #333;">Shop/Store</span>
+    </div>
+    <div class="menu-option" data-option="settings" style="display: flex; align-items: center; padding: 12px 15px; margin-bottom: 8px; background-color: #f8f9fa; border-radius: 8px; cursor: pointer; transition: background-color 0.2s;">
+      <i class="fas fa-sliders-h" style="font-size: 24px; margin-right: 15px; color: #8c43ff;"></i>
+      <span style="font-weight: 500; color: #333;">Settings</span>
+    </div>
+    <div id="menu-close" style="text-align: center; padding: 10px; margin-top: 15px; background-color: #8c43ff; color: white; border-radius: 8px; cursor: pointer;">Close</div>
+  </div>
+  
+  <!-- JavaScript for map functionality -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // ===== CONFIG AND INITIALIZATION =====
+      const CONFIG = {
+        MAP_ZOOM: 17,
+        DEFAULT_LAT: 37.7749, // San Francisco
+        DEFAULT_LNG: -122.4194,
+        PLAYER_LEVEL: "{{ player.level }}" || "1", // Get player level or default to 1
+        INTERACTION_RADIUS: 40,
+        INTERACTION_RADIUS_PINK: 80,
+        MAP_ATTRIBUTION: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        MAP_TILE_URL: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+      };
+      
+      // Initialize display
+      document.getElementById('player-level').textContent = CONFIG.PLAYER_LEVEL;
+      
+      // Initialize the full application
+      initMap();
+      
+      /**
+       * Initialize map and related functionality
+       */
+      function initMap() {
+        // Check localStorage first, then server data, then default
+        let playerLat = parseFloat(localStorage.getItem('playerLatitude'));
+        let playerLng = parseFloat(localStorage.getItem('playerLongitude'));
+        
+        // If no localStorage data, fall back to server data or defaults
+        if (isNaN(playerLat) || isNaN(playerLng)) {
+          playerLat = parseFloat("{{ player_latitude }}") || CONFIG.DEFAULT_LAT;
+          playerLng = parseFloat("{{ player_longitude }}") || CONFIG.DEFAULT_LNG;
+        }
+        
+        // Save the coordinates to localStorage to ensure consistency
+        localStorage.setItem('playerLatitude', playerLat);
+        localStorage.setItem('playerLongitude', playerLng);
+        
+        // Create a single, consistent position array that will be used for ALL elements
+        const initialPosition = [playerLat, playerLng];
+        console.log('Initial position:', initialPosition);
+        
+        // Initialize the map with this position
+        const map = L.map('map', {
+        zoomControl: false,
+          attributionControl: false
+        }).setView(initialPosition, CONFIG.MAP_ZOOM);
+        
+        // Add map tiles
+        L.tileLayer(CONFIG.MAP_TILE_URL, {
+          attribution: '',
+          subdomains: 'abcd',
+          maxZoom: 19
+        }).addTo(map);
+
+        // Use a different approach - create all elements with one function
+        const gameElements = createAllGameElements(map, initialPosition);
+        window.gameElements = gameElements;
+        
+        // Now add game markers (POIs) AFTER player elements are created
+        addGameMarkers(map, playerLat, playerLng);
+        
+        setupEventHandlers(map);
+      }
+      
+      /**
+       * Create all game elements together to ensure consistency
+       */
+      function createAllGameElements(map, position) {
+        console.log('Creating all game elements at:', position);
+        
+        // Create the player marker
+        const playerMarker = L.circleMarker(position, {
+          radius: 10,
+          fillColor: '#1e88e5',
+          fillOpacity: 1,
+          color: 'white',
+          weight: 2,
+          opacity: 1
+      }).addTo(map);
+      
+        // Add pulse animation
+        setTimeout(() => {
+          const element = playerMarker.getElement();
+          if (element) element.classList.add('player-marker');
+      }, 100);
+      
+        // Create interaction circles
+        const interactionRadius = L.circle(position, {
+          radius: CONFIG.INTERACTION_RADIUS,
+          className: 'interaction-radius',
+          fill: false,
+          interactive: false
+        }).addTo(map);
+        
+        const interactionRadiusPink = L.circle(position, {
+          radius: CONFIG.INTERACTION_RADIUS_PINK,
+          className: 'interaction-radius-pink',
+          fill: false,
+          interactive: false
+      }).addTo(map);
+      
+        // Verify all positions
+        console.log('Player marker at:', playerMarker.getLatLng());
+        console.log('Interaction radius at:', interactionRadius.getLatLng());
+        console.log('Pink interaction radius at:', interactionRadiusPink.getLatLng());
+        
+        return { playerMarker, interactionRadius, interactionRadiusPink };
+      }
+      
+      /**
+       * Add game markers to the map (points of interest)
+       */
+      function addGameMarkers(map, playerLat, playerLng) {
+        console.log('⭐ addGameMarkers called with position:', playerLat, playerLng);
+        
+        // Create reusable icon generator for zones (square with icon)
+        const createZoneIcon = (iconClass, color) => L.divIcon({
+          html: `<div class="zone-marker" style="background-color: ${color};">
+                  <i class="${iconClass}"></i>
+                </div>`,
+          className: '',
+          iconSize: [40, 40],
+          iconAnchor: [20, 20],
+          popupAnchor: [0, -20]
+        });
+        
+        // Create reusable icon generator for arts (glowing circle)
+        const createArtsIcon = (iconClass, color) => L.divIcon({
+          html: `<div class="arts-marker" style="background-color: ${color};">
+                  <i class="${iconClass}"></i>
+                </div>`,
+          className: '',
+          iconSize: [40, 40],
+          iconAnchor: [20, 20],
+          popupAnchor: [0, -20]
+        });
+        
+        // Define icons for different entity types
+        const icons = {
+          // Zone icons (square)
+          'think': createZoneIcon('fas fa-brain', '#4a6cf7'),
+          'production': createZoneIcon('fas fa-industry', '#28a745'),
+          'market': createZoneIcon('fas fa-store', '#17a2b8'),
+          'creative': createZoneIcon('fas fa-paint-brush', '#fd7e14'),
+          'social': createZoneIcon('fas fa-users', '#6f42c1'),
+          
+          // Art icons (glowing circle)
+          'liberal_art': createArtsIcon('fas fa-book', '#4a6cf7'),
+          'mechanical_art': createArtsIcon('fas fa-tools', '#28a745'),
+          'fine_art': createArtsIcon('fas fa-palette', '#fd7e14'),
+          'social_art': createArtsIcon('fas fa-comments', '#6f42c1'),
+          
+          // Experience icons (glowing circle)
+          'experience': createArtsIcon('fas fa-star', '#ffc107'),
+          'quest': createArtsIcon('fas fa-scroll', '#28a745'),
+          'challenge': createArtsIcon('fas fa-bolt', '#dc3545')
+        };
+        
+        // Create marker groups for different entity types
+        window.markerGroups = {
+          zones: L.layerGroup().addTo(map),
+          experiences: L.layerGroup().addTo(map),
+          arts: L.layerGroup().addTo(map)  // Add arts layer group
+        };
+        
+        // Store these groups globally for later updates
+        window.markerGroups = markerGroups;
+        
+        // Define fetchMapData function to be accessible globally
+        fetchMapData = function() {
+          // Get current player position
+          const playerPosition = window.gameElements.playerMarker.getLatLng();
+          console.log('🔍 Fetching map data at position:', playerPosition);
+          
+          // Add a visual indicator that we're loading data
+          const loadingMsg = document.createElement('div');
+          loadingMsg.innerHTML = 'Loading map data...';
+          loadingMsg.style.position = 'fixed';
+          loadingMsg.style.top = '50%';
+          loadingMsg.style.left = '50%';
+          loadingMsg.style.transform = 'translate(-50%, -50%)';
+          loadingMsg.style.background = 'rgba(0,0,0,0.7)';
+          loadingMsg.style.color = 'white';
+          loadingMsg.style.padding = '10px 20px';
+          loadingMsg.style.borderRadius = '5px';
+          loadingMsg.style.zIndex = '9999';
+          loadingMsg.id = 'loading-map-data';
+          document.body.appendChild(loadingMsg);
+
+          // Construct the API URL
+          const apiUrl = `/zones/api/map-elements/?lat=${playerPosition.lat}&lng=${playerPosition.lng}`;
+          console.log('📡 API URL:', apiUrl);
+          
+          // Fetch data from our API
+          fetch(apiUrl)
+            .then(response => {
+              console.log('📥 API Response status:', response.status);
+              if (!response.ok) {
+                throw new Error(`Network response was not ok: ${response.status}`);
+              }
+              return response.json();
+            })
+            .then(data => {
+              console.log('✅ Received map data:', data);
+              document.getElementById('loading-map-data').remove();
+              
+              if (!data.zones || !data.zones.length) {
+                console.warn('❌ No zones found in API response');
+                // Show error message to user
+                const noZonesMsg = document.createElement('div');
+                noZonesMsg.innerHTML = 'No zones found nearby!';
+                noZonesMsg.style.position = 'fixed';
+                noZonesMsg.style.top = '30%';
+                noZonesMsg.style.left = '50%';
+                noZonesMsg.style.transform = 'translate(-50%, -50%)';
+                noZonesMsg.style.background = 'rgba(255,0,0,0.7)';
+                noZonesMsg.style.color = 'white';
+                noZonesMsg.style.padding = '10px 20px';
+                noZonesMsg.style.borderRadius = '5px';
+                noZonesMsg.style.zIndex = '9999';
+                noZonesMsg.id = 'no-zones-msg';
+                document.body.appendChild(noZonesMsg);
+                setTimeout(() => {
+                  if (document.getElementById('no-zones-msg')) {
+                    document.getElementById('no-zones-msg').remove();
+                  }
+                }, 3000);
+              }
+              
+              // Clear existing markers
+              markerGroups.zones.clearLayers();
+              markerGroups.experiences.clearLayers();
+              markerGroups.arts.clearLayers(); // Clear arts markers
+              
+              // Add zone markers
+              if (data.zones && data.zones.length) {
+                console.log(`🏢 Adding ${data.zones.length} zone markers`);
+                data.zones.forEach(zone => {
+                  console.log(`  - Zone: ${zone.name} at ${zone.lat},${zone.lng}`);
+                  // Default to think icon if type not recognized
+                  const icon = icons[zone.type] || icons.think;
+                  
+                  L.marker([zone.lat, zone.lng], {icon})
+                    .bindPopup(`
+                      <div class="map-popup zone-popup">
+                        <h5>${zone.name}</h5>
+                        <p>Rank ${zone.rank}</p>
+                        <button class="btn btn-sm btn-primary mt-2" 
+                          onclick="window.location='/zones/zones/${zone.id}/'">
+                          Visit Zone
+                        </button>
+                      </div>
+                    `)
+                    .addTo(markerGroups.zones);
+                });
+              }
+              
+              // Add arts markers if they exist in the API response
+              if (data.arts && data.arts.length) {
+                console.log(`🎨 Adding ${data.arts.length} arts markers`);
+                data.arts.forEach(art => {
+                  console.log(`  - Art: ${art.name} at ${art.lat},${art.lng}`);
+                  // Use specific icon for art type or default to generic art icon
+                  const icon = icons[art.type] || icons.fine_art;
+                  
+                  L.marker([art.lat, art.lng], {icon})
+                    .bindPopup(`
+                      <div class="map-popup art-popup">
+                        <h5>${art.name}</h5>
+                        <p>Level: ${art.level || 1}</p>
+                        <button class="btn btn-sm btn-primary mt-2" 
+                          onclick="window.location='/game/arts/${art.id}/'">
+                          Capture Art
+                        </button>
+                      </div>
+                    `)
+                    .addTo(markerGroups.arts);
+                });
+              }
+              
+              // Add experience markers
+              if (data.experiences && data.experiences.length) {
+                console.log(`🌟 Adding ${data.experiences.length} experience markers`);
+                data.experiences.forEach(exp => {
+                  console.log(`  - Experience: ${exp.name} at ${exp.lat},${exp.lng}`);
+                  // Use specific icon for experience type or default to generic experience icon
+                  const icon = icons[exp.type] || icons.experience;
+                  
+                  L.marker([exp.lat, exp.lng], {icon})
+                    .bindPopup(`
+                      <div class="map-popup experience-popup">
+                        <h5>${exp.name}</h5>
+                        <p>Difficulty: ${exp.difficulty}/10</p>
+                        <p>Duration: ${exp.duration} minutes</p>
+                        <button class="btn btn-sm btn-primary mt-2">
+                          Start Experience
+                        </button>
+                      </div>
+                    `)
+                    .addTo(markerGroups.experiences);
+                });
+              }
+            })
+            .catch(error => {
+              console.error('❌ Error fetching map data:', error);
+              // Remove loading message
+              if (document.getElementById('loading-map-data')) {
+                document.getElementById('loading-map-data').remove();
+              }
+              
+              // Show error message to user
+              const errorMsg = document.createElement('div');
+              errorMsg.innerHTML = `Error: ${error.message}. Using sample data instead.`;
+              errorMsg.style.position = 'fixed';
+              errorMsg.style.top = '30%';
+              errorMsg.style.left = '50%';
+              errorMsg.style.transform = 'translate(-50%, -50%)';
+              errorMsg.style.background = 'rgba(255,0,0,0.7)';
+              errorMsg.style.color = 'white';
+              errorMsg.style.padding = '10px 20px';
+              errorMsg.style.borderRadius = '5px';
+              errorMsg.style.zIndex = '9999';
+              errorMsg.id = 'error-msg';
+              document.body.appendChild(errorMsg);
+              setTimeout(() => {
+                if (document.getElementById('error-msg')) {
+                  document.getElementById('error-msg').remove();
+                }
+              }, 5000);
+              
+              // Fallback to sample data if API fails
+              addSampleMarkers();
+            });
+        };
+        
+        // Function to add sample markers as fallback
+        function addSampleMarkers() {
+          console.warn('⚠️ Using sample marker data');
+          
+          // Sample data for zones (near player)
+          const sampleZones = [
+            {name: "Think Tank: Philosophy", type: "think", lat: playerLat + 0.001, lng: playerLng - 0.001, rank: 1},
+            {name: "Production Tank: Crafts", type: "production", lat: playerLat - 0.001, lng: playerLng + 0.001, rank: 2},
+            {name: "Agora Market", type: "market", lat: playerLat + 0.0005, lng: playerLng + 0.0005, rank: 3},
+            {name: "Think Tank: Mathematics", type: "think", lat: playerLat - 0.0015, lng: playerLng - 0.0005, rank: 2},
+            {name: "Production Tank: Digital Media", type: "production", lat: playerLat + 0.0012, lng: playerLng - 0.0012, rank: 3},
+            {name: "Marketplace: Tech Exchange", type: "market", lat: playerLat - 0.0008, lng: playerLng - 0.0013, rank: 2}
+          ];
+          
+          // Sample data for arts (near player)
+          const sampleArts = [
+            // Fine Arts
+            {id: 1, name: "Fine Arts: Painting", type: "fine_art", lat: playerLat - 0.0002, lng: playerLng - 0.0002, level: 2},
+            {id: 2, name: "Fine Arts: Sculpture", type: "fine_art", lat: playerLat - 0.0005, lng: playerLng + 0.0003, level: 2},
+            {id: 3, name: "Fine Arts: Music", type: "fine_art", lat: playerLat + 0.0006, lng: playerLng + 0.0002, level: 3},
+            {id: 4, name: "Fine Arts: Photography", type: "fine_art", lat: playerLat - 0.0008, lng: playerLng - 0.0006, level: 1},
+            
+            // Liberal Arts
+            {id: 5, name: "Liberal Arts: History", type: "liberal_art", lat: playerLat + 0.0004, lng: playerLng + 0.0004, level: 3},
+            {id: 6, name: "Liberal Arts: Literature", type: "liberal_art", lat: playerLat + 0.0007, lng: playerLng - 0.0006, level: 3},
+            {id: 7, name: "Liberal Arts: Philosophy", type: "liberal_art", lat: playerLat - 0.0003, lng: playerLng + 0.0009, level: 4},
+            {id: 8, name: "Liberal Arts: Languages", type: "liberal_art", lat: playerLat + 0.0003, lng: playerLng - 0.0009, level: 2},
+            
+            // Mechanical Arts
+            {id: 9, name: "Mechanical Arts: Engineering", type: "mechanical_art", lat: playerLat - 0.0008, lng: playerLng + 0.0009, level: 1},
+            {id: 10, name: "Mechanical Arts: Robotics", type: "mechanical_art", lat: playerLat + 0.0002, lng: playerLng + 0.0008, level: 5},
+            {id: 11, name: "Mechanical Arts: Architecture", type: "mechanical_art", lat: playerLat + 0.0008, lng: playerLng - 0.0003, level: 2},
+            {id: 12, name: "Mechanical Arts: Electronics", type: "mechanical_art", lat: playerLat - 0.0004, lng: playerLng - 0.0008, level: 3},
+            
+            // Social Arts
+            {id: 13, name: "Social Arts: Psychology", type: "social_art", lat: playerLat + 0.0011, lng: playerLng - 0.0008, level: 4},
+            {id: 14, name: "Social Arts: Education", type: "social_art", lat: playerLat - 0.0006, lng: playerLng + 0.0006, level: 3},
+            {id: 15, name: "Social Arts: Communication", type: "social_art", lat: playerLat + 0.0001, lng: playerLng - 0.0011, level: 2},
+            {id: 16, name: "Social Arts: Anthropology", type: "social_art", lat: playerLat - 0.0010, lng: playerLng + 0.0001, level: 5}
+          ];
+          
+          // Sample data for experiences (near player)
+          const sampleExperiences = [
+            {name: "Quest: City Clean-up", type: "quest", lat: playerLat - 0.0005, lng: playerLng - 0.0005, difficulty: 3, duration: 30},
+            {name: "Challenge: Mathematics", type: "challenge", lat: playerLat + 0.0008, lng: playerLng + 0.0008, difficulty: 5, duration: 45},
+            {name: "Quest: Campus Tour", type: "quest", lat: playerLat + 0.0006, lng: playerLng - 0.0007, difficulty: 1, duration: 60},
+            {name: "Challenge: Public Speaking", type: "challenge", lat: playerLat - 0.0007, lng: playerLng + 0.0007, difficulty: 4, duration: 20},
+            {name: "Collaboration: Team Project", type: "collaboration", lat: playerLat + 0.0009, lng: playerLng + 0.0001, difficulty: 3, duration: 90}
+          ];
+          
+          // Clear existing markers
+          markerGroups.zones.clearLayers();
+          markerGroups.experiences.clearLayers();
+          markerGroups.arts.clearLayers();
+          
+          // Add sample zone markers
+          sampleZones.forEach(zone => {
+            const icon = icons[zone.type] || icons.think;
+            L.marker([zone.lat, zone.lng], {icon})
+              .bindPopup(`
+                <div class="map-popup zone-popup">
+                  <h5>${zone.name}</h5>
+                  <p>Rank ${zone.rank || 1}</p>
+                  <p>${zone.description || 'No description available'}</p>
+                  <button class="btn btn-sm btn-primary mt-2">Visit Zone</button>
+                </div>
+              `)
+              .addTo(markerGroups.zones);
+          });
+          
+          // Add sample art markers
+          console.log(`🎨 Adding ${sampleArts.length} sample arts markers`);
+          sampleArts.forEach(art => {
+            console.log(`  - Sample art: ${art.name} at ${art.lat},${art.lng}`);
+            const icon = icons[art.type] || icons.fine_art;
+            L.marker([art.lat, art.lng], {icon})
+              .bindPopup(`
+                <div class="map-popup art-popup">
+                  <h5>${art.name}</h5>
+                  <p>Level ${art.level || 1}</p>
+                  <button class="btn btn-sm btn-primary mt-2">Capture Art</button>
+                </div>
+              `)
+              .addTo(markerGroups.arts);
+          });
+          
+          // Add sample experience markers
+          sampleExperiences.forEach(exp => {
+            console.log(`  - Sample experience: ${exp.name} at ${exp.lat},${exp.lng}`);
+            L.marker([exp.lat, exp.lng], {icon: icons[exp.type] || icons.experience})
+              .bindPopup(`
+                <div class="map-popup experience-popup">
+                  <h5>${exp.name}</h5>
+                  <p>Difficulty: ${exp.difficulty}/10</p>
+                  <p>Duration: ${exp.duration} minutes</p>
+                  <button class="btn btn-sm btn-primary mt-2">Start Experience</button>
+                </div>
+              `)
+              .addTo(markerGroups.experiences);
+          });
+        }
+        
+        // Initial load of map data
+        fetchMapData();
+        
+        // Set up auto-refresh every 30 seconds
+        setInterval(fetchMapData, 30000);
+      }
+      
+      /**
+       * Set up all event handlers for UI elements
+       */
+      function setupEventHandlers(map) {
+        // Update player information
+        updatePlayerInfo();
+        
+        // Setup modal close button
+        document.getElementById('close-modal').addEventListener('click', () => {
+          document.getElementById('example-modal').style.display = 'none';
+        });
+        
+        // Register all button handlers
+        registerButtonHandlers(map);
+        
+        // Initialize the Pokeball menu interactions
+        setupMenuInteractions();
+        
+        // Initialize search functionality
+        setupSearchBar();
+      }
+      
+      /**
+       * Update player information from server data
+       */
+      function updatePlayerInfo() {
+        const playerLevel = "{{ player.level }}" || "1";
+        const playerTitle = "{{ player.title }}" || "Campus Explorer";
+        
+        document.getElementById('player-level').textContent = playerLevel;
+        if ("{{ player.title }}") {
+          document.getElementById('player-title').textContent = playerTitle;
+        }
+      }
+      
+      /**
+       * Register all button event handlers
+       */
+      function registerButtonHandlers(map) {
+        // Function to request user location without page navigation
+        const requestLocation = () => {
+          if (!navigator.geolocation) {
+            alert("Geolocation is not supported by this browser.");
+            return;
+          }
+          
+          console.log('Requesting location...');
+          
+          navigator.geolocation.getCurrentPosition(
+            position => {
+              const {latitude: lat, longitude: lng} = position.coords;
+              console.log('Received coordinates:', lat, lng);
+              
+              // Save location to localStorage for persistence
+              localStorage.setItem('playerLatitude', lat);
+              localStorage.setItem('playerLongitude', lng);
+              
+              // Create a consistent position array for all elements
+              const newPosition = [lat, lng];
+              console.log('New position array:', newPosition);
+              
+              // Update map view first
+              map.setView(newPosition, CONFIG.MAP_ZOOM);
+              
+              // Remove old elements
+              const { playerMarker, interactionRadius, interactionRadiusPink } = window.gameElements;
+              playerMarker.remove();
+              interactionRadius.remove();
+              interactionRadiusPink.remove();
+              
+              // Create new elements all at once with the exact same coordinates
+              window.gameElements = createAllGameElements(map, newPosition);
+              
+              // Show confirmation to user
+              showToast('Location updated!');
+            },
+            error => {
+              console.error('Geolocation error:', error);
+              alert('Unable to get your location. Please enable location services.');
+            }
+          );
+        };
+        
+        // Helper function to show toast messages
+        function showToast(message, duration = 3000) {
+          const toast = document.getElementById('toast');
+          toast.textContent = message;
+          toast.classList.add('show');
+          
+          setTimeout(() => {
+            toast.classList.remove('show');
+          }, duration);
+        }
+        
+        // Show modal function
+        const showModal = () => {
+          document.getElementById('example-modal').style.display = 'flex';
+        };
+        
+        // Register all button handlers using a configuration object
+        const buttonHandlers = [
+          { id: 'button-2', handler: showModal },
+          { id: 'button-3', handler: requestLocation },
+          { id: 'compass', handler: () => map.setBearing(0) },
+          { id: 'main-action-button', handler: togglePokemonMenu },
+          { id: 'contribute-button-new', handler: () => {
+            // Show the contribution menu
+            const contributionMenu = document.getElementById('contribution-menu');
+            const menuOverlay = document.getElementById('menu-overlay');
+            if (contributionMenu && menuOverlay) {
+              contributionMenu.style.display = 'block';
+              menuOverlay.style.display = 'block';
+              showToast('Opening contribution options...');
+            }
+          } },
+          { id: 'buddy-pokemon', handler: () => window.location.href = '/game/profile/' },
+          { id: 'player-avatar', handler: showModal },
+        ];
+        
+        buttonHandlers.forEach(({ id, handler }) => {
+          const element = document.getElementById(id);
+          if (element) {
+            element.addEventListener('click', handler);
+          }
+        });
+      }
+
+      // Function to toggle the Pokemon menu
+      function togglePokemonMenu() {
+        const menu = document.getElementById('pokeball-menu');
+        menu.classList.toggle('active');
+      }
+      
+      // Setup menu interaction handlers
+      function setupMenuInteractions() {
+        // Add event listener for menu close button
+        document.getElementById('menu-close').addEventListener('click', togglePokemonMenu);
+
+        // Add event listeners for main menu buttons with proper navigation
+        const menuItems = [
+          { id: 'menu-lexicon', label: 'LEXICON', url: '/game/virtues/' },
+          { id: 'menu-battle', label: 'BATTLE', url: '#', locked: true },
+          { id: 'menu-shop', label: 'SHOP', url: '/game/market/' },
+          { id: 'menu-art', label: 'ART', url: '/game/arts/' },
+          { id: 'menu-items', label: 'ITEMS', url: '/game/wishlist/' }
+        ];
+        
+        menuItems.forEach(item => {
+          document.getElementById(item.id).addEventListener('click', () => {
+            if (item.locked) {
+              showToast(`${item.label} is currently locked`);
+            } else {
+              // Navigate to the specified URL
+              window.location.href = item.url;
+            }
+            togglePokemonMenu();
+          });
+        });
+
+        // Add event listeners for the side utility buttons
+        const utilityButtons = [
+          { id: 'menu-settings', label: 'SETTINGS', url: '/game/profile/' },
+          { id: 'menu-news', label: 'NEWS', url: '/game/notifications/' },
+          { id: 'menu-events', label: 'EVENTS', url: '/game/nearby/' }
+        ];
+        
+        utilityButtons.forEach(button => {
+          document.getElementById(button.id).addEventListener('click', () => {
+            // Navigate to the specified URL
+            window.location.href = button.url;
+          });
+        });
+      }
+      
+      /**
+       * Setup search bar functionality
+       */
+      function setupSearchBar() {
+        const searchInput = document.getElementById('map-search');
+        const searchResults = document.getElementById('search-results');
+        const clearButton = document.getElementById('search-clear');
+        
+        // Sample data for demonstration purposes
+        // In a real implementation, this would come from the server or API
+        const sampleLocations = [
+          { name: "Main Library", type: "think", lat: 39.037, lng: -94.575, description: "Central campus library" },
+          { name: "Student Center", type: "market", lat: 39.036, lng: -94.576, description: "Campus hub for activities" },
+          { name: "STEM Building", type: "think", lat: 39.038, lng: -94.574, description: "Science and technology labs" },
+          { name: "Recreation Center", type: "experience", lat: 39.035, lng: -94.573, description: "Fitness and sports activities" },
+          { name: "Arts Complex", type: "production", lat: 39.034, lng: -94.577, description: "Visual and performing arts" },
+          { name: "Campus Gardens", type: "experience", lat: 39.039, lng: -94.578, description: "Botanical displays and relaxation" }
+        ];
+        
+        // Icon mapping for different location types
+        const typeIcons = {
+          think: "fa-brain",
+          market: "fa-shopping-cart",
+          production: "fa-industry",
+          experience: "fa-star",
+          quest: "fa-scroll",
+          challenge: "fa-trophy",
+          collaboration: "fa-users",
+          default: "fa-map-marker-alt"
+        };
+        
+        // Function to get the appropriate icon for a location type
+        function getIconForType(type) {
+          return typeIcons[type] || typeIcons.default;
+        }
+        
+        // Search input event handlers
+        searchInput.addEventListener('input', function() {
+          const query = this.value.trim().toLowerCase();
+          
+          // Clear search results
+          searchResults.innerHTML = '';
+          
+          if (query.length < 2) {
+            searchResults.classList.remove('active');
+            return;
+          }
+          
+          // Filter locations based on query
+          const filteredLocations = sampleLocations.filter(location => 
+            location.name.toLowerCase().includes(query) || 
+            location.description.toLowerCase().includes(query)
+          );
+          
+          // Display results if we have any matches
+          if (filteredLocations.length > 0) {
+            searchResults.classList.add('active');
+            
+            // Create result items
+            filteredLocations.forEach(location => {
+              const resultItem = document.createElement('div');
+              resultItem.className = 'search-result-item';
+              resultItem.innerHTML = `
+                <div class="search-result-icon">
+                  <i class="fas ${getIconForType(location.type)}"></i>
+                </div>
+                <div class="search-result-info">
+                  <div class="search-result-title">${location.name}</div>
+                  <div class="search-result-subtitle">${location.description}</div>
+                </div>
+              `;
+              
+              // Add click handler to center map on this location
+              resultItem.addEventListener('click', function() {
+                // Center map on location
+                map.setView([location.lat, location.lng], 18);
+                
+                // Close search results
+                searchResults.classList.remove('active');
+                searchInput.value = location.name;
+                
+                // Optional: Drop a temporary pin or highlight this location
+                const tempMarker = L.marker([location.lat, location.lng])
+                  .addTo(map)
+                  .bindPopup(`
+                    <div class="map-popup">
+                      <h5>${location.name}</h5>
+                      <p>${location.description}</p>
+                    </div>
+                  `)
+                  .openPopup();
+                
+                // Remove the marker after a delay
+                setTimeout(() => {
+                  if (tempMarker) map.removeLayer(tempMarker);
+                }, 5000);
+              });
+              
+              searchResults.appendChild(resultItem);
+            });
+          } else {
+            // Show "no results" message
+            searchResults.classList.add('active');
+            searchResults.innerHTML = `
+              <div class="search-result-item" style="justify-content: center; color: #888;">
+                No results found
+              </div>
+            `;
+          }
+        });
+        
+        // Clear button handler
+        clearButton.addEventListener('click', function() {
+          searchInput.value = '';
+          searchResults.innerHTML = '';
+          searchResults.classList.remove('active');
+          searchInput.focus();
+        });
+        
+        // Close search results when clicking outside
+        document.addEventListener('click', function(event) {
+          const isClickInside = searchInput.contains(event.target) || 
+                                searchResults.contains(event.target) ||
+                                clearButton.contains(event.target);
+          
+          if (!isClickInside) {
+            searchResults.classList.remove('active');
+          }
+        });
+        
+        // Close search results when pressing Escape
+        document.addEventListener('keydown', function(event) {
+          if (event.key === 'Escape') {
+            searchResults.classList.remove('active');
+            searchInput.blur();
+          }
+        });
+      }
+    });
+  </script>
+  
+  <!-- Simple JavaScript to handle pokeball tooltip manually -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const pokeball = document.getElementById('main-action-button');
+      const pokeballTooltip = document.createElement('div');
+      
+      pokeballTooltip.style.position = 'absolute';
+      pokeballTooltip.style.bottom = '90px';
+      pokeballTooltip.style.left = '50%';
+      pokeballTooltip.style.transform = 'translateX(-50%)';
+      pokeballTooltip.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+      pokeballTooltip.style.color = 'white';
+      pokeballTooltip.style.padding = '5px 10px';
+      pokeballTooltip.style.borderRadius = '6px';
+      pokeballTooltip.style.fontSize = '14px';
+      pokeballTooltip.style.textAlign = 'center';
+      pokeballTooltip.style.whiteSpace = 'nowrap';
+      pokeballTooltip.style.zIndex = '3000';
+      pokeballTooltip.style.opacity = '0';
+      pokeballTooltip.style.transition = 'opacity 0.3s ease';
+      pokeballTooltip.style.pointerEvents = 'none';
+      pokeballTooltip.textContent = 'Main Menu';
+      
+      document.body.appendChild(pokeballTooltip);
+      
+      pokeball.addEventListener('mouseenter', function() {
+        const rect = pokeball.getBoundingClientRect();
+        pokeballTooltip.style.left = (rect.left + rect.width/2) + 'px';
+        pokeballTooltip.style.opacity = '1';
+      });
+      
+      pokeball.addEventListener('mouseleave', function() {
+        pokeballTooltip.style.opacity = '0';
+      });
+    });
+  </script>
+
+  <!-- Add this section at the end of the DOMContentLoaded event listener function -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // ... existing code ...
+      
+      // Direct event listener for the new contribute button
+      const contributeButton = document.getElementById('contribute-button-new');
+      if (contributeButton) {
+        contributeButton.addEventListener('click', function() {
+          console.log('Contribute button clicked');
+          // Update this to open the contribution menu instead of just showing a toast
+          showToast('Opening contribution menu...');
+          openContributionMenu();
+        });
+      }
+      
+      // ... existing code ...
+    });
+  </script>
+
+  <script>
+    // ... existing code ...
+
+    // Function to show a toast message
+    function showToast(message, duration = 3000) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, duration);
+    }
+
+    // Register button handlers when document is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize the map
+      const map = L.map('map', {
+        center: [playerLat, playerLng], 
+        zoom: 16,
+        zoomControl: false,
+        attributionControl: false
+      });
+
+      // ... existing code ...
+
+      // Make the compass clickable
+      const compass = document.getElementById('compass');
+      if (compass) {
+        compass.style.cursor = 'pointer';
+        compass.addEventListener('click', function() {
+          showToast('Compass clicked - navigate to center');
+          map.setView([playerLat, playerLng], 16);
+        });
+      }
+
+      // Get contribution menu elements
+      const contributeButton = document.getElementById('contribute-button-new');
+      const contributionMenu = document.getElementById('contribution-menu');
+      const menuOverlay = document.getElementById('menu-overlay');
+      const menuClose = document.getElementById('menu-close');
+      const menuOptions = document.querySelectorAll('.menu-option');
+
+      // Function to open contribution menu
+      function openContributionMenu() {
+        contributionMenu.style.display = 'block';
+        menuOverlay.style.display = 'block';
+      }
+
+      // Function to close contribution menu
+      function closeContributionMenu() {
+        contributionMenu.style.display = 'none';
+        menuOverlay.style.display = 'none';
+      }
+
+      // Contribute button click handler
+      if (contributeButton) {
+        contributeButton.addEventListener('click', function() {
+          showToast('Opening contribution menu...');
+          openContributionMenu();
+        });
+      }
+
+      // Menu close button click handler
+      if (menuClose) {
+        menuClose.addEventListener('click', closeContributionMenu);
+      }
+
+      // Menu overlay click handler (close when clicking outside)
+      if (menuOverlay) {
+        menuOverlay.addEventListener('click', closeContributionMenu);
+      }
+
+      // Menu option click handlers
+      menuOptions.forEach(option => {
+        option.addEventListener('click', function() {
+          const optionType = this.getAttribute('data-option');
+          
+          // Handle different menu options
+          switch(optionType) {
+            case 'artCollection':
+              showToast('Navigating to Art Collection...');
+              window.location.href = '/game/arts/pokedex/';
+              break;
+            case 'currentArts':
+              showToast('Navigating to Current Arts...');
+              window.location.href = '/game/arts/';
+              break;
+            case 'experienceEngine':
+              showToast('Navigating to Experience Engine...');
+              window.location.href = '/game/experiences/';
+              break;
+            case 'teamsSocial':
+              showToast('Navigating to Teams & Social...');
+              window.location.href = '/game/teams/';
+              break;
+            case 'shop':
+              showToast('Navigating to Shop/Store...');
+              window.location.href = '/game/market/';
+              break;
+            case 'settings':
+              showToast('Navigating to Settings...');
+              window.location.href = '/accounts/profile/settings/';
+              break;
+            default:
+              showToast('Feature coming soon!');
+          }
+          
+          closeContributionMenu();
+        });
+      });
+
+      // ... existing code ...
+    });
+
+    // ... existing code ...
+  </script>
+
+  <!-- Add dedicated script for fixing the menu close functionality -->
+  <script>
+    // Wait for DOM to be fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      // Get elements
+      const menuClose = document.getElementById('menu-close');
+      const menuOverlay = document.getElementById('menu-overlay');
+      const contributionMenu = document.getElementById('contribution-menu');
+      
+      // Function to close the menu
+      function closeContributionMenu() {
+        console.log('Closing contribution menu');
+        if (contributionMenu) contributionMenu.style.display = 'none';
+        if (menuOverlay) menuOverlay.style.display = 'none';
+      }
+      
+      // Add event listener to close button
+      if (menuClose) {
+        console.log('Adding event listener to close button');
+        menuClose.addEventListener('click', closeContributionMenu);
+      }
+      
+      // Add event listener to overlay (clicking outside the menu)
+      if (menuOverlay) {
+        menuOverlay.addEventListener('click', closeContributionMenu);
+      }
+    });
+  </script>
+
+  <!-- Set up menu interactions -->
+  <script>
+   // Set up menu close button
+    const menuClose = document.getElementById('menu-close');
+    const menuOverlay = document.getElementById('menu-overlay');
+    const contributionMenu = document.getElementById('contribution-menu');
+    
+    if (menuClose) {
+     menuClose.addEventListener('click', function() {
+       contributionMenu.style.display = 'none';
+       menuOverlay.style.display = 'none';
+     });
+    }
+    
+   // Close menu when clicking overlay
+    if (menuOverlay) {
+     menuOverlay.addEventListener('click', function() {
+       contributionMenu.style.display = 'none';
+       menuOverlay.style.display = 'none';
+     });
+   }
+   
+   // Set up menu option handlers
+   const menuOptions = document.querySelectorAll('.menu-option');
+   menuOptions.forEach(option => {
+     option.addEventListener('click', function() {
+       const optionType = this.getAttribute('data-option');
+       
+       // Helper function to show toast messages
+       function showToast(message, duration = 3000) {
+         const toast = document.createElement('div');
+         toast.style.position = 'fixed';
+         toast.style.bottom = '80px';
+         toast.style.left = '50%';
+         toast.style.transform = 'translateX(-50%)';
+         toast.style.backgroundColor = 'rgba(0,0,0,0.7)';
+         toast.style.color = 'white';
+         toast.style.padding = '10px 15px';
+         toast.style.borderRadius = '20px';
+         toast.style.zIndex = '3000';
+         toast.textContent = message;
+         
+         document.body.appendChild(toast);
+         
+         // Remove after specified duration
+         setTimeout(() => {
+           document.body.removeChild(toast);
+         }, duration);
+       }
+       
+       // Handle different menu options
+       switch(optionType) {
+         case 'artCollection':
+           showToast('Navigating to Art Collection...');
+           window.location.href = '/game/arts/pokedex/';
+           break;
+         case 'currentArts':
+           showToast('Navigating to Current Arts...');
+           window.location.href = '/game/arts/';
+           break;
+         case 'experienceEngine':
+           showToast('Navigating to Experience Engine...');
+           window.location.href = '/game/experiences/';
+           break;
+         case 'teamsSocial':
+           showToast('Navigating to Teams & Social...');
+           window.location.href = '/game/teams/';
+           break;
+         case 'shop':
+           showToast('Navigating to Shop/Store...');
+           window.location.href = '/game/market/';
+           break;
+         case 'settings':
+           showToast('Navigating to Settings...');
+           window.location.href = '/accounts/profile/settings/';
+           break;
+         default:
+           showToast('Feature coming soon!');
+       }
+       
+       contributionMenu.style.display = 'none';
+       menuOverlay.style.display = 'none';
+     });
+   });
+  </script>
+
+  <!-- Simple fix for button functionality -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 1. Add a close button to the pokeball menu if it doesn't exist
+      const pokeballMenu = document.getElementById('pokeball-menu');
+      if (pokeballMenu && !pokeballMenu.querySelector('.menu-close')) {
+        const closeButton = document.createElement('div');
+        closeButton.className = 'menu-close';
+        closeButton.innerHTML = '<i class="fas fa-times"></i> Close';
+        closeButton.style.textAlign = 'center';
+        closeButton.style.padding = '10px';
+        closeButton.style.marginTop = '15px';
+        closeButton.style.backgroundColor = '#8c43ff';
+        closeButton.style.color = 'white';
+        closeButton.style.borderRadius = '8px';
+        closeButton.style.cursor = 'pointer';
+        pokeballMenu.appendChild(closeButton);
+      }
+      
+      // 2. Simple direct handlers for all buttons
+      // Contribution menu close button
+      document.getElementById('menu-close')?.addEventListener('click', function() {
+        document.getElementById('contribution-menu').style.display = 'none';
+        document.getElementById('menu-overlay').style.display = 'none';
+      });
+      
+      // Menu overlay
+      document.getElementById('menu-overlay')?.addEventListener('click', function() {
+        document.getElementById('contribution-menu').style.display = 'none';
+        document.getElementById('menu-overlay').style.display = 'none';
+      });
+      
+      // Pokeball menu toggle
+      document.getElementById('main-action-button')?.addEventListener('click', function() {
+        document.getElementById('pokeball-menu').classList.toggle('active');
+      });
+      
+      // Pokeball menu close
+      pokeballMenu?.querySelector('.menu-close')?.addEventListener('click', function() {
+        pokeballMenu.classList.remove('active');
+      });
+      
+      // Compass button - center map
+      document.getElementById('compass')?.addEventListener('click', function() {
+        if (typeof map !== 'undefined' && userMarker) {
+          map.setView([userMarker.getLatLng().lat, userMarker.getLatLng().lng], 17);
+        }
+      });
+    });
+  </script>
+
+  <!-- Diagnostic Panel - TEMPORARY -->
+  <div id="diagnostic-panel" style="position: fixed; left: 10px; top: 10px; background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 5px; z-index: 10000; max-height: 80vh; overflow-y: auto; width: 300px; font-family: monospace; font-size: 12px;">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+      <h3 style="margin: 0;">UI Diagnostics</h3>
+      <button id="close-diagnostic" style="background: #f44336; border: none; color: white; border-radius: 3px; cursor: pointer;">×</button>
+    </div>
+    <div>
+      <button id="run-diagnostics" style="background: #4CAF50; border: none; color: white; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-bottom: 10px;">Run Diagnostics</button>
+      <button id="test-all-buttons" style="background: #2196F3; border: none; color: white; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-bottom: 10px; margin-left: 5px;">Test All Buttons</button>
+    </div>
+    <div id="diagnostic-log" style="font-size: 11px; line-height: 1.4;"></div>
+  </div>
+
+  <script>
+  // DIAGNOSTIC SCRIPT - To be removed after debugging
+  (function() {
+    // Wait for DOM to be fully loaded
+    window.addEventListener('DOMContentLoaded', function() {
+      console.log("Diagnostic script loaded");
+      
+      const logElement = document.getElementById('diagnostic-log');
+      
+      // Log function
+      function log(message, type = 'info') {
+        console.log(message);
+        const entry = document.createElement('div');
+        entry.style.borderBottom = '1px solid #444';
+        entry.style.padding = '3px 0';
+        
+        if (type === 'error') {
+          entry.style.color = '#ff5252';
+        } else if (type === 'success') {
+          entry.style.color = '#4CAF50';
+        } else if (type === 'warning') {
+          entry.style.color = '#FFC107';
+        }
+        
+        entry.textContent = message;
+        logElement.appendChild(entry);
+        logElement.scrollTop = logElement.scrollHeight;
+      }
+      
+      // Clear log
+      function clearLog() {
+        logElement.innerHTML = '';
+      }
+      
+      // Close diagnostic panel
+      document.getElementById('close-diagnostic').addEventListener('click', function() {
+        document.getElementById('diagnostic-panel').style.display = 'none';
+      });
+      
+      // Run diagnostics
+      document.getElementById('run-diagnostics').addEventListener('click', function() {
+        clearLog();
+        runDiagnostics();
+      });
+      
+      // Test all buttons
+      document.getElementById('test-all-buttons').addEventListener('click', function() {
+        clearLog();
+        testAllButtons();
+      });
+      
+      function runDiagnostics() {
+        log('Starting diagnostics...', 'info');
+        
+        // Check for main menu button
+        const mainMenuButton = document.querySelector('.main-action-button');
+        if (mainMenuButton) {
+          log('✅ Main menu button found with class: main-action-button', 'success');
+        } else {
+          log('❌ Main menu button not found with class: main-action-button', 'error');
+        }
+        
+        // Check for pokeball menu
+        const pokeballMenu = document.getElementById('pokeball-menu');
+        if (pokeballMenu) {
+          log('✅ Pokeball menu found with ID: pokeball-menu', 'success');
+        } else {
+          log('❌ Pokeball menu not found with ID: pokeball-menu', 'error');
+        }
+        
+        // Check for pokeball menu close button
+        const pokeballMenuClose = document.querySelector('#pokeball-menu .menu-close');
+        if (pokeballMenuClose) {
+          log('✅ Pokeball menu close button found', 'success');
+        } else {
+          log('❌ Pokeball menu close button not found', 'error');
+        }
+        
+        // Check for compass button
+        const compassButton = document.getElementById('compass-button');
+        if (compassButton) {
+          log('✅ Compass button found with ID: compass-button', 'success');
+        } else {
+          log('❌ Compass button not found with ID: compass-button', 'error');
+        }
+        
+        // Check for contribution button
+        const contributeButton = document.getElementById('contribute-button');
+        if (contributeButton) {
+          log('✅ Contribute button found with ID: contribute-button', 'success');
+        } else {
+          log('❌ Contribute button not found with ID: contribute-button', 'error');
+        }
+        
+        // Check for contribution menu
+        const contributionMenu = document.getElementById('contribution-menu');
+        if (contributionMenu) {
+          log('✅ Contribution menu found with ID: contribution-menu', 'success');
+        } else {
+          log('❌ Contribution menu not found with ID: contribution-menu', 'error');
+        }
+        
+        // Check for contribution menu close button
+        const contributionMenuClose = document.querySelector('#contribution-menu .menu-close');
+        if (contributionMenuClose) {
+          log('✅ Contribution menu close button found', 'success');
+        } else {
+          log('❌ Contribution menu close button not found', 'error');
+        }
+        
+        // Check for menu overlay
+        const menuOverlay = document.getElementById('menu-overlay');
+        if (menuOverlay) {
+          log('✅ Menu overlay found with ID: menu-overlay', 'success');
+        } else {
+          log('❌ Menu overlay not found with ID: menu-overlay', 'error');
+        }
+        
+        // Check for any script errors
+        log('Checking for script errors...', 'info');
+        window.onerror = function(message, source, lineno, colno, error) {
+          log(`❌ JavaScript error: ${message}`, 'error');
+          return true;
+        };
+      }
+      
+      function testAllButtons() {
+        log('Testing button event attachments...', 'info');
+        
+        // Test main menu button
+        const mainMenuButton = document.querySelector('.main-action-button');
+        if (mainMenuButton) {
+          log('Testing main menu button...', 'info');
+          mainMenuButton.addEventListener('click', function() {
+            log('✅ Main menu button clicked!', 'success');
+          });
+        }
+        
+        // Test compass button
+        const compassButton = document.getElementById('compass-button');
+        if (compassButton) {
+          log('Testing compass button...', 'info');
+          compassButton.addEventListener('click', function() {
+            log('✅ Compass button clicked!', 'success');
+          });
+        }
+        
+        // Test contribute button
+        const contributeButton = document.getElementById('contribute-button');
+        if (contributeButton) {
+          log('Testing contribute button...', 'info');
+          contributeButton.addEventListener('click', function() {
+            log('✅ Contribute button clicked!', 'success');
+          });
+        }
+        
+        // Test pokeball menu close button
+        const pokeballMenuClose = document.querySelector('#pokeball-menu .menu-close');
+        if (pokeballMenuClose) {
+          log('Testing pokeball menu close button...', 'info');
+          pokeballMenuClose.addEventListener('click', function() {
+            log('✅ Pokeball menu close button clicked!', 'success');
+          });
+        }
+        
+        // Test contribution menu close button
+        const contributionMenuClose = document.querySelector('#contribution-menu .menu-close');
+        if (contributionMenuClose) {
+          log('Testing contribution menu close button...', 'info');
+          contributionMenuClose.addEventListener('click', function() {
+            log('✅ Contribution menu close button clicked!', 'success');
+          });
+        }
+        
+        // Add direct implementations for the main menu toggle
+        if (mainMenuButton) {
+          log('Adding direct implementation for main menu toggle', 'info');
+          mainMenuButton.addEventListener('click', function() {
+            const pokeballMenu = document.getElementById('pokeball-menu');
+            if (pokeballMenu) {
+              if (pokeballMenu.classList.contains('active')) {
+                pokeballMenu.classList.remove('active');
+                log('Main menu closed via direct implementation', 'success');
+              } else {
+                pokeballMenu.classList.add('active');
+                log('Main menu opened via direct implementation', 'success');
+              }
+            }
+          });
+        }
+        
+        // Add direct implementations for the compass button
+        if (compassButton) {
+          log('Adding direct implementation for compass button', 'info');
+          compassButton.addEventListener('click', function() {
+            log('Attempting to center map...', 'info');
+            if (window.map) {
+              try {
+                const userLocation = [window.userLatitude || 0, window.userLongitude || 0];
+                window.map.setView(userLocation, 17);
+                log('Map centered successfully', 'success');
+              } catch (e) {
+                log('Error centering map: ' + e.message, 'error');
+              }
+            } else {
+              log('Map object not found', 'error');
+            }
+          });
+        }
+        
+        log('All test event listeners attached!', 'success');
+        log('Now try clicking the buttons on the page', 'info');
+      }
+      
+      // Run diagnostics automatically on load
+      setTimeout(runDiagnostics, 500);
+    });
+  })();
+  </script>
+
+  <!-- Simple fix for button functionality -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Get elements by their actual IDs
+      const mainActionButton = document.getElementById('main-action-button');
+      const pokeballMenu = document.getElementById('pokeball-menu');
+      const compassButton = document.getElementById('compass');
+      const contributionMenu = document.getElementById('contribution-menu');
+      const menuOverlay = document.getElementById('menu-overlay');
+      const menuClose = document.getElementById('menu-close');
+      
+      console.log('Elements found:', {
+        mainActionButton: !!mainActionButton,
+        pokeballMenu: !!pokeballMenu,
+        compassButton: !!compassButton,
+        contributionMenu: !!contributionMenu,
+        menuOverlay: !!menuOverlay,
+        menuClose: !!menuClose
+      });
+      
+      // 1. Make sure the pokeball menu has a close button
+      if (pokeballMenu && !pokeballMenu.querySelector('.menu-close')) {
+        const closeButton = document.createElement('div');
+        closeButton.className = 'menu-close';
+        closeButton.innerHTML = '<i class="fas fa-times"></i> Close';
+        closeButton.style.textAlign = 'center';
+        closeButton.style.padding = '10px';
+        closeButton.style.marginTop = '15px';
+        closeButton.style.backgroundColor = '#8c43ff';
+        closeButton.style.color = 'white';
+        closeButton.style.borderRadius = '8px';
+        closeButton.style.cursor = 'pointer';
+        pokeballMenu.appendChild(closeButton);
+        console.log('Added close button to pokeball menu');
+      }
+      
+      // 2. Set up main action button (pokeball) toggle
+      if (mainActionButton) {
+        mainActionButton.addEventListener('click', function(e) {
+          console.log('Main action button clicked');
+          if (pokeballMenu) {
+            pokeballMenu.classList.toggle('active');
+            console.log('Toggled pokeball menu, active:', pokeballMenu.classList.contains('active'));
+          }
+        });
+      }
+      
+      // 3. Setup pokeball menu close button
+      if (pokeballMenu) {
+        const pokeballClose = pokeballMenu.querySelector('.menu-close');
+        if (pokeballClose) {
+          pokeballClose.addEventListener('click', function() {
+            console.log('Pokeball close button clicked');
+            pokeballMenu.classList.remove('active');
+          });
+        }
+      }
+      
+      // 4. Setup compass button
+      if (compassButton) {
+        compassButton.addEventListener('click', function() {
+          console.log('Compass button clicked');
+          try {
+            if (window.map && window.userMarker) {
+              const userLatLng = window.userMarker.getLatLng();
+              console.log('Centering map to:', userLatLng);
+              window.map.setView([userLatLng.lat, userLatLng.lng], 17);
+            } else {
+              console.error('Map or userMarker not available');
+            }
+          } catch (e) {
+            console.error('Error centering map:', e);
+          }
+        });
+      }
+      
+      // 5. Setup contribution menu close button
+      if (menuClose) {
+        menuClose.addEventListener('click', function() {
+          console.log('Menu close button clicked');
+          if (contributionMenu) contributionMenu.style.display = 'none';
+          if (menuOverlay) menuOverlay.style.display = 'none';
+        });
+      }
+      
+      // 6. Setup menu overlay
+      if (menuOverlay) {
+        menuOverlay.addEventListener('click', function() {
+          console.log('Menu overlay clicked');
+          if (contributionMenu) contributionMenu.style.display = 'none';
+          menuOverlay.style.display = 'none';
+        });
+      }
+    });
+  </script>
+
+  <!-- Diagnostic Panel - TEMPORARY -->
+  <div id="diagnostic-panel" style="position: fixed; left: 10px; top: 10px; background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 5px; z-index: 10000; max-height: 80vh; overflow-y: auto; width: 300px; font-family: monospace; font-size: 12px;">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+      <h3 style="margin: 0;">UI Diagnostics</h3>
+      <button id="close-diagnostic" style="background: #f44336; border: none; color: white; border-radius: 3px; cursor: pointer;">×</button>
+    </div>
+    <div>
+      <button id="run-diagnostics" style="background: #4CAF50; border: none; color: white; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-bottom: 10px;">Run Diagnostics</button>
+      <button id="test-all-buttons" style="background: #2196F3; border: none; color: white; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-bottom: 10px; margin-left: 5px;">Test All Buttons</button>
+    </div>
+    <div id="diagnostic-log" style="font-size: 11px; line-height: 1.4;"></div>
+  </div>
+
+  <script>
+  // DIAGNOSTIC SCRIPT - To be removed after debugging
+  (function() {
+    // Wait for DOM to be fully loaded
+    window.addEventListener('DOMContentLoaded', function() {
+      console.log("Diagnostic script loaded");
+      
+      const logElement = document.getElementById('diagnostic-log');
+      
+      // Log function
+      function log(message, type = 'info') {
+        console.log(message);
+        const entry = document.createElement('div');
+        entry.style.borderBottom = '1px solid #444';
+        entry.style.padding = '3px 0';
+        
+        if (type === 'error') {
+          entry.style.color = '#ff5252';
+        } else if (type === 'success') {
+          entry.style.color = '#4CAF50';
+        } else if (type === 'warning') {
+          entry.style.color = '#FFC107';
+        }
+        
+        entry.textContent = message;
+        logElement.appendChild(entry);
+        logElement.scrollTop = logElement.scrollHeight;
+      }
+      
+      // Clear log
+      function clearLog() {
+        logElement.innerHTML = '';
+      }
+      
+      // Close diagnostic panel
+      document.getElementById('close-diagnostic').addEventListener('click', function() {
+        document.getElementById('diagnostic-panel').style.display = 'none';
+      });
+      
+      // Run diagnostics
+      document.getElementById('run-diagnostics').addEventListener('click', function() {
+        clearLog();
+        runDiagnostics();
+      });
+      
+      // Test all buttons
+      document.getElementById('test-all-buttons').addEventListener('click', function() {
+        clearLog();
+        testAllButtons();
+      });
+      
+      function runDiagnostics() {
+        log('Starting diagnostics...', 'info');
+        
+        // Check for main menu button
+        const mainMenuButton = document.getElementById('main-action-button');
+        if (mainMenuButton) {
+          log('✅ Main menu button found with ID: main-action-button', 'success');
+        } else {
+          log('❌ Main menu button not found with ID: main-action-button', 'error');
+        }
+        
+        // Check for pokeball menu
+        const pokeballMenu = document.getElementById('pokeball-menu');
+        if (pokeballMenu) {
+          log('✅ Pokeball menu found with ID: pokeball-menu', 'success');
+        } else {
+          log('❌ Pokeball menu not found with ID: pokeball-menu', 'error');
+        }
+        
+        // Check for pokeball menu close button
+        const pokeballMenuClose = document.querySelector('#pokeball-menu .menu-close');
+        if (pokeballMenuClose) {
+          log('✅ Pokeball menu close button found', 'success');
+        } else {
+          log('❌ Pokeball menu close button not found', 'error');
+        }
+        
+        // Check for compass button
+        const compassButton = document.getElementById('compass');
+        if (compassButton) {
+          log('✅ Compass button found with ID: compass', 'success');
+        } else {
+          log('❌ Compass button not found with ID: compass', 'error');
+        }
+        
+        // Check for contribution button
+        const contributeButton = document.getElementById('contribute-button');
+        if (contributeButton) {
+          log('✅ Contribute button found with ID: contribute-button', 'success');
+        } else {
+          log('❌ Contribute button not found with ID: contribute-button', 'error');
+        }
+        
+        // Check for contribution menu
+        const contributionMenu = document.getElementById('contribution-menu');
+        if (contributionMenu) {
+          log('✅ Contribution menu found with ID: contribution-menu', 'success');
+        } else {
+          log('❌ Contribution menu not found with ID: contribution-menu', 'error');
+        }
+        
+        // Check for contribution menu close button
+        const contributionMenuClose = document.getElementById('menu-close');
+        if (contributionMenuClose) {
+          log('✅ Contribution menu close button found with ID: menu-close', 'success');
+        } else {
+          log('❌ Contribution menu close button not found with ID: menu-close', 'error');
+        }
+        
+        // Check for menu overlay
+        const menuOverlay = document.getElementById('menu-overlay');
+        if (menuOverlay) {
+          log('✅ Menu overlay found with ID: menu-overlay', 'success');
+        } else {
+          log('❌ Menu overlay not found with ID: menu-overlay', 'error');
+        }
+        
+        // Check for map object
+        log('Checking for Leaflet map object...', 'info');
+        if (window.map) {
+          log('✅ Leaflet map object found in window scope', 'success');
+        } else {
+          log('❌ Leaflet map object not found in window scope', 'error');
+        }
+        
+        // Check for user marker
+        log('Checking for user marker...', 'info');
+        if (window.userMarker) {
+          log('✅ User marker found in window scope', 'success');
+        } else {
+          log('❌ User marker not found in window scope', 'error');
+        }
+      }
+      
+      function testAllButtons() {
+        log('Testing button event attachments...', 'info');
+        
+        // Test main menu button
+        const mainMenuButton = document.getElementById('main-action-button');
+        if (mainMenuButton) {
+          log('Testing main menu button...', 'info');
+          mainMenuButton.addEventListener('click', function() {
+            log('✅ Main menu button clicked!', 'success');
+          });
+        }
+        
+        // Test compass button
+        const compassButton = document.getElementById('compass');
+        if (compassButton) {
+          log('Testing compass button...', 'info');
+          compassButton.addEventListener('click', function() {
+            log('✅ Compass button clicked!', 'success');
+          });
+        }
+        
+        // Test contribute button
+        const contributeButton = document.getElementById('contribute-button');
+        if (contributeButton) {
+          log('Testing contribute button...', 'info');
+          contributeButton.addEventListener('click', function() {
+            log('✅ Contribute button clicked!', 'success');
+          });
+        }
+        
+        // Test pokeball menu close button
+        const pokeballMenuClose = document.querySelector('#pokeball-menu .menu-close');
+        if (pokeballMenuClose) {
+          log('Testing pokeball menu close button...', 'info');
+          pokeballMenuClose.addEventListener('click', function() {
+            log('✅ Pokeball menu close button clicked!', 'success');
+          });
+        }
+        
+        // Test contribution menu close button
+        const contributionMenuClose = document.getElementById('menu-close');
+        if (contributionMenuClose) {
+          log('Testing contribution menu close button...', 'info');
+          contributionMenuClose.addEventListener('click', function() {
+            log('✅ Contribution menu close button clicked!', 'success');
+          });
+        }
+        
+        log('All test event listeners attached!', 'success');
+        log('Now try clicking the buttons on the page', 'info');
+      }
+      
+      // Run diagnostics automatically on load
+      setTimeout(runDiagnostics, 500);
+    });
+  })();
+  </script>
+
+  <!-- Simple fix for button functionality -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log("Final fixes script loaded");
+      
+      // 1. Fix the compass button functionality
+      const compassButton = document.getElementById('compass');
+      if (compassButton) {
+        console.log("Found compass button, adding click handler");
+        compassButton.addEventListener('click', function() {
+          console.log("Compass button clicked");
+          try {
+            // Get map object from window
+            const map = window.map;
+            if (!map) {
+              console.error("Map not found in window scope");
+              return;
+            }
+            
+            // Use browser geolocation instead of looking for markers
+            if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(
+                function(position) {
+                  const lat = position.coords.latitude;
+                  const lng = position.coords.longitude;
+                  console.log("Centering map on position:", lat, lng);
+                  map.setView([lat, lng], 17);
+                },
+                function(error) {
+                  console.error("Geolocation error:", error);
+                  // Try to use default values or stored values as fallback
+                  const lat = parseFloat(localStorage.getItem('playerLatitude')) || 37.7749;
+                  const lng = parseFloat(localStorage.getItem('playerLongitude')) || -122.4194;
+                  console.log("Using fallback position:", lat, lng);
+                  map.setView([lat, lng], 17);
+                }
+              );
+            } else {
+              console.error("Geolocation not supported");
+              alert("Geolocation is not supported by your browser");
+            }
+          } catch (error) {
+            console.error("Error in compass button handler:", error);
+          }
+        });
+      }
+      
+      // 2. Fix the contribution menu close button
+      const contributionMenu = document.getElementById('contribution-menu');
+      if (contributionMenu) {
+        console.log("Found contribution menu, looking for close button");
+        
+        // Try to find any close button
+        const closeButtons = contributionMenu.querySelectorAll('.menu-close, [id*="close"], button, .fa-times');
+        
+        if (closeButtons.length > 0) {
+          console.log(`Found ${closeButtons.length} potential close buttons`);
+          
+          // Add event handlers to all potential close buttons
+          closeButtons.forEach(button => {
+            console.log("Adding click handler to:", button);
+            button.addEventListener('click', function() {
+              console.log("Close button clicked");
+              contributionMenu.style.display = 'none';
+              
+              // Also hide the overlay
+              const overlay = document.getElementById('menu-overlay');
+              if (overlay) {
+                overlay.style.display = 'none';
+              }
+            });
+          });
+        } else {
+          console.log("No close button found, adding one");
+          
+          // Create a new close button
+          const newCloseButton = document.createElement('div');
+          newCloseButton.className = 'menu-close';
+          newCloseButton.innerHTML = '<i class="fas fa-times"></i> Close';
+          newCloseButton.style.textAlign = 'center';
+          newCloseButton.style.padding = '10px';
+          newCloseButton.style.marginTop = '15px';
+          newCloseButton.style.backgroundColor = '#8c43ff';
+          newCloseButton.style.color = 'white';
+          newCloseButton.style.borderRadius = '8px';
+          newCloseButton.style.cursor = 'pointer';
+          
+          // Add it to the contribution menu
+          contributionMenu.appendChild(newCloseButton);
+          
+          // Add event handler
+          newCloseButton.addEventListener('click', function() {
+            console.log("New close button clicked");
+            contributionMenu.style.display = 'none';
+            
+            // Also hide the overlay
+            const overlay = document.getElementById('menu-overlay');
+            if (overlay) {
+              overlay.style.display = 'none';
+            }
+          });
+        }
+      }
+      
+      // 3. Fix the main menu button click area
+      const mainMenuButton = document.getElementById('main-action-button');
+      if (mainMenuButton) {
+        // Make sure children don't block clicks
+        const children = mainMenuButton.querySelectorAll('*');
+        children.forEach(child => {
+          child.style.pointerEvents = 'none';
+        });
+        
+        // Add click handler
+        mainMenuButton.addEventListener('click', function() {
+          console.log("Main menu button clicked");
+          const pokeballMenu = document.getElementById('pokeball-menu');
+          if (pokeballMenu) {
+            pokeballMenu.classList.toggle('active');
+          }
+        });
+      }
+    });
+  </script>
+
+  <script>
+  // IMMEDIATE FIX - SIMPLE CODE
+  document.addEventListener('DOMContentLoaded', function() {
+    // 1. MAIN MENU BUTTON - Direct fix
+    document.getElementById('main-action-button').onclick = function() {
+      document.getElementById('pokeball-menu').classList.toggle('active');
+    };
+    
+    // 2. COMPASS BUTTON - Direct fix  
+    document.getElementById('compass').onclick = function() {
+      if (window.map) {
+        navigator.geolocation.getCurrentPosition(
+          function(pos) {
+            window.map.setView([pos.coords.latitude, pos.coords.longitude], 17);
+          },
+          function() {
+            // Fallback coordinates
+            window.map.setView([37.7749, -122.4194], 17);
+          }
+        );
+      }
+    };
+
+    // 3. CONTRIBUTION MENU CLOSE - Direct fix
+    const closeButtons = document.querySelectorAll('#contribution-menu .menu-close, #menu-close');
+    closeButtons.forEach(function(btn) {
+      btn.onclick = function() {
+        document.getElementById('contribution-menu').style.display = 'none';
+        document.getElementById('menu-overlay').style.display = 'none';
+      };
+    });
+
+    // Make sure pokeball children don't interfere with clicks
+    const pokeballElements = document.querySelectorAll('#main-action-button *');
+    pokeballElements.forEach(function(el) {
+      el.style.pointerEvents = 'none';
+    });
+  });
+  </script>
+
+  <script>
+  // ULTRA MINIMAL FIX - VERSION 2
+  document.addEventListener('DOMContentLoaded', function() {
+    // 1. MAIN MENU BUTTON - Direct fix
+    document.getElementById('main-action-button').onclick = function() {
+      document.getElementById('pokeball-menu').classList.toggle('active');
+    };
+    
+    // 2. COMPASS BUTTON - More direct fix using different approaches to find the map
+    document.getElementById('compass').onclick = function() {
+      console.log("Compass clicked");
+      
+      // Try multiple ways to find the map object
+      const mapObj = findMapObject();
+      
+      if (mapObj) {
+        console.log("Found map object:", mapObj);
+        navigator.geolocation.getCurrentPosition(
+          function(pos) {
+            console.log("Got position:", pos.coords.latitude, pos.coords.longitude);
+            mapObj.setView([pos.coords.latitude, pos.coords.longitude], 17);
+          },
+          function(err) {
+            console.log("Geolocation error:", err);
+            // Fallback coordinates
+            mapObj.setView([37.7749, -122.4194], 17);
+          }
+        );
+      } else {
+        console.error("Could not find Leaflet map object");
+        alert("Could not access map. Please refresh the page.");
+      }
+    };
+    
+    // Helper function to find the map object by any means necessary
+    function findMapObject() {
+      console.log("Searching for map object...");
+      
+      // Method 1: Direct window.map
+      if (window.map && typeof window.map.setView === 'function') {
+        console.log("Found map in window.map");
+        return window.map;
+      }
+      
+      // Method 2: Try to find the Leaflet map instance
+      const mapContainer = document.getElementById('map');
+      if (mapContainer && mapContainer._leaflet_id) {
+        const leafletMap = L.Map.getMapById(mapContainer._leaflet_id);
+        if (leafletMap) {
+          console.log("Found map through Leaflet API");
+          return leafletMap;
+        }
+      }
+      
+      // Method 3: Find it in all global properties
+      for (const prop in window) {
+        if (window[prop] && 
+            typeof window[prop] === 'object' && 
+            window[prop]._leaflet_id &&
+            typeof window[prop].setView === 'function') {
+          console.log("Found map in window." + prop);
+          return window[prop];
+        }
+      }
+      
+      // Method 4: If all else fails, recreate the map
+      console.log("Attempting to recreate map");
+      try {
+        if (mapContainer && L) {
+          const newMap = L.map(mapContainer, {
+            center: [37.7749, -122.4194],
+            zoom: 17
+          });
+          
+          // Add a tile layer
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          }).addTo(newMap);
+          
+          window.map = newMap; // Save for future use
+          return newMap;
+        }
+      } catch (e) {
+        console.error("Error recreating map:", e);
+      }
+      
+      return null;
+    }
+
+    // 3. CONTRIBUTION MENU CLOSE - Direct fix
+    const closeButtons = document.querySelectorAll('#contribution-menu .menu-close, #menu-close');
+    closeButtons.forEach(function(btn) {
+      btn.onclick = function() {
+        document.getElementById('contribution-menu').style.display = 'none';
+        document.getElementById('menu-overlay').style.display = 'none';
+      };
+    });
+
+    // Make sure pokeball children don't interfere with clicks
+    const pokeballElements = document.querySelectorAll('#main-action-button *');
+    pokeballElements.forEach(function(el) {
+      el.style.pointerEvents = 'none';
+    });
+  });
+  </script>
+
+  <script>
+  // Final implementation to fix all UI issues
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log("🔍 Map UI fixes loading...");
+    
+    // 1. Fix Main Menu Button (Pokeball button)
+    const mainActionButton = document.getElementById('main-action-button');
+    if (mainActionButton) {
+      console.log("✓ Found main menu button");
+      
+      // Make all child elements non-clickable to ensure the button itself gets clicks
+      const children = mainActionButton.querySelectorAll('*');
+      children.forEach(child => {
+        child.style.pointerEvents = 'none';
+      });
+      
+      // Add direct click handler that toggles the pokeball menu
+      mainActionButton.onclick = function() {
+        const pokeballMenu = document.getElementById('pokeball-menu');
+        if (pokeballMenu) {
+          pokeballMenu.classList.toggle('active');
+          console.log("Main menu button clicked, toggled menu");
+        }
+      };
+    }
+    
+    // 2. Fix Contribution Menu Close Button
+    const contributeMenu = document.getElementById('contribute-menu');
+    const contributeMenuOverlay = document.getElementById('contribute-menu-overlay');
+    
+    if (contributeMenu) {
+      console.log("✓ Found contribution menu");
+      const contributeMenuClose = contributeMenu.querySelector('.menu-close');
+      
+      if (contributeMenuClose) {
+        contributeMenuClose.onclick = function() {
+          contributeMenu.classList.remove('active');
+          if (contributeMenuOverlay) {
+            contributeMenuOverlay.classList.remove('active');
+          }
+          console.log("Contribution menu closed");
+        };
+      }
+    }
+    
+    // 3. Fix Compass Button - NUCLEAR APPROACH with multiple fallbacks
+    const compassButton = document.getElementById('compass-button');
+    if (compassButton) {
+      console.log("✓ Found compass button");
+      
+      compassButton.onclick = function() {
+        console.log("Compass button clicked, finding map...");
+        
+        // Try to find the map object using multiple approaches
+        const mapObject = findMapObject();
+        
+        if (mapObject) {
+          // We found a map!
+          console.log("✓ Map object found:", mapObject);
+          
+          // Center the map on user's location
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+              function(position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                console.log(`✓ Got user location: ${lat}, ${lng}`);
+                
+                try {
+                  // Try to center the map
+                  mapObject.setView([lat, lng], 17);
+                  console.log("✓ Map centered on user location");
+                } catch (error) {
+                  console.error("❌ Error centering map:", error);
+                  alert("Could not center map on your location. Try refreshing the page.");
+                }
+              },
+              function(error) {
+                console.error("❌ Geolocation error:", error);
+                
+                // Fallback to saved coordinates if available
+                const savedLat = localStorage.getItem('userLat');
+                const savedLng = localStorage.getItem('userLng');
+                
+                if (savedLat && savedLng) {
+                  try {
+                    mapObject.setView([parseFloat(savedLat), parseFloat(savedLng)], 17);
+                    console.log("✓ Map centered on saved location");
+                  } catch (err) {
+                    console.error("❌ Error using saved coordinates:", err);
+                    alert("Could not center map. Please try again later.");
+                  }
+                } else {
+                  alert("Location access denied. Please enable location services for this site.");
+                }
+              }
+            );
+          } else {
+            alert("Geolocation is not supported by your browser.");
+          }
+        } else {
+          console.error("❌ Could not find map object");
+          alert("Map not found. Please refresh the page and try again.");
+        }
+      };
+    }
+    
+    // Helper function to find the map object using multiple methods
+    function findMapObject() {
+      console.log("Searching for map object...");
+      
+      // Method 1: Check for window.map
+      if (window.map && typeof window.map.setView === 'function') {
+        console.log("Method 1: Found map in window.map");
+        return window.map;
+      }
+      
+      // Method 2: Look for Leaflet map container
+      try {
+        const mapContainer = document.querySelector('.leaflet-container');
+        if (mapContainer && mapContainer._leaflet_id) {
+          // Try to get the map via container
+          console.log("Method 2: Found Leaflet container, accessing map...");
+          
+          // Try multiple approaches to get the map from the container
+          if (mapContainer._leaflet) {
+            return mapContainer._leaflet;
+          }
+          
+          // Look through all objects in window for Leaflet maps
+          for (const key in window) {
+            if (window[key] && 
+                window[key]._container && 
+                window[key]._container === mapContainer && 
+                typeof window[key].setView === 'function') {
+              console.log(`Method 2b: Found map as window.${key}`);
+              return window[key];
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Error in Method 2:", e);
+      }
+      
+      // Method 3: Find any object that looks like a Leaflet map
+      try {
+        console.log("Method 3: Scanning all global objects for a Leaflet map...");
+        for (const key in window) {
+          if (window[key] && 
+              typeof window[key] === 'object' && 
+              typeof window[key].setView === 'function' && 
+              typeof window[key].getContainer === 'function') {
+            console.log(`Method 3: Found Leaflet-like map as window.${key}`);
+            return window[key];
+          }
+        }
+      } catch (e) {
+        console.error("Error in Method 3:", e);
+      }
+      
+      // Method 4: Last resort - try to create a new map if one exists
+      try {
+        console.log("Method 4: Checking if L exists to create a new map...");
+        if (window.L && typeof window.L.map === 'function') {
+          const mapContainer = document.getElementById('map');
+          if (mapContainer) {
+            console.log("Method 4: Found map container, attempting to recreate map...");
+            // Check if there's already a Leaflet instance
+            if (mapContainer._leaflet_id) {
+              console.log("Map container already has a Leaflet instance");
+              // Don't recreate, just return null
+              return null;
+            }
+            
+            // Get existing center and zoom if available
+            let center = [40.7128, -74.0060]; // Default NYC
+            let zoom = 13;
+            
+            // Try to get values from localStorage
+            const storedLat = localStorage.getItem('mapLat');
+            const storedLng = localStorage.getItem('mapLng');
+            const storedZoom = localStorage.getItem('mapZoom');
+            
+            if (storedLat && storedLng) {
+              center = [parseFloat(storedLat), parseFloat(storedLng)];
+            }
+            
+            if (storedZoom) {
+              zoom = parseInt(storedZoom);
+            }
+            
+            console.log(`Creating new map at ${center} with zoom ${zoom}`);
+            return L.map('map').setView(center, zoom);
+          }
+        }
+      } catch (e) {
+        console.error("Error in Method 4:", e);
+      }
+      
+      return null;
+    }
+  });
+  </script>
+
+  <!-- Replace the script at the end of the file, just before </body> -->
+  <script>
+  // ULTRA SIMPLIFIED UI FIX - Final Version - WITH CORRECTED IDs
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log("🔧 Loading ultra-simplified UI fix with corrected IDs");
+    
+    // Helper to set up a button with error handling
+    function setupButton(id, clickHandler) {
+      const button = document.getElementById(id);
+      if (button) {
+        console.log(`✅ Found ${id}`);
+        button.onclick = clickHandler;
+        return true;
+      } else {
+        console.log(`❌ Button not found: ${id}`);
+        return false;
+      }
+    }
+    
+    // ===== 1. FIX MAIN MENU BUTTON =====
+    setupButton('main-action-button', function() {
+      console.log("Main menu button clicked");
+      const pokeballMenu = document.getElementById('pokeball-menu');
+      if (pokeballMenu) {
+        pokeballMenu.classList.toggle('active');
+      }
+    });
+    
+    // Fix the click-through issue on the main menu button
+    const mainActionButton = document.getElementById('main-action-button');
+    if (mainActionButton) {
+      // Make all children non-clickable
+      const children = mainActionButton.querySelectorAll('*');
+      children.forEach(child => {
+        child.style.pointerEvents = 'none';
+      });
+    }
+    
+    // ===== 2. FIX CONTRIBUTION MENU CLOSE =====
+    // First, try the ID-based approach
+    const contributionMenu = document.getElementById('contribution-menu');
+    if (contributionMenu) {
+      console.log("✅ Found contribution-menu");
+      const menuClose = contributionMenu.querySelector('.menu-close');
+      if (menuClose) {
+        console.log("✅ Found menu-close inside contribution-menu");
+        menuClose.onclick = function() {
+          contributionMenu.classList.remove('active');
+          const overlay = document.getElementById('menu-overlay');
+          if (overlay) overlay.classList.remove('active');
+        };
+      }
+    }
+    
+    // ===== 3. FIX COMPASS BUTTON ===== 
+    // Try both IDs: compass-button and compass
+    setupButton('compass', function() {
+      compassButtonHandler();
+    }) || setupButton('compass-button', function() {
+      compassButtonHandler();
+    });
+    
+    function compassButtonHandler() {
+      console.log("Compass button clicked");
+      
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          function(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            
+            // Store for future reference
+            localStorage.setItem('userLat', lat);
+            localStorage.setItem('userLng', lng);
+            
+            console.log(`Got location: ${lat}, ${lng}`);
+            
+            // Try to center map using various methods
+            try {
+              // Method 1: Try window.map directly
+              if (window.map && typeof window.map.setView === 'function') {
+                window.map.setView([lat, lng], 17);
+                console.log("Map centered using window.map");
+                return;
+              }
+              
+              // Method 2: Look for Leaflet container in DOM
+              const mapContainers = document.querySelectorAll('.leaflet-container');
+              for (const container of mapContainers) {
+                if (container._leaflet_id) {
+                  for (const key in window) {
+                    if (window[key] && 
+                        typeof window[key] === 'object' && 
+                        window[key]._container === container && 
+                        typeof window[key].setView === 'function') {
+                      window[key].setView([lat, lng], 17);
+                      console.log("Map centered using container lookup");
+                      return;
+                    }
+                  }
+                }
+              }
+              
+              // Method 3: Try updating URL and reloading
+              alert(`Found your location (${lat.toFixed(6)}, ${lng.toFixed(6)}), but couldn't center the map automatically. The page will reload to attempt to center the map.`);
+              window.location.href = window.location.pathname + `?lat=${lat}&lng=${lng}&zoom=17`;
+              
+            } catch (error) {
+              console.error("Error centering map:", error);
+              alert(`Got your location (${lat.toFixed(6)}, ${lng.toFixed(6)}) but couldn't center the map.`);
+            }
+          },
+          function(error) {
+            console.error("Geolocation error:", error);
+            alert("Couldn't get your location. Please check your browser settings.");
+          }
+        );
+      } else {
+        alert("Your browser doesn't support geolocation.");
+      }
+    }
+    
+    // ===== 4. CHECK FOR URL PARAMETERS =====
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('lat') && urlParams.has('lng')) {
+        const lat = parseFloat(urlParams.get('lat'));
+        const lng = parseFloat(urlParams.get('lng'));
+        const zoom = urlParams.has('zoom') ? parseInt(urlParams.get('zoom')) : 17;
+        
+        console.log(`Found coordinates in URL: ${lat}, ${lng}, zoom: ${zoom}`);
+        
+        // Try centering map with a delay to ensure it's loaded
+        setTimeout(function() {
+          try {
+            if (window.map && typeof window.map.setView === 'function') {
+              window.map.setView([lat, lng], zoom);
+              console.log("Map centered from URL parameters");
+            } else {
+              console.log("Map not available for centering from URL");
+            }
+          } catch (e) {
+            console.error("Error centering map from URL parameters:", e);
+          }
+        }, 1500);
+      }
+    } catch (e) {
+      console.error("Error processing URL parameters:", e);
+    }
+    
+    // ===== 5. DIAGNOSTIC INFORMATION =====
+    console.log("UI Fix Script Complete - Available Objects:");
+    console.log("- window.map exists:", !!window.map);
+    console.log("- window.userMarker exists:", !!window.userMarker);
+    console.log("- window.L exists:", !!window.L);
+    if (window.map) {
+      console.log("- map.setView is function:", typeof window.map.setView === 'function');
+      console.log("- map.setBearing is function:", typeof window.map.setBearing === 'function');
+    }
+    if (window.userMarker) {
+      console.log("- userMarker.getLatLng is function:", typeof window.userMarker.getLatLng === 'function');
+    }
+    if (window.L && window.L.Map) {
+      console.log("- L.Map.getMapById is function:", typeof window.L.Map.getMapById === 'function');
+    }
+  });
+  </script>
+</body>
+</html> 

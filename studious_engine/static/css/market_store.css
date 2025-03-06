@@ -1,0 +1,1192 @@
+/* TEST STYLE - REMOVE AFTER CONFIRMING CSS IS LOADED */
+.market-page-title {
+  color: magenta !important;
+  border: 3px solid lime !important;
+  background-color: yellow !important;
+  padding: 10px !important;
+}
+
+/* Market Store Styles - Enhanced Visual Design with Golden Ratio */
+
+/* Add RGB versions of variables directly */
+:root {
+  --eudaimonia-primary-rgb: 0, 113, 227;
+  --eudaimonia-secondary-rgb: 94, 92, 230;
+  --eudaimonia-success-rgb: 40, 205, 65;
+  --eudaimonia-warning-rgb: 255, 159, 10;
+  --eudaimonia-danger-rgb: 255, 59, 48;
+  
+  /* Fallback values in case CSS variables aren't supported */
+  --eudaimonia-primary: #0071e3;
+  --eudaimonia-secondary: #5e5ce6;
+  --eudaimonia-success: #28cd41;
+  --eudaimonia-warning: #ff9f0a;
+  --eudaimonia-danger: #ff3b30;
+  --eudaimonia-text-secondary: #86868b;
+  --eudaimonia-dark: #1d1d1f;
+  --eudaimonia-card-bg: rgba(255, 255, 255, 0.8);
+  
+  /* New design system variables */
+  --card-border-radius: 1.25rem;
+  --card-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  --card-hover-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+  --transition-standard: all 0.3s ease;
+  
+  /* Golden Ratio Values (approximated to 1.618) */
+  --golden-ratio: 1.618;
+  --golden-section-lg: 61.8%; /* 1/1.618 = ~0.618 or 61.8% */
+  --golden-section-sm: 38.2%; /* 1 - 0.618 = 0.382 or 38.2% */
+  
+  /* Golden Ratio spacing system */
+  --space-xs: 0.5rem;
+  --space-sm: calc(var(--space-xs) * var(--golden-ratio)); /* ~0.809rem */
+  --space-md: calc(var(--space-sm) * var(--golden-ratio)); /* ~1.309rem */
+  --space-lg: calc(var(--space-md) * var(--golden-ratio)); /* ~2.118rem */
+  --space-xl: calc(var(--space-lg) * var(--golden-ratio)); /* ~3.427rem */
+  --space-xxl: calc(var(--space-xl) * var(--golden-ratio)); /* ~5.545rem */
+}
+
+/* Typography System with Golden Ratio */
+.market-page-title {
+  font-size: clamp(1.75rem, 5vw, 3rem);
+  font-weight: 800;
+  color: var(--eudaimonia-dark);
+  line-height: 1.1;
+  margin-bottom: var(--space-md);
+  text-wrap: balance;
+}
+
+.market-lead {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  color: var(--eudaimonia-text-secondary);
+  margin-bottom: var(--space-lg);
+  text-wrap: balance;
+  max-width: calc(100% * var(--golden-section-lg)); /* Apply golden ratio to max-width */
+}
+
+.layer-title {
+  font-size: calc(1rem * var(--golden-ratio)) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em !important;
+  margin-bottom: var(--space-xs) !important;
+}
+
+.layer-subtitle {
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+  color: var(--eudaimonia-text-secondary) !important;
+  margin-bottom: var(--space-xs) !important;
+}
+
+.section-title {
+  font-size: calc(1.25rem * var(--golden-ratio)); /* ~2.02rem */
+  font-weight: 700;
+  color: var(--eudaimonia-dark);
+  position: relative;
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-sm);
+  display: flex;
+  align-items: center;
+}
+
+.section-title::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: calc(3rem * var(--golden-ratio)); /* ~4.85rem - golden ratio applied */
+  height: 3px;
+  background: linear-gradient(
+    to right,
+    var(--eudaimonia-primary),
+    var(--eudaimonia-secondary)
+  );
+  border-radius: 3px;
+}
+
+/* Golden Ratio Spacing System */
+.mb-xl {
+  margin-bottom: var(--space-xl) !important;
+}
+
+.mb-lg {
+  margin-bottom: var(--space-lg) !important;
+}
+
+.mb-md {
+  margin-bottom: var(--space-md) !important;
+}
+
+.mb-sm {
+  margin-bottom: var(--space-sm) !important;
+}
+
+.mb-xs {
+  margin-bottom: var(--space-xs) !important;
+}
+
+/* Golden Ratio Applied to Market Layout */
+.market-section {
+  margin-bottom: var(--space-xl);
+  position: relative;
+}
+
+/* Golden Ratio Cards Layout */
+.market-layer-card {
+  position: relative;
+  border-radius: var(--card-border-radius);
+  overflow: hidden;
+  height: calc(16rem * var(--golden-ratio)); /* ~25.9rem - applying golden ratio */
+  box-shadow: var(--card-shadow);
+  transition: var(--transition-standard);
+  display: flex;
+  flex-direction: column;
+}
+
+.market-layer-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--card-hover-shadow);
+}
+
+/* Apply golden ratio to grid layout */
+.row-golden {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.col-golden-primary {
+  width: var(--golden-section-lg);
+  padding: 0 var(--space-md);
+}
+
+.col-golden-secondary {
+  width: var(--golden-section-sm);
+  padding: 0 var(--space-md);
+}
+
+/* Apply golden ratio to the store grid system */
+.market-items-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(100% / 3.236), 1fr)); /* 3.236 = 2 * golden ratio */
+  gap: var(--space-md);
+}
+
+.market-item {
+  aspect-ratio: var(--golden-ratio);
+  position: relative;
+  background: var(--eudaimonia-card-bg);
+  border-radius: var(--card-border-radius);
+  overflow: hidden;
+  transition: var(--transition-standard);
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--card-shadow);
+}
+
+/* Filter and sidebar golden ratio */
+.store-layout {
+  display: flex;
+  gap: var(--space-lg);
+}
+
+.store-sidebar {
+  flex: 0 0 var(--golden-section-sm);
+}
+
+.store-main-content {
+  flex: 0 0 var(--golden-section-lg);
+}
+
+/* Search input with golden proportions */
+.search-container {
+  position: relative;
+  margin-bottom: var(--space-lg);
+}
+
+#market-search {
+  height: calc(3rem * var(--golden-ratio) / 2); /* ~2.427rem */
+  border-radius: calc(var(--card-border-radius) / var(--golden-ratio)); /* ~0.772rem */
+  padding-left: var(--space-md);
+  padding-right: 3.5rem;
+  font-size: 1rem;
+  border: 1px solid rgba(var(--eudaimonia-primary-rgb), 0.2);
+  transition: var(--transition-standard);
+}
+
+/* Layer navigation with golden ratio */
+.layer-nav {
+  display: flex;
+  overflow-x: auto;
+  padding-bottom: var(--space-sm);
+  margin-bottom: var(--space-md);
+  gap: calc(var(--space-md) / var(--golden-ratio)); /* ~0.809rem */
+}
+
+.layer-nav-item {
+  padding: var(--space-xs) var(--space-md);
+  background-color: rgba(var(--eudaimonia-primary-rgb), 0.05);
+  border-radius: calc(var(--card-border-radius) / var(--golden-ratio));
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition-standard);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+/* Golden ratio for images */
+.market-item-image {
+  position: relative;
+  overflow: hidden;
+  height: 0;
+  padding-top: calc(100% / var(--golden-ratio)); /* Creates a golden ratio rectangle */
+  background-color: #f0f0f0;
+  background-size: cover;
+  background-position: center;
+}
+
+/* Card Styles - Enhanced and more direct */
+.market-layer-card.outer-layer {
+  background: #ff9f0a !important; /* Fallback */
+  background: linear-gradient(135deg, #ff9d0a 0%, #ff3830 100%) !important;
+  color: white !important;
+}
+
+.market-layer-card.middle-layer {
+  background: #5e5ce6 !important; /* Fallback */
+  background: linear-gradient(135deg, #5d5be6 0%, #0070e3 100%) !important;
+  color: white !important;
+}
+
+.market-layer-card.inner-layer {
+  background: #28cd41 !important; /* Fallback */
+  background: linear-gradient(135deg, #28cc41 0%, #59c7fa 100%) !important;
+  color: white !important;
+}
+
+.card-overlay {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background-size: cover !important;
+  background-position: center !important;
+  opacity: 0.18 !important;
+  mix-blend-mode: overlay !important;
+  transition: opacity 0.3s ease !important;
+}
+
+.market-layer-card:hover .card-overlay {
+  opacity: 0.22 !important;
+}
+
+.card-body {
+  position: relative !important;
+  z-index: 2 !important;
+  padding: 2rem !important;
+}
+
+.card-footer {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: none !important;
+  position: relative !important;
+  z-index: 2 !important;
+  padding: 1.25rem 2rem !important;
+}
+
+/* Background Images - Hardcoded full URLs */
+.bg-port-city {
+  background-image: url('/static/images/port-city.jpg') !important;
+}
+
+.bg-middle-city {
+  background-image: url('/static/images/middle-city.jpg') !important;
+}
+
+.bg-inner-city {
+  background-image: url('/static/images/inner-city.jpg') !important;
+}
+
+.bg-market-item1 {
+  background-image: url('/static/images/market-item1.jpg') !important;
+}
+
+.bg-market-item2 {
+  background-image: url('/static/images/market-item2.jpg') !important;
+}
+
+.bg-market-item3 {
+  background-image: url('/static/images/market-item3.jpg') !important;
+}
+
+.bg-market-item4 {
+  background-image: url('/static/images/market-item4.jpg') !important;
+}
+
+.bg-market-item5 {
+  background-image: url('/static/images/market-item5.jpg') !important;
+}
+
+.bg-market-item6 {
+  background-image: url('/static/images/market-item6.jpg') !important;
+}
+
+.bg-market-item7 {
+  background-image: url('/static/images/market-item7.jpg') !important;
+}
+
+.bg-market-item8 {
+  background-image: url('/static/images/market-item8.jpg') !important;
+}
+
+/* Market Items - Enhanced */
+.market-item:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--card-hover-shadow);
+}
+
+.market-item-image img {
+  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.market-item:hover .market-item-image img {
+  transform: scale(1.05);
+}
+
+.market-item:focus-visible {
+  outline: 3px solid var(--eudaimonia-primary);
+  outline-offset: 2px;
+}
+
+/* Layer badges with direct colors */
+.market-layer-badge {
+  position: absolute;
+  top: var(--space-sm);
+  left: var(--space-sm);
+  padding: calc(var(--space-xs) / 1.5) var(--space-sm);
+  border-radius: calc(var(--card-border-radius) / 2);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: white;
+  z-index: 2;
+}
+
+.outer-layer {
+  background: linear-gradient(135deg, #ff9d0a 0%, #ff3830 100%) !important;
+  color: white !important;
+}
+
+.middle-layer {
+  background: linear-gradient(135deg, #5d5be6 0%, #0070e3 100%) !important;
+  color: white !important;
+}
+
+.inner-layer {
+  background: linear-gradient(135deg, #28cc41 0%, #59c7fa 100%) !important;
+  color: white !important;
+}
+
+/* Request Form - Enhanced */
+.request-form {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 1.5rem;
+  padding: 2rem;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+}
+
+.request-badge {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07rem;
+  font-weight: 600;
+  padding: 0.4rem 0.9rem;
+  border-radius: 1.25rem;
+}
+
+/* Category tag styling */
+.category-tag {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 1.25rem;
+  background: rgba(0, 0, 0, 0.03);
+  color: var(--eudaimonia-text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-right: 0.75rem;
+  margin-bottom: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.category-tag:hover {
+  background: var(--eudaimonia-primary);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 113, 227, 0.2);
+}
+
+/* No results message styling */
+#no-results-message {
+  transition: all 0.3s ease;
+  padding: 2rem;
+  text-align: center;
+}
+
+#no-results-message .alert {
+  border-radius: 1.25rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+}
+
+/* Recommendation styles - Enhanced */
+.recommendation-item {
+  position: relative;
+  border: none;
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);
+  border-radius: 1.25rem;
+  overflow: hidden;
+  height: 100%;
+  transition: all 0.3s ease;
+}
+
+.recommendation-item:hover {
+  transform: translateY(-7px);
+  box-shadow: 0 18px 35px rgba(0, 0, 0, 0.12);
+}
+
+.recommendation-tag {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 10;
+  background: rgba(var(--eudaimonia-primary-rgb), 0.9);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.05rem;
+}
+
+.ribbon-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  overflow: hidden;
+  width: 150px;
+  height: 150px;
+}
+
+.ribbon {
+  position: absolute;
+  top: 35px;
+  left: -35px;
+  width: 170px;
+  text-align: center;
+  padding: 7px 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07rem;
+  transform: rotate(-45deg);
+  color: white;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.ribbon-primary {
+  background: linear-gradient(135deg, var(--eudaimonia-primary), var(--eudaimonia-secondary));
+}
+
+/* Economic Layer Progression Styles - Enhanced */
+.progress-card {
+  border: none;
+  border-radius: 1.5rem;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.07);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.progress-card:hover {
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.1);
+}
+
+.progress-card .card-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 1.5rem 2rem;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.progression-path {
+  padding: 3rem 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.progress-track {
+  position: absolute;
+  top: 50%;
+  left: 70px;
+  right: 70px;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.06);
+  transform: translateY(-50%);
+  z-index: 1;
+  border-radius: 3px;
+}
+
+.milestone-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  z-index: 2;
+}
+
+.milestone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.milestone-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  margin-bottom: 1.25rem;
+  font-size: 1.5rem;
+  color: var(--eudaimonia-text-secondary);
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.milestone.active .milestone-icon {
+  color: white;
+  border-color: transparent;
+  transform: scale(1.05);
+}
+
+.milestone-outer .milestone-icon {
+  background: rgba(255, 159, 10, 0.2);
+  color: #ff9f0a;
+}
+
+.milestone-middle .milestone-icon {
+  background: rgba(94, 92, 230, 0.1);
+  color: #5e5ce6;
+}
+
+.milestone-inner .milestone-icon {
+  background: rgba(40, 205, 65, 0.1);
+  color: #28cd41;
+}
+
+.milestone.active.milestone-outer .milestone-icon {
+  background: linear-gradient(135deg, #ff9f0a 0%, #ff3b30 100%);
+  box-shadow: 0 10px 25px rgba(255, 159, 10, 0.3);
+}
+
+.milestone.active.milestone-middle .milestone-icon {
+  background: linear-gradient(135deg, #5e5ce6 0%, #0071e3 100%);
+  box-shadow: 0 10px 25px rgba(94, 92, 230, 0.3);
+}
+
+.milestone.active.milestone-inner .milestone-icon {
+  background: linear-gradient(135deg, #28cd41 0%, #5ac8fa 100%);
+  box-shadow: 0 10px 25px rgba(40, 205, 65, 0.3);
+}
+
+.milestone-info {
+  text-align: center;
+  max-width: 130px;
+}
+
+.milestone-info h6 {
+  margin-bottom: 0.35rem;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.milestone-status {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.current-status, .next-steps-card {
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 1.25rem;
+  padding: 1.75rem;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+  height: 100%;
+}
+
+.next-steps-list {
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+}
+
+.next-steps-list .list-group-item {
+  border-left: none;
+  border-right: none;
+  padding: 1.25rem 1.5rem;
+  transition: background 0.3s ease;
+}
+
+.next-steps-list .list-group-item:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.next-steps-list .list-group-item:first-child {
+  border-top: none;
+}
+
+.next-steps-list .list-group-item:last-child {
+  border-bottom: none;
+}
+
+.step-icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  font-size: 1.1rem;
+}
+
+/* Modal styles for economic layers - Enhanced */
+.outer-layer-light {
+  background: linear-gradient(135deg, rgba(255, 159, 10, 0.08) 0%, rgba(255, 59, 48, 0.08) 100%);
+  border: none;
+  border-left: 4px solid #ff9f0a;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+}
+
+.outer-layer-light:hover {
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.07);
+  transform: translateY(-3px);
+}
+
+.middle-layer-light {
+  background: linear-gradient(135deg, rgba(94, 92, 230, 0.08) 0%, rgba(0, 113, 227, 0.08) 100%);
+  border: none;
+  border-left: 4px solid #5e5ce6;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+}
+
+.middle-layer-light:hover {
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.07);
+  transform: translateY(-3px);
+}
+
+.inner-layer-light {
+  background: linear-gradient(135deg, rgba(40, 205, 65, 0.08) 0%, rgba(90, 200, 250, 0.08) 100%);
+  border: none;
+  border-left: 4px solid #28cd41;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+}
+
+.inner-layer-light:hover {
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.07);
+  transform: translateY(-3px);
+}
+
+/* Wishlist toggle button styles - Enhanced */
+.wishlist-toggle {
+  background-color: rgba(255, 255, 255, 0.95);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: var(--transition-standard);
+  border: none;
+  color: #888;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  will-change: transform;
+}
+
+.wishlist-toggle:hover {
+  background-color: var(--eudaimonia-primary);
+  color: white;
+  transform: scale(1.1);
+}
+
+.wishlist-toggle.active {
+  background-color: var(--eudaimonia-primary);
+  color: white;
+  box-shadow: 0 4px 10px rgba(0, 113, 227, 0.3);
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(0,113,227,0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(0,113,227,0); }
+  100% { box-shadow: 0 0 0 0 rgba(0,113,227,0); }
+}
+
+.wishlist-toggle.active {
+  animation: pulse 1.5s 1;
+}
+
+/* Filter system styles - Enhanced */
+.filter-card {
+  background: var(--eudaimonia-card-bg);
+  border-radius: var(--card-border-radius);
+  padding: var(--space-md);
+  box-shadow: var(--card-shadow);
+  position: sticky;
+  top: var(--space-md);
+}
+
+.filter-section {
+  margin-bottom: var(--space-md);
+}
+
+.filter-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: var(--space-sm);
+  color: var(--eudaimonia-dark);
+}
+
+.filter-option {
+  margin-bottom: var(--space-xs);
+}
+
+/* Toast notification styles - Enhanced */
+.toast-container {
+  z-index: 1100;
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+}
+
+.toast {
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  border: none;
+}
+
+@supports (backdrop-filter: blur(10px)) {
+  .toast {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.toast {
+  animation: slideInRight 0.3s ease forwards;
+}
+
+.toast-body {
+  padding: 1rem 1.25rem;
+  font-weight: 500;
+}
+
+/* Skeleton loading effect for card content */
+@keyframes skeleton-loading {
+  0% { background-position: -200px 0; }
+  100% { background-position: calc(200px + 100%) 0; }
+}
+
+.market-item-loading {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200px 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+/* Compare products toggle */
+.compare-toggle {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 3;
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(255,255,255,0.7);
+  border-radius: 4px;
+  background: rgba(255,255,255,0.3);
+  transition: all 0.2s ease;
+}
+
+.compare-toggle.active {
+  background: var(--eudaimonia-primary);
+  border-color: var(--eudaimonia-primary);
+}
+
+/* Recently viewed section */
+.recently-viewed-section {
+  position: relative;
+  padding: 1.5rem;
+  border-radius: 1.25rem;
+  background: linear-gradient(135deg, rgba(0,113,227,0.05), rgba(94,92,230,0.05));
+  margin-top: 3rem;
+}
+
+/* Improved filter chips */
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Use CSS Grid for better card layouts */
+.market-items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Sticky filter sidebar for easier shopping */
+.filter-sidebar {
+  position: sticky;
+  top: 2rem;
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+}
+
+/* Improved empty state styling */
+.empty-results {
+  display: grid;
+  place-items: center;
+  min-height: 300px;
+  text-align: center;
+  background: rgba(0,0,0,0.02);
+  border-radius: 1.5rem;
+  padding: 2rem;
+}
+
+/* Subtle parallax effect for featured items */
+.featured-section {
+  perspective: 1000px;
+}
+
+.featured-item {
+  transform-style: preserve-3d;
+  transition: transform 0.5s ease;
+}
+
+.featured-item:hover {
+  transform: translateZ(20px);
+}
+
+/* Frosted glass effect for premium items */
+.premium-item-card {
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+/* Gradient text for premium items */
+.premium-item-title {
+  background: linear-gradient(135deg, var(--eudaimonia-primary), var(--eudaimonia-secondary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 800;
+}
+
+/* Form button enhancements */
+.filter-form .btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.filter-form .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0,113,227,0.2);
+}
+
+/* Add print styles for order details */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .market-item {
+    break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid #eee;
+  }
+}
+
+/* Responsive Enhancements */
+@media (max-width: 767.98px) {
+  .layer-nav-item, .wishlist-toggle, .filter-tag {
+    min-height: 44px; /* Apple's recommended minimum touch target size */
+  }
+  
+  /* Enhanced mobile card view */
+  .market-item {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    grid-template-rows: auto;
+    height: auto;
+  }
+  
+  .market-item-image {
+    height: 100%;
+    grid-row: span 2;
+  }
+  
+  /* Adjust font sizes and spacing for mobile */
+  .market-page-title {
+    margin-bottom: 1rem;
+  }
+  
+  .market-lead {
+    margin-bottom: 1.5rem;
+  }
+}
+
+@media (max-width: 1199.98px) {
+  .section-title {
+    font-size: 1.6rem;
+  }
+  
+  .milestone-icon {
+    width: 55px;
+    height: 55px;
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .market-page-title {
+    font-size: 2.25rem;
+  }
+  
+  .market-layer-card {
+    margin-bottom: 1.5rem;
+  }
+  
+  .section-title {
+    font-size: 1.5rem;
+  }
+  
+  .progress-track {
+    left: 50px;
+    right: 50px;
+  }
+  
+  .milestone-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .market-page-title {
+    font-size: 1.75rem;
+  }
+  
+  .market-lead {
+    font-size: 1rem;
+  }
+  
+  .section-title {
+    font-size: 1.3rem;
+  }
+  
+  .market-item-image {
+    height: 160px;
+  }
+  
+  .milestone-info {
+    max-width: 80px;
+    font-size: 0.8rem;
+  }
+  
+  .milestone-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+  
+  .layer-nav-item {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.9rem;
+  }
+  
+  #market-search {
+    padding: 1rem 60px 1rem 1.25rem;
+    font-size: 1rem;
+  }
+}
+
+/* Additional market item styles for golden ratio layout */
+
+.market-item {
+  aspect-ratio: var(--golden-ratio);
+  position: relative;
+  background: var(--eudaimonia-card-bg);
+  border-radius: var(--card-border-radius);
+  overflow: hidden;
+  transition: var(--transition-standard);
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--card-shadow);
+}
+
+.market-item:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--card-hover-shadow);
+}
+
+.market-item-image {
+  position: relative;
+  overflow: hidden;
+  height: 0;
+  padding-top: calc(100% / var(--golden-ratio)); /* Creates a golden ratio rectangle */
+  background-color: #f0f0f0;
+  background-size: cover;
+  background-position: center;
+}
+
+.market-item-content {
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  justify-content: space-between;
+}
+
+.market-item-title {
+  font-size: calc(1rem * var(--golden-ratio) / 1.5);
+  font-weight: 600;
+  margin-bottom: var(--space-xs);
+  color: var(--eudaimonia-dark);
+}
+
+.market-item-category {
+  font-size: 0.85rem;
+  color: var(--eudaimonia-text-secondary);
+  margin-bottom: var(--space-xs);
+}
+
+.market-item-price {
+  font-weight: 700;
+  font-size: calc(1rem * var(--golden-ratio) / 1.8);
+  color: var(--eudaimonia-primary);
+  margin-top: auto;
+  margin-bottom: 0;
+}
+
+.market-layer-badge {
+  position: absolute;
+  top: var(--space-sm);
+  left: var(--space-sm);
+  padding: calc(var(--space-xs) / 1.5) var(--space-sm);
+  border-radius: calc(var(--card-border-radius) / 2);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: white;
+  z-index: 2;
+}
+
+/* Filter card with golden ratio */
+.filter-card {
+  background: var(--eudaimonia-card-bg);
+  border-radius: var(--card-border-radius);
+  padding: var(--space-md);
+  box-shadow: var(--card-shadow);
+  position: sticky;
+  top: var(--space-md);
+}
+
+.filter-section {
+  margin-bottom: var(--space-md);
+}
+
+.filter-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: var(--space-sm);
+  color: var(--eudaimonia-dark);
+}
+
+.filter-option {
+  margin-bottom: var(--space-xs);
+}
+
+/* Responsive golden ratio layout adjustments */
+@media (max-width: 991.98px) {
+  .store-layout {
+    flex-direction: column;
+  }
+  
+  .store-sidebar,
+  .store-main-content {
+    width: 100%;
+    flex: none;
+  }
+  
+  .filter-card {
+    position: relative;
+    top: 0;
+    margin-bottom: var(--space-md);
+  }
+  
+  .row-golden {
+    flex-direction: column;
+  }
+  
+  .col-golden-primary,
+  .col-golden-secondary {
+    width: 100%;
+    padding: 0;
+    margin-bottom: var(--space-md);
+  }
+}
+
+@media (max-width: 767.98px) {
+  .market-items-container {
+    grid-template-columns: repeat(auto-fill, minmax(calc(100% / 1.618), 1fr));
+  }
+}
+
+@media (max-width: 575.98px) {
+  .market-page-title {
+    font-size: calc(1.5rem * var(--golden-ratio) / 1.5);
+  }
+  
+  .market-lead {
+    font-size: 1rem;
+  }
+  
+  .section-title {
+    font-size: calc(1.25rem * var(--golden-ratio) / 1.3);
+  }
+  
+  .market-item-image {
+    padding-top: calc(100% / var(--golden-ratio) * 0.8);
+  }
+} 

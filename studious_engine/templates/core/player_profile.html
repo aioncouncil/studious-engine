@@ -1,0 +1,1803 @@
+{% comment %}
+[CLAUDE:OPTIMIZATION_LAYER:START]
+This template is part of the core_user_system component
+See .claude/README.md for more information
+[CLAUDE:OPTIMIZATION_LAYER:END]
+{% endcomment %}
+
+{% extends "game_app_base.html" %}
+{% load static %}
+
+{% block title %}Player Profile - AtlantisGo{% endblock %}
+
+{% block css %}
+{{ block.super }}
+<style>
+  /* Variables for consistent styling */
+  :root {
+    --primary-yellow: #f8c854;
+    --primary-teal: #5ca297;
+    --secondary-color: #96d6c8;
+    --text-dark: #444;
+    --text-muted: #999;
+    --bg-gradient: linear-gradient(145deg, 
+      #FFD773 0%, 
+      #FFE29F 15%, 
+      #FFF1CE 30%, 
+      #FFFAED 60%, 
+      #ffffff 85%);
+  }
+
+  body {
+    background-color: #FFEEC3;
+    background-image: var(--bg-gradient);
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center;
+  }
+
+  /* Profile Nav Tabs Styling */
+  .profile-nav-container {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: transparent;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    padding: 35px 0 5px;
+  }
+  
+  .profile-nav-container.scrolled {
+    background-color: rgba(255, 244, 214, 0.95);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  }
+  
+  .profile-nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px 0;
+    width: 100%;
+    max-width: 270px;
+    margin: 0 auto;
+    position: relative;
+  }
+  
+  .nav-tab {
+    flex: 1;
+    text-align: center;
+    font-size: 15px;
+    letter-spacing: 1.2px;
+    font-weight: 500;
+    color: rgba(120, 120, 120, 0.7);
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    transition: color 0.2s ease;
+  }
+  
+  .nav-tab:hover { color: rgba(80, 80, 80, 0.9); }
+  .nav-tab.active { color: #333; }
+  
+  .nav-tab.active:after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 25%;
+    width: 50%;
+    height: 3px;
+    background-color: #3478e3;
+    border-radius: 3px;
+    transition: all 0.2s ease;
+  }
+  
+  .me-tab-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    font-size: 17px;
+    padding-bottom: 3px; /* Add padding to match the FRIENDS tab */
+  }
+  
+  .friends-tab-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; /* Changed from flex-start to center */
+    position: relative;
+  }
+  
+  .friends-tab-content > div:first-child { 
+    font-size: 17px; 
+    margin-top: 0; /* Remove any margin */
+  }
+  
+  .friend-count {
+    font-size: 15px;
+    color: #68bbca;
+    line-height: 1;
+    margin-top: 2px; /* Reduced from 4px */
+    margin-bottom: 3px; /* Added to balance the layout */
+  }
+  
+  .friend-notification {
+    position: absolute;
+    top: 0;
+    right: -15px;
+    width: 8px;
+    height: 8px;
+    background-color: #5dc2b8;
+    border-radius: 50%;
+  }
+
+  /* Pokemon GO avatar area */
+  .pokemon-avatar-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 5px auto 25px;
+    position: relative;
+  }
+  
+  .pokemon-avatar {
+    width: 220px;
+    height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 2; /* Reduced from 5 to allow virtues to be fully visible */
+  }
+  
+  .avatar-background-circle {
+    position: absolute;
+    width: 220px;
+    height: 220px;
+    background: radial-gradient(circle, rgba(104, 187, 202, 0.15) 0%, rgba(104, 187, 202, 0.05) 70%, transparent 100%);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -60%);
+    z-index: 0;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+  
+  .pokemon-avatar img {
+    max-width: 100%;
+    max-height: 100%;
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 5px 10px rgba(0,0,0,0.1));
+    border-radius: 20px; /* Round the corners of the profile picture */
+  }
+  
+  .avatar-placeholder {
+    background-color: rgba(230, 230, 230, 0.2);
+    border-radius: 20px; /* Already rounded but ensuring consistency */
+    width: 180px;
+    height: 250px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+  }
+
+  .avatar-placeholder:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 50%);
+    z-index: 0;
+  }
+
+  .avatar-placeholder i {
+    position: relative;
+    z-index: 1;
+    color: rgba(120, 120, 120, 0.5);
+  }
+
+  /* Virtues progress circles around avatar */
+  .virtues-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 3; /* Increased to be above the avatar */
+    pointer-events: none; /* Don't block avatar clicks */
+  }
+
+  .virtue-marker {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: auto; /* Make the markers clickable */
+  }
+
+  .virtue-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(240,240,240,0.7) 100%);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    border: 2px solid #fff;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #444;
+    transition: all 0.2s ease;
+  }
+
+  .virtue-circle:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  }
+
+  .virtue-circle.primary {
+    width: 60px;
+    height: 60px;
+    font-size: 18px;
+    font-weight: 600;
+    background: linear-gradient(135deg, rgba(248,200,84,0.15) 0%, rgba(255,220,140,0.3) 100%);
+    border: 2px solid rgba(248,200,84,0.4);
+  }
+
+  .virtue-circle.beauty {
+    color: #e99b30;
+  }
+
+  .virtue-circle.justice {
+    color: #3478e3;
+  }
+
+  .virtue-circle.health {
+    color: #5fe2bf;
+  }
+
+  .virtue-circle.wealth {
+    color: #f8c854;
+  }
+
+  .virtue-circle.strength {
+    color: #f57a82;
+  }
+
+  .virtue-circle.wisdom {
+    color: #84cdee;
+  }
+
+  .virtue-circle.courage {
+    color: #ff8c42;
+  }
+
+  .virtue-circle.temperance {
+    color: #6a5acd;
+  }
+
+  .virtue-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #777;
+    font-weight: 500;
+  }
+
+  /* Left side virtues - positioned further out */
+  .virtue-beauty {
+    top: 15%;
+    left: calc(50% - 195px);
+  }
+
+  .virtue-health {
+    top: 40%;
+    left: calc(50% - 185px);
+  }
+
+  .virtue-wealth {
+    top: 60%;
+    left: calc(50% - 185px);
+  }
+
+  .virtue-strength {
+    top: 85%;
+    left: calc(50% - 195px);
+  }
+
+  /* Right side virtues - positioned further out */
+  .virtue-justice {
+    top: 15%;
+    right: calc(50% - 195px);
+  }
+
+  .virtue-wisdom {
+    top: 40%;
+    right: calc(50% - 185px);
+  }
+
+  .virtue-courage {
+    top: 60%;
+    right: calc(50% - 185px);
+  }
+
+  .virtue-temperance {
+    top: 85%;
+    right: calc(50% - 195px);
+  }
+
+  /* Player name and details */
+  .player-name-title {
+    color: #e99b30;
+    font-size: 28px;
+    font-weight: 600;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    margin: 10px 0 5px;
+    letter-spacing: 0.5px;
+    text-align: center;
+  }
+
+  .username-text {
+    color: #666;
+    font-size: 16px;
+    margin-bottom: 10px;
+    letter-spacing: 0.3px;
+    text-align: center;
+  }
+
+  .player-level-display {
+    display: flex;
+    align-items: center;
+    margin: 15px 15px;
+  }
+
+  .level-number {
+    font-size: 58px;
+    color: var(--primary-yellow);
+    font-weight: 400;
+    margin-right: 10px;
+    line-height: 1;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  }
+
+  .level-text {
+    color: var(--primary-yellow);
+    text-transform: uppercase;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    line-height: 1;
+  }
+
+  .xp-bar {
+    height: 8px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    margin: 15px 15px 25px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+  }
+
+  .xp-progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: linear-gradient(to right, #f7bf44, #ffd47f);
+    border-radius: 4px;
+    width: 25%;
+    transition: width 0.3s ease;
+  }
+
+  .xp-text {
+    text-align: right;
+    padding-right: 15px;
+    font-size: 16px;
+    color: var(--primary-yellow);
+    margin: -20px 0 25px;
+    text-shadow: 0 1px 1px rgba(255,255,255,0.8);
+    font-weight: 500;
+  }
+
+  /* Action buttons */
+  .action-buttons {
+    display: flex;
+    justify-content: space-around;
+    margin: 25px 15px 30px;
+  }
+
+  .action-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: var(--primary-teal);
+    transition: transform 0.15s ease;
+  }
+  
+  .action-button:hover, .action-button:focus {
+    transform: translateY(-2px);
+    color: var(--primary-teal);
+  }
+  
+  .action-button:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  .action-button-circle {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    background-color: var(--secondary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+    transition: all 0.2s ease;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+  }
+  
+  .action-button:hover .action-button-circle {
+    background-color: #8acfbf;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+  }
+
+  .action-button-circle i {
+    font-size: 26px;
+    color: white;
+  }
+
+  .action-button-text {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--primary-teal);
+    font-weight: 500;
+    margin-top: 3px;
+  }
+
+  /* Floating X Button */
+  .floating-x-button {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #5dc2b8 0%, #39a2b1 100%);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    animation: pulse 2s infinite;
+  }
+  
+  @keyframes pulse {
+    0% { box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2); }
+    50% { box-shadow: 0 6px 25px rgba(83, 194, 184, 0.3); }
+    100% { box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2); }
+  }
+  
+  .floating-x-button:hover, .floating-x-button:focus {
+    background: linear-gradient(145deg, #52b7ad 0%, #34a095 100%);
+    transform: translateX(-50%) scale(1.05);
+  }
+  
+  .floating-x-button:active {
+    transform: translateX(-50%) scale(0.95);
+  }
+  
+  .floating-x-button .x-icon {
+    color: white;
+    font-size: 32px;
+    font-weight: 200;
+  }
+
+  /* Total Activity section */
+  .activity-section {
+    margin-top: 15px;
+    border-top: 1px solid rgba(220, 220, 220, 0.5);
+    padding: 25px 0 30px;
+  }
+
+  .activity-section:first-child {
+    border-top: none; /* Remove top border from first section */
+  }
+
+  .activity-header {
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 1.5px;
+    font-size: 14px;
+    font-weight: 600; /* Increased weight */
+    text-align: center;
+    margin-bottom: 25px;
+  }
+
+  .activity-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid rgba(240, 240, 240, 0.7);
+  }
+
+  .activity-icon {
+    color: var(--primary-teal);
+    margin-right: 15px;
+    font-size: 24px;
+  }
+
+  .activity-label {
+    color: var(--text-dark);
+    font-size: 16px;
+    letter-spacing: 0.2px;
+  }
+
+  .activity-value {
+    color: var(--primary-teal);
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+  
+  /* Weekly Progress Section styles */
+  .weekly-progress-section {
+    padding: 15px 0 30px;
+    border-radius: 12px;
+    margin: 15px 10px 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(240, 240, 240, 0.8);
+  }
+  
+  .weekly-progress-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(to right, #ffd07d, #ffebb4);
+    opacity: 0.6;
+  }
+  
+  .weekly-header {
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 1.5px;
+    font-size: 15px;
+    font-weight: 500;
+    text-align: center;
+    margin-bottom: 5px;
+  }
+  
+  .weekly-dates {
+    font-size: 14px;
+    color: #888;
+    text-align: center;
+    margin-bottom: 15px;
+    letter-spacing: 0.5px;
+  }
+  
+  .weekly-highlight {
+    text-align: center;
+    padding: 20px 15px 25px;
+  }
+  
+  .weekly-achievement {
+    font-size: 26px;
+    color: #2a6baa;
+    font-weight: 500;
+    line-height: 1.3;
+    text-shadow: 0 1px 1px rgba(255,255,255,0.8);
+  }
+  
+  .rewards-container {
+    padding: 0 15px;
+    position: relative;
+  }
+  
+  .rewards-label {
+    text-align: center;
+    padding: 8px 0;
+    position: relative;
+    margin-bottom: 20px;
+  }
+  
+  .rewards-label span {
+    background-color: #f57a82;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    padding: 6px 30px;
+    border-radius: 4px;
+    display: inline-block;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    position: relative;
+    z-index: 2;
+  }
+  
+  .rewards-label::before,
+  .rewards-label::after {
+    content: '';
+    position: absolute;
+    height: 2px;
+    background-color: rgba(230, 230, 230, 0.7);
+    top: 50%;
+    width: 35%;
+    z-index: 1;
+  }
+  
+  .rewards-label::before {
+    left: 0;
+  }
+  
+  .rewards-label::after {
+    right: 0;
+  }
+  
+  .achievement-milestones {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 20px 15px;
+  }
+  
+  .achievement-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .achievement-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    font-size: 22px;
+    background-color: #f0f0f0;
+    color: #bbb;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .achievement-circle.completed {
+    background-color: #5fe2bf;
+    color: white;
+    box-shadow: 0 3px 10px rgba(95, 226, 191, 0.3);
+  }
+  
+  .achievement-circle.in-progress {
+    background-color: #84cdee;
+    color: white;
+    box-shadow: 0 3px 10px rgba(132, 205, 238, 0.3);
+  }
+  
+  .achievement-circle.locked {
+    background-color: #5a6c83;
+    color: #eee;
+    border-radius: 45% 50% 45% 50%;
+    transform: rotate(5deg);
+    box-shadow: 0 3px 10px rgba(90, 108, 131, 0.3);
+  }
+  
+  .achievement-value {
+    font-size: 16px;
+    font-weight: 500;
+    color: #555;
+    letter-spacing: 0.5px;
+  }
+  
+  /* Seeds Section styles - more condensed and professional layout */
+  .seeds-section {
+    padding: 25px 15px 40px;
+    margin-bottom: 0; /* Removed bottom margin since we have sections following it */
+    border-bottom: none; /* Remove border if there is one */
+  }
+  
+  .seed-incubator-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .seed-incubator {
+    width: 100px;
+    height: 130px;
+    margin-right: 15px;
+    position: relative;
+    filter: drop-shadow(0 8px 12px rgba(0,0,0,0.1));
+  }
+  
+  .seed-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  
+  .default-seed {
+    background: linear-gradient(to bottom, #bdf2ec, #a0e5dd);
+    border: 3px solid #5ca297;
+    border-radius: 10px;
+    position: relative;
+    overflow: visible;
+  }
+  
+  .default-seed::before {
+    content: '';
+    position: absolute;
+    top: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 40px;
+    background: radial-gradient(circle, #e8ffc9 60%, #d1f8a7 100%);
+    border-radius: 50%;
+    box-shadow: inset 0 -2px 5px rgba(0,0,0,0.05);
+  }
+  
+  .default-seed::after {
+    content: '';
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 60px;
+    background: linear-gradient(to bottom, #96d6c8, #7bc8b9);
+    border-radius: 50% 50% 10px 10px;
+    box-shadow: inset 0 2px 5px rgba(255,255,255,0.3);
+  }
+  
+  .seed-progress {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .seed-progress-text {
+    font-size: 22px;
+    color: #5cc4b8;
+    font-weight: 500;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 1px rgba(255,255,255,0.9);
+  }
+  
+  .seed-progress-bar {
+    height: 10px;
+    background-color: rgba(240, 240, 240, 0.7);
+    border-radius: 5px;
+    margin-bottom: 15px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+  }
+  
+  .seed-progress-fill {
+    height: 100%;
+    background: linear-gradient(to right, #6ee0c4, #93f0d9);
+    border-radius: 5px;
+  }
+  
+  .seed-action-button {
+    background: linear-gradient(to bottom, #7aecd5, #4fd5ba);
+    color: white;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    border: none;
+    border-radius: 20px;
+    padding: 10px 0;
+    width: 100%;
+    max-width: 160px;
+    align-self: flex-start;
+    box-shadow: 0 4px 10px rgba(79, 213, 186, 0.25);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    text-shadow: 0 1px 1px rgba(0,0,0,0.1);
+  }
+  
+  .seed-action-button:hover, .seed-action-button:focus {
+    background: linear-gradient(to bottom, #6cd8c2, #45c6ac);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(79, 213, 186, 0.3);
+  }
+  
+  .seed-action-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 5px rgba(79, 213, 186, 0.2);
+  }
+  
+  .seed-stats {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 0 10px;
+  }
+  
+  .stat-row {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    gap: 30px;
+  }
+  
+  .stat-item {
+    display: flex;
+    align-items: center;
+    width: auto;
+  }
+  
+  .stat-icon {
+    color: #5cc4b8;
+    font-size: 20px;
+    margin-right: 10px;
+    width: 24px;
+    text-align: center;
+  }
+  
+  .stat-value {
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+  
+  /* Zone Badges and Medals Styling */
+  .badge-diamond-container {
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, #f0f8ff 0%, #d6eaff 100%);
+    border: 1px solid rgba(200, 220, 240, 0.5);
+    transform: rotate(45deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin: 0 auto 20px; /* Adjusted bottom margin */
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    overflow: hidden;
+  }
+  
+  .badge-diamond-container:hover {
+    transform: rotate(45deg) scale(1.05);
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.15);
+    border-color: rgba(92, 162, 151, 0.4);
+  }
+  
+  .badge-icon-container {
+    transform: rotate(-45deg); /* Counter-rotate to keep icon straight */
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #5ca297;
+  }
+  
+  .badge-icon-container i {
+    font-size: 24px;
+  }
+  
+  /* Position the progress bar OUTSIDE and BELOW the badge diamond */
+  .badge-progress-bar {
+    width: 60px;
+    height: 5px;
+    background-color: rgba(0,0,0,0.08);
+    border-radius: 3px;
+    margin: 0 auto 8px; /* Positioning below the badge */
+    position: relative;
+  }
+  
+  .badge-progress {
+    height: 100%;
+    background: linear-gradient(90deg, #5ca297, #96d6c8);
+    border-radius: 3px;
+  }
+  
+  /* Badge location text styling */
+  .badge-location {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 90px;
+    margin: 0 auto;
+    line-height: 1.2;
+  }
+  
+  .badge-list-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+  }
+  
+  .badge-list-diamond {
+    width: 60px;
+    height: 60px;
+    position: relative;
+    background-color: rgba(103, 193, 191, 0.2);
+    border: 1px solid rgba(103, 193, 191, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    transition: all 0.2s ease;
+  }
+  
+  .badge-list-diamond:hover {
+    background-color: rgba(103, 193, 191, 0.3);
+    transform: scale(1.05);
+  }
+  
+  .badge-list-icon {
+    font-size: 24px;
+    color: #5cc4b8;
+  }
+  
+  .badge-list-text {
+    font-size: 14px;
+    color: #5cc4b8;
+    font-weight: 500;
+    letter-spacing: 1px;
+  }
+  
+  /* Medals styling */
+  .medal-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 0 5px;
+  }
+  
+  .medal-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+    border: 2px solid white;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s ease;
+  }
+  
+  .medal-circle:hover {
+    transform: scale(1.08);
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
+  }
+  
+  .medal-circle.gold {
+    background: radial-gradient(circle, #ffd773 0%, #ffb347 100%);
+  }
+  
+  .medal-circle.silver {
+    background: radial-gradient(circle, #e8e8e8 0%, #b9c1c9 100%);
+  }
+  
+  .medal-circle.bronze {
+    background: radial-gradient(circle, #ffc09c 0%, #cd7f32 100%);
+  }
+  
+  .medal-icon {
+    font-size: 22px;
+    color: #444;
+  }
+  
+  .medal-number {
+    font-size: 24px;
+    font-weight: 600;
+    color: #444;
+  }
+  
+  .medal-progress-bar {
+    width: 50px;
+    height: 4px;
+    background-color: rgba(0,0,0,0.08);
+    border-radius: 2px;
+    margin: 0 auto;
+  }
+  
+  .medal-progress {
+    height: 100%;
+    background: linear-gradient(to right, #5ca297, #96d6c8);
+    border-radius: 2px;
+  }
+
+  /* Recent Locations section */
+  .recent-locations-section {
+    padding: 25px 0 40px;
+    border-top: 1px solid rgba(220, 220, 220, 0.5);
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 576px) {
+    .action-button-circle {
+      width: 60px;
+      height: 60px;
+    }
+    
+    .action-button-text {
+      font-size: 11px;
+    }
+    
+    .player-name-title {
+      font-size: 26px;
+    }
+    
+    .level-number {
+      font-size: 50px;
+    }
+    
+    .weekly-achievement {
+      font-size: 22px;
+    }
+    
+    .achievement-circle {
+      width: 50px;
+      height: 50px;
+    }
+    
+    /* Adjust virtue markers for small screens */
+    .virtue-circle {
+      width: 40px;
+      height: 40px;
+      font-size: 14px;
+    }
+    
+    .virtue-circle.primary {
+      width: 48px;
+      height: 48px;
+      font-size: 16px;
+    }
+    
+    .virtue-title {
+      font-size: 9px;
+    }
+    
+    /* Left side virtues - mobile - positioned further out */
+    .virtue-beauty {
+      left: calc(50% - 155px);
+    }
+
+    .virtue-health {
+      left: calc(50% - 145px);
+    }
+
+    .virtue-wealth {
+      left: calc(50% - 145px);
+    }
+
+    .virtue-strength {
+      left: calc(50% - 155px);
+    }
+
+    /* Right side virtues - mobile - positioned further out */
+    .virtue-justice {
+      right: calc(50% - 155px);
+    }
+
+    .virtue-wisdom {
+      right: calc(50% - 145px);
+    }
+
+    .virtue-courage {
+      right: calc(50% - 145px);
+    }
+
+    .virtue-temperance {
+      right: calc(50% - 155px);
+    }
+  }
+  
+  /* Extra small screens - use a completely different layout for virtues */
+  @media (max-width: 400px) {
+    /* Container for virtue markers needs to adapt */
+    .pokemon-avatar-container {
+      padding-top: 20px;
+      padding-bottom: 20px;
+      margin-bottom: 80px; /* Add space below for the grid layout */
+    }
+    
+    .virtues-container {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      grid-gap: 10px;
+      margin-top: 270px; /* Position below the avatar */
+      height: auto;
+      width: auto;
+      max-width: 280px;
+      margin-left: auto;
+      margin-right: auto;
+      z-index: 4; /* Ensure it's above everything */
+    }
+    
+    /* Override absolute positioning for all virtue markers */
+    .virtue-marker {
+      position: relative;
+      top: auto;
+      left: auto;
+      right: auto;
+      margin: 0;
+    }
+    
+    .virtue-circle {
+      width: 35px;
+      height: 35px;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+    
+    .virtue-circle.primary {
+      width: 40px;
+      height: 40px;
+      font-size: 14px;
+    }
+    
+    .virtue-title {
+      font-size: 8px;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .profile-nav {
+      max-width: 300px;
+    }
+    
+    .pokemon-avatar {
+      width: 240px;
+      height: 350px;
+    }
+  }
+
+  @media (min-width: 992px) {
+    /* Left side virtues - large screens - positioned further out */
+    .virtue-beauty {
+      left: calc(50% - 220px);
+    }
+
+    .virtue-health {
+      left: calc(50% - 210px);
+    }
+
+    .virtue-wealth {
+      left: calc(50% - 210px);
+    }
+
+    .virtue-strength {
+      left: calc(50% - 220px);
+    }
+
+    /* Right side virtues - large screens - positioned further out */
+    .virtue-justice {
+      right: calc(50% - 220px);
+    }
+
+    .virtue-wisdom {
+      right: calc(50% - 210px);
+    }
+
+    .virtue-courage {
+      right: calc(50% - 210px);
+    }
+
+    .virtue-temperance {
+      right: calc(50% - 220px);
+    }
+  }
+
+  .locations-header {
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 1.5px;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    margin: 15px 0 25px;
+  }
+  
+  /* Add more vertical space between sections */
+  .seeds-section {
+    margin-bottom: 35px;
+    padding-bottom: 30px;
+    border-bottom: none;
+  }
+  
+  /* Row containing badges */
+  .badge-row {
+    margin-bottom: 25px;
+    justify-content: center;
+  }
+  
+  /* Make sure the badge columns have equal spacing */
+  .badge-col {
+    padding: 0 10px;
+  }
+
+  /* New Economic Layer Badge */
+  .economic-layer-badge {
+    position: absolute;
+    right: 20px;
+    top: 85px;
+    z-index: 10;
+    padding: 5px 15px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+  }
+  
+  .layer-port {
+    background: linear-gradient(135deg, #7cb8f7 0%, #4a90e2 100%);
+    color: white;
+  }
+  
+  .layer-laws {
+    background: linear-gradient(135deg, #a389d4 0%, #6c5ce7 100%);
+    color: white;
+  }
+  
+  .layer-republic {
+    background: linear-gradient(135deg, #f8c291 0%, #e67e22 100%);
+    color: white;
+  }
+
+  .economic-layer-badge i {
+    margin-right: 6px;
+  }
+  
+  /* Virtue History Chart */
+  .virtue-history-chart {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    margin-top: 20px;
+  }
+  
+  /* Preferences Section */
+  .preferences-section {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    margin-top: 20px;
+  }
+  
+  .preferences-section h3 {
+    color: var(--text-dark);
+    font-size: 18px;
+    margin-bottom: 15px;
+  }
+  
+  .preference-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .preference-item:last-child {
+    border-bottom: none;
+  }
+  
+  .preference-name {
+    font-weight: 500;
+    color: var(--text-dark);
+  }
+  
+  .preference-value {
+    color: var(--text-muted);
+  }
+  
+  /* Recommendations Section */
+  .recommendations-section {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    margin-top: 20px;
+  }
+  
+  .recommendation-item {
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .recommendation-icon {
+    width: 50px;
+    height: 50px;
+    background: var(--primary-teal);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin-right: 15px;
+    flex-shrink: 0;
+  }
+  
+  .recommendation-content {
+    flex-grow: 1;
+  }
+  
+  .recommendation-title {
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 5px;
+  }
+  
+  .recommendation-description {
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+  
+  .recommendation-boost {
+    background: var(--primary-yellow);
+    color: var(--text-dark);
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-left: 8px;
+  }
+</style>
+{% endblock %}
+
+{# Override status bar to hide it on the profile page #}
+{% block body %}
+<div class="app-content">
+  {# Status bar removed #}
+  
+  <!-- Profile Nav Tabs -->
+  <div class="profile-nav-container" id="profileNavContainer">
+    <div class="profile-nav">
+      <div class="nav-tab active">
+        <div class="me-tab-content">ME</div>
+      </div>
+      <div class="nav-tab">
+        <div class="friends-tab-content">
+          <div>FRIENDS</div>
+          <div class="friend-count">18</div>
+          <div class="friend-notification"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating X button that links to map -->
+  <a href="{% url 'core:map' %}" class="floating-x-button">
+    <span class="x-icon">✕</span>
+  </a>
+
+  <!-- Main content area -->
+  <div class="app-content-inner">
+    {% block inner %}
+    <div class="container-fluid py-3">
+      <!-- Pokemon GO-style Profile Display -->
+      <div class="row">
+        <div class="col-12">
+          <!-- Player Name and Level -->
+          <h1 class="player-name-title">{{ player.user.get_full_name|default:"Trainer Name" }}</h1>
+          <p class="username-text">@{{ player.user.username }}</p>
+          
+          <!-- Pokemon Character/Avatar Area -->
+          <div class="pokemon-avatar-container">
+            <!-- Virtues markers around avatar -->
+            <div class="virtues-container">
+              <!-- Left side virtues -->
+              <div class="virtue-marker virtue-beauty">
+                <div class="virtue-circle primary beauty">85</div>
+                <span class="virtue-title">Beauty</span>
+              </div>
+              <div class="virtue-marker virtue-health">
+                <div class="virtue-circle health">72</div>
+                <span class="virtue-title">Health</span>
+              </div>
+              <div class="virtue-marker virtue-wealth">
+                <div class="virtue-circle wealth">63</div>
+                <span class="virtue-title">Wealth</span>
+              </div>
+              <div class="virtue-marker virtue-strength">
+                <div class="virtue-circle strength">78</div>
+                <span class="virtue-title">Strength</span>
+              </div>
+              
+              <!-- Right side virtues -->
+              <div class="virtue-marker virtue-justice">
+                <div class="virtue-circle primary justice">80</div>
+                <span class="virtue-title">Justice</span>
+              </div>
+              <div class="virtue-marker virtue-wisdom">
+                <div class="virtue-circle wisdom">75</div>
+                <span class="virtue-title">Wisdom</span>
+              </div>
+              <div class="virtue-marker virtue-courage">
+                <div class="virtue-circle courage">82</div>
+                <span class="virtue-title">Courage</span>
+              </div>
+              <div class="virtue-marker virtue-temperance">
+                <div class="virtue-circle temperance">68</div>
+                <span class="virtue-title">Temperance</span>
+              </div>
+            </div>
+            
+            {% if player.avatar %}
+              <div class="pokemon-avatar">
+                <div class="avatar-background-circle"></div>
+                <img src="{{ player.avatar.url }}" alt="Player Avatar">
+              </div>
+            {% else %}
+              <div class="pokemon-avatar">
+                <div class="avatar-background-circle"></div>
+                <div class="avatar-placeholder">
+                  <i class="fas fa-user-alt fa-4x text-muted"></i>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+          
+          <!-- Level Display -->
+          <div class="player-level-display">
+            <div class="level-number">{{ player.level|default:"1" }}</div>
+            <div class="level-text">LEVEL</div>
+          </div>
+          
+          <!-- XP Bar -->
+          <div class="xp-bar">
+            <div class="xp-progress" style="width: 25%;"></div>
+          </div>
+          <div class="xp-text">{{ player.experience_points|default:"0" }}/ {{ player.next_level_xp|default:"1,000" }}</div>
+          
+          <!-- Action Buttons - Updated names to match app functionality -->
+          <div class="action-buttons">
+            <a href="#" class="action-button">
+              <div class="action-button-circle">
+                <i class="fas fa-tasks"></i>
+              </div>
+              <span class="action-button-text">QUESTS</span>
+            </a>
+            <a href="#" class="action-button">
+              <div class="action-button-circle">
+                <i class="fas fa-medal"></i>
+              </div>
+              <span class="action-button-text">ACHIEVEMENTS</span>
+            </a>
+            <a href="#" class="action-button">
+              <div class="action-button-circle">
+                <i class="fas fa-box-open"></i>
+              </div>
+              <span class="action-button-text">INVENTORY</span>
+            </a>
+            <a href="{% url 'users:detail' user.username %}" class="action-button">
+              <div class="action-button-circle">
+                <i class="fas fa-cog"></i>
+              </div>
+              <span class="action-button-text">SETTINGS</span>
+            </a>
+          </div>
+          
+          <!-- Activity Section -->
+          <div class="activity-section">
+            <h3 class="activity-header">TOTAL ACTIVITY</h3>
+            
+            <div class="activity-item">
+              <div class="d-flex align-items-center">
+                <i class="fas fa-shoe-prints activity-icon"></i>
+                <span class="activity-label">Distance Walked</span>
+              </div>
+              <span class="activity-value">{{ player.distance_walked|default:"0.0" }} km</span>
+            </div>
+            
+            <div class="activity-item">
+              <div class="d-flex align-items-center">
+                <i class="fas fa-map-marker-alt activity-icon"></i>
+                <span class="activity-label">Locations Visited</span>
+              </div>
+              <span class="activity-value">{{ player.locations_visited|default:"0" }}</span>
+            </div>
+            
+            <div class="activity-item">
+              <div class="d-flex align-items-center">
+                <i class="fas fa-landmark activity-icon"></i>
+                <span class="activity-label">Experiences Completed</span>
+              </div>
+              <span class="activity-value">{{ player.completed_experiences|default:"0" }}</span>
+            </div>
+            
+            <div class="activity-item">
+              <div class="d-flex align-items-center">
+                <i class="fas fa-star activity-icon"></i>
+                <span class="activity-label">Total XP</span>
+              </div>
+              <span class="activity-value">{{ player.experience_points|default:"0" }}</span>
+            </div>
+          </div>
+          
+          <!-- Seeds Section - Condensed layout -->
+          <div class="seeds-section">
+            <div class="seed-incubator-container">
+              <div class="seed-incubator">
+                {% if seed_image %}
+                  <img src="{{ seed_image.url }}" alt="Seed Incubator" class="seed-image">
+                {% else %}
+                  <div class="seed-image default-seed"></div>
+                {% endif %}
+              </div>
+              
+              <div class="seed-progress">
+                <span class="seed-progress-text">{{ seed_progress|default:"3.7" }}/5 km</span>
+                <div class="seed-progress-bar">
+                  <div class="seed-progress-fill" style="width: 74%"></div>
+                </div>
+                
+                <button class="seed-action-button">SEEDS</button>
+              </div>
+            </div>
+            
+            <!-- Seed stats section - centered -->
+            <div class="seed-stats">
+              <div class="stat-row">
+                <div class="stat-item">
+                  <i class="fas fa-seedling stat-icon"></i>
+                  <span class="stat-value">{{ seeds_grown|default:"8" }} Seeds Grown</span>
+                </div>
+                
+                <div class="stat-item">
+                  <i class="fas fa-shoe-prints stat-icon"></i>
+                  <span class="stat-value">{{ steps|default:"46,031" }} Steps</span>
+                </div>
+              </div>
+              
+              <div class="stat-row">
+                <div class="stat-item">
+                  <i class="fas fa-star stat-icon"></i>
+                  <span class="stat-value">{{ stars|default:"12" }} Stars Received</span>
+                </div>
+                
+                <div class="stat-item">
+                  <i class="fas fa-fire-alt stat-icon"></i>
+                  <span class="stat-value">{{ calories|default:"624" }} Calories</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Zone Badges Section -->
+          <div class="activity-section">
+            <h3 class="activity-header">ZONE BADGES</h3>
+            
+            <!-- Recently Visited -->
+            <h3 class="locations-header">RECENTLY VISITED</h3>
+            
+            <!-- Display recently visited locations in a grid layout -->
+            <div class="row badge-row text-center mx-1 mb-4">
+              <div class="col-4 badge-col">
+                <div class="badge-diamond-container">
+                  <div class="badge-icon-container">
+                    <i class="fas fa-book-open"></i>
+                  </div>
+                </div>
+                <div class="badge-progress-bar">
+                  <div class="badge-progress" style="width: 75%"></div>
+                </div>
+                <p class="badge-location">Maspeth Public Library</p>
+              </div>
+              
+              <div class="col-4 badge-col">
+                <div class="badge-diamond-container">
+                  <div class="badge-icon-container">
+                    <i class="fas fa-tree"></i>
+                  </div>
+                </div>
+                <div class="badge-progress-bar">
+                  <div class="badge-progress" style="width: 65%"></div>
+                </div>
+                <p class="badge-location">Frontera Park</p>
+              </div>
+              
+              <div class="col-4 badge-col">
+                <div class="badge-list-container">
+                  <div class="badge-list-diamond">
+                    <i class="fas fa-list badge-list-icon"></i>
+                  </div>
+                  <p class="badge-list-text">LIST</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Medals Section - Reduced to 1 row -->
+          <div class="activity-section">
+            <h3 class="activity-header">MEDALS</h3>
+            
+            <!-- Display medals in a grid layout - only 1 row as requested -->
+            <div class="row text-center mx-1">
+              <div class="col medal-item">
+                <div class="medal-circle gold">
+                  <span class="medal-number">1</span>
+                </div>
+                <div class="medal-progress-bar">
+                  <div class="medal-progress" style="width: 100%;"></div>
+                </div>
+              </div>
+              
+              <div class="col medal-item">
+                <div class="medal-circle gold">
+                  <i class="fas fa-award medal-icon"></i>
+                </div>
+                <div class="medal-progress-bar">
+                  <div class="medal-progress" style="width: 40%;"></div>
+                </div>
+              </div>
+              
+              <div class="col medal-item">
+                <div class="medal-circle gold">
+                  <i class="fas fa-trophy medal-icon"></i>
+                </div>
+                <div class="medal-progress-bar">
+                  <div class="medal-progress" style="width: 65%;"></div>
+                </div>
+              </div>
+              
+              <div class="col medal-item">
+                <div class="medal-circle bronze">
+                  <i class="fas fa-medal medal-icon"></i>
+                </div>
+                <div class="medal-progress-bar">
+                  <div class="medal-progress" style="width: 20%;"></div>
+                </div>
+              </div>
+              
+              <div class="col medal-item">
+                <div class="medal-circle silver">
+                  <i class="fas fa-certificate medal-icon"></i>
+                </div>
+                <div class="medal-progress-bar">
+                  <div class="medal-progress" style="width: 50%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endblock inner %}
+  </div>
+  
+  {# Bottom navigation bar removed #}
+</div>
+{% endblock body %}
+
+{% block javascript %}
+{{ block.super }}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // DOM element references
+    const navContainer = document.getElementById('profileNavContainer');
+    const navTabs = document.querySelectorAll('.nav-tab');
+    const xButton = document.querySelector('.floating-x-button');
+    
+    // Handle scrolling to change background color
+    window.addEventListener('scroll', function() {
+      navContainer.classList.toggle('scrolled', window.scrollY > 10);
+    });
+    
+    // Handle tab switching with animation
+    navTabs.forEach(tab => {
+      tab.addEventListener('click', function() {
+        // Only proceed if not already active
+        if (!this.classList.contains('active')) {
+          // Store references
+          const profileContent = document.querySelector('.container-fluid');
+          const isFriendsTab = this.querySelector('.friends-tab-content') !== null;
+          
+          // Update tab states
+          navTabs.forEach(t => {
+            t.classList.remove('active');
+            t.style.transition = 'all 0.3s ease';
+          });
+          this.classList.add('active');
+          
+          // Handle content display
+          handleTabContentChange(isFriendsTab, profileContent);
+        }
+      });
+    });
+    
+    // Add subtle pulse animation to floating X button
+    if (xButton) {
+      xButton.addEventListener('mouseenter', () => xButton.style.transform = 'translateX(-50%) scale(1.05)');
+      xButton.addEventListener('mouseleave', () => xButton.style.transform = 'translateX(-50%)');
+      xButton.addEventListener('mousedown', () => xButton.style.transform = 'translateX(-50%) scale(0.95)');
+      xButton.addEventListener('mouseup', () => xButton.style.transform = 'translateX(-50%) scale(1.05)');
+    }
+    
+    // Function to handle content change when tabs are switched
+    function handleTabContentChange(isFriendsTab, profileContent) {
+      // Fade out current content
+      profileContent.style.opacity = 0;
+      profileContent.style.transition = 'opacity 0.2s ease';
+      
+      setTimeout(() => {
+        if (isFriendsTab) {
+          // Store original content if not already stored
+          if (!profileContent.dataset.originalContent) {
+            profileContent.dataset.originalContent = profileContent.innerHTML;
+          }
+          
+          // Show friends content placeholder
+          profileContent.innerHTML = `
+            <div class="row mb-4">
+              <div class="col-12 text-center">
+                <h1 class="page-heading mt-4" style="color: #333; font-size: 24px;">Friends</h1>
+                <p class="lead text-muted">Connect with other players</p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-12 text-center py-5">
+                <i class="fas fa-users fa-4x mb-3" style="color: #96d6c8;"></i>
+                <h4 class="mb-3">Friends Feature Coming Soon</h4>
+                <p class="text-muted">This feature is currently under development.</p>
+              </div>
+            </div>
+          `;
+        } else if (profileContent.dataset.originalContent) {
+          // Restore original profile content
+          profileContent.innerHTML = profileContent.dataset.originalContent;
+        }
+        
+        // Fade in new content
+        profileContent.style.opacity = 1;
+      }, 200);
+    }
+  });
+</script>
+{% endblock javascript %}
+
+{% block modal %}
+  <!-- Global game modals can go here -->
+{% endblock modal %} 

@@ -1,0 +1,23 @@
+<!-- Add these links to the navigation menu -->
+<!-- ... existing code ... -->
+
+<!-- Inside the user-logged-in section -->
+<li class="nav-item dropdown">
+  <a class="nav-link dropdown-toggle" href="#" id="contributeDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    <i class="fas fa-plus-circle"></i> Contribute
+  </a>
+  <div class="dropdown-menu" aria-labelledby="contributeDropdown">
+    <a class="dropdown-item" href="{% url 'zones:submit_zone' %}">
+      <i class="fas fa-map-marker-alt"></i> Submit a New Zone
+    </a>
+    <a class="dropdown-item" href="{% url 'experiences:submit_experience' %}">
+      <i class="fas fa-star"></i> Submit a New Experience
+    </a>
+    <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="#">
+      <i class="fas fa-heart"></i> My Contributions
+    </a>
+  </div>
+</li>
+
+<!-- ... rest of existing code ... --> 

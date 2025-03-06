@@ -1,0 +1,738 @@
+{% comment %}
+[CLAUDE:OPTIMIZATION_LAYER:START]
+This template is part of the core_user_system component
+See .claude/README.md for more information
+[CLAUDE:OPTIMIZATION_LAYER:END]
+{% endcomment %}
+
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}Tech Tree | Eudaimonia Arts{% endblock %}
+
+{% block css %}
+{{ block.super }}
+<style>
+  .tech-tree-container {
+    padding: 2rem;
+    background-color: #f8fafc;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* D3 Network Visualization Styles */
+  #tech-tree-visualization {
+    width: 100%;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #f8fafc;
+    margin-bottom: 20px;
+  }
+  
+  .node circle {
+    fill: #edf2f7;
+    stroke: #cbd5e0;
+    stroke-width: 2px;
+  }
+  
+  .node-completed circle {
+    fill: #c6f6d5;
+    stroke: #38a169;
+  }
+  
+  .node-unlocked circle {
+    fill: #e9f5fe;
+    stroke: #4299e1;
+  }
+  
+  .node-locked circle {
+    fill: #edf2f7;
+    stroke: #cbd5e0;
+  }
+  
+  .node text {
+    font-size: 12px;
+    text-anchor: middle;
+  }
+  
+  .link {
+    stroke: #cbd5e0;
+    stroke-width: 2px;
+  }
+  
+  .link-completed {
+    stroke: #38a169;
+  }
+  
+  .tech-tree-tooltip {
+    opacity: 0;
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    pointer-events: none;
+    z-index: 1000;
+    max-width: 300px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Original styles for the list view */
+  .tree-level {
+    margin-bottom: 3rem;
+    position: relative;
+  }
+  
+  .tree-level::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1.5rem;
+    height: 1px;
+    background: linear-gradient(to right, transparent, #cbd5e1, transparent);
+  }
+  
+  .tree-level:last-child::after {
+    display: none;
+  }
+  
+  .level-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .level-label {
+    display: inline-block;
+    padding: 0.5rem 1.5rem;
+    background: linear-gradient(135deg, #3b82f6, #4f46e5);
+    color: white;
+    border-radius: 999px;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .tree-nodes {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+  }
+  
+  .tree-node {
+    flex: 1 0 300px;
+    max-width: 350px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    border: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .tree-node.node-completed {
+    border-color: #38a169;
+  }
+  
+  .tree-node.node-unlocked {
+    border-color: #4299e1;
+  }
+  
+  .tree-node.node-locked {
+    border-color: #cbd5e0;
+    opacity: 0.8;
+  }
+  
+  .node-header {
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  
+  .node-completed .node-header {
+    background-color: #f0fff4;
+  }
+  
+  .node-unlocked .node-header {
+    background-color: #ebf8ff;
+  }
+  
+  .node-locked .node-header {
+    background-color: #f7fafc;
+  }
+  
+  .node-status-badge {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+  
+  .node-completed .node-status-badge {
+    background-color: #38a169;
+    color: white;
+  }
+  
+  .node-unlocked .node-status-badge {
+    background-color: #4299e1;
+    color: white;
+  }
+  
+  .node-locked .node-status-badge {
+    background-color: #e2e8f0;
+    color: #718096;
+  }
+  
+  .node-header h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  
+  .node-body {
+    padding: 15px;
+    flex-grow: 1;
+  }
+  
+  .node-description {
+    margin-bottom: 15px;
+    font-size: 14px;
+    color: #4a5568;
+  }
+  
+  .node-requirements {
+    margin-top: 15px;
+  }
+  
+  .node-requirements h6 {
+    margin: 0 0 10px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  
+  .requirement-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .requirement-list li {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 5px;
+    font-size: 14px;
+  }
+  
+  .requirement-met {
+    color: #38a169;
+  }
+  
+  .requirement-not-met {
+    color: #e53e3e;
+  }
+  
+  .node-footer {
+    padding: 15px;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  .progress-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+  }
+  
+  .progress-stat {
+    text-align: center;
+    background-color: #edf2f7;
+    padding: 15px;
+    border-radius: 6px;
+    flex: 1;
+    margin: 0 5px;
+  }
+  
+  .stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2d3748;
+  }
+  
+  .stat-label {
+    font-size: 14px;
+    color: #4a5568;
+  }
+  
+  .tech-tree-progress {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    border: 1px solid #e2e8f0;
+  }
+  
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    margin-bottom: 5px;
+  }
+  
+  .progress-bar-container {
+    height: 8px;
+    background-color: #edf2f7;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .progress-bar {
+    height: 100%;
+    background-color: #4299e1;
+    border-radius: 4px;
+  }
+  
+  /* View toggle styles */
+  .view-toggle {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  
+  .view-toggle button {
+    padding: 8px 16px;
+    background-color: #edf2f7;
+    border: 1px solid #cbd5e0;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+  }
+  
+  .view-toggle button:first-child {
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+  }
+  
+  .view-toggle button:last-child {
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+  }
+  
+  .view-toggle button.active {
+    background-color: #4299e1;
+    color: white;
+    border-color: #2b6cb0;
+  }
+  
+  /* Progress bar width classes */
+  .progress-width-0 { width: 0%; }
+  .progress-width-5 { width: 5%; }
+  .progress-width-10 { width: 10%; }
+  .progress-width-15 { width: 15%; }
+  .progress-width-20 { width: 20%; }
+  .progress-width-25 { width: 25%; }
+  .progress-width-30 { width: 30%; }
+  .progress-width-35 { width: 35%; }
+  .progress-width-40 { width: 40%; }
+  .progress-width-45 { width: 45%; }
+  .progress-width-50 { width: 50%; }
+  .progress-width-55 { width: 55%; }
+  .progress-width-60 { width: 60%; }
+  .progress-width-65 { width: 65%; }
+  .progress-width-70 { width: 70%; }
+  .progress-width-75 { width: 75%; }
+  .progress-width-80 { width: 80%; }
+  .progress-width-85 { width: 85%; }
+  .progress-width-90 { width: 90%; }
+  .progress-width-95 { width: 95%; }
+  .progress-width-100 { width: 100%; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="page-header">
+    <h1>Eudaimonia Tech Tree</h1>
+    <p class="lead">Unlock new knowledge and skills through structured learning paths</p>
+    </div>
+  
+  <!-- Tech tree data stored in a hidden element -->
+  <div style="display: none;">
+    <div id="tech-tree-data">{{ tech_tree_levels_json|safe }}</div>
+    <div id="tech-tree-stats">{{ tech_tree_stats_json|safe }}</div>
+  </div>
+  
+  <!-- Overall Progress -->
+  <div class="tech-tree-progress">
+    <div class="progress-header">
+      <h3 class="mb-0">Your Progress</h3>
+      <span class="badge bg-primary">Level {{ user_profile.level }}</span>
+    </div>
+    
+    <div class="progress-stats">
+      <div class="progress-stat">
+        <div class="stat-value">{{ tech_tree_stats.completed_nodes }}</div>
+        <div class="stat-label">Completed</div>
+      </div>
+      <div class="progress-stat">
+        <div class="stat-value">{{ tech_tree_stats.unlocked_nodes }}</div>
+        <div class="stat-label">Unlocked</div>
+      </div>
+      <div class="progress-stat">
+        <div class="stat-value">{{ tech_tree_stats.completion_percentage|floatformat:0 }}%</div>
+        <div class="stat-label">Complete</div>
+      </div>
+    </div>
+    
+    <div class="progress-label">
+      <span>Overall Progress</span>
+      <span>{{ tech_tree_stats.completion_percentage|floatformat:0 }}%</span>
+    </div>
+    <div class="progress-bar-container">
+      <div class="progress-bar {% if tech_tree_stats.completion_percentage <= 100 %}progress-width-{{ tech_tree_stats.completion_percentage|floatformat:0 }}{% else %}progress-width-100{% endif %}"></div>
+    </div>
+  </div>
+  
+  <!-- View Toggle -->
+  <div class="view-toggle">
+    <button id="network-view-btn" class="active">Network View</button>
+    <button id="list-view-btn">List View</button>
+  </div>
+  
+  <!-- Network Visualization View -->
+  <div id="network-view">
+    <div id="tech-tree-visualization"></div>
+    <div class="tech-tree-tooltip"></div>
+  </div>
+  
+  <!-- List View -->
+  <div id="list-view" style="display: none;">
+  <div class="tech-tree-container">
+    {% for level in tech_tree_levels %}
+      <div class="tree-level">
+        <div class="level-header">
+          <div class="level-label">Level {{ level.level }}</div>
+        </div>
+        
+        <div class="tree-nodes">
+          {% for node in level.nodes %}
+            <div class="tree-node 
+                          {% if node.completed %}node-completed
+                          {% elif node.available %}node-unlocked
+                        {% else %}node-locked{% endif %}">
+              <div class="node-header">
+                <div class="node-status-badge">
+                    {% if node.completed %}
+                    <i class="fas fa-check"></i>
+                    {% elif node.available %}
+                    <i class="fas fa-unlock"></i>
+                  {% else %}
+                    <i class="fas fa-lock"></i>
+                  {% endif %}
+                </div>
+                  <h4>{{ node.name }}</h4>
+              </div>
+              
+              <div class="node-body">
+                  <p class="node-description">{{ node.description }}</p>
+                
+                  {% if node.available and not node.completed and node.percent_complete > 0 %}
+                  <div class="progress-label">
+                    <span>Progress</span>
+                      <span>{{ node.percent_complete|floatformat:0 }}%</span>
+                  </div>
+                  <div class="progress-bar-container">
+                      <div class="progress-bar {% if node.percent_complete <= 100 %}progress-width-{{ node.percent_complete|floatformat:0 }}{% else %}progress-width-100{% endif %}"></div>
+                  </div>
+                {% endif %}
+                
+                <div class="node-requirements">
+                  <h6>Prerequisites</h6>
+                  <ul class="requirement-list">
+                      {% for prereq_id in node.prerequisites %}
+                        <li>
+                          {% for prelevel in tech_tree_levels %}
+                            {% for prenode in prelevel.nodes %}
+                              {% if prenode.id == prereq_id %}
+                                {% if prenode.completed %}
+                                  <i class="fas fa-check-circle requirement-met"></i>
+                                {% else %}
+                                  <i class="fas fa-times-circle requirement-not-met"></i>
+                                {% endif %}
+                                {{ prenode.name }}
+                              {% endif %}
+                            {% endfor %}
+                          {% endfor %}
+                      </li>
+                    {% empty %}
+                      <li>No prerequisites</li>
+                    {% endfor %}
+                  </ul>
+                  </div>
+              </div>
+              
+              <div class="node-footer">
+                  {% if node.completed %}
+                  <span class="badge bg-success">Completed</span>
+                  {% elif node.available %}
+                    <a href="{% url 'core:tech_tree_detail' node.id %}" class="btn btn-sm btn-primary">Continue Learning</a>
+                {% else %}
+                  <span class="badge bg-secondary">Locked</span>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+{{ block.super }}
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // View toggle functionality
+    const networkViewBtn = document.getElementById('network-view-btn');
+    const listViewBtn = document.getElementById('list-view-btn');
+    const networkView = document.getElementById('network-view');
+    const listView = document.getElementById('list-view');
+    
+    networkViewBtn.addEventListener('click', function() {
+      networkView.style.display = 'block';
+      listView.style.display = 'none';
+      networkViewBtn.classList.add('active');
+      listViewBtn.classList.remove('active');
+    });
+    
+    listViewBtn.addEventListener('click', function() {
+      networkView.style.display = 'none';
+      listView.style.display = 'block';
+      networkViewBtn.classList.remove('active');
+      listViewBtn.classList.add('active');
+    });
+    
+    // D3 Network Visualization
+    const width = document.getElementById('tech-tree-visualization').clientWidth;
+    const height = 600;
+    
+    // Parse the tech tree data from Django context
+    const techTreeData = JSON.parse(document.getElementById('tech-tree-data').textContent);
+    
+    // Process tech tree data into D3 format
+    const nodes = [];
+    const links = [];
+    
+    // Create a map for quick lookup
+    const nodeMap = {};
+    
+    // First pass: Create all nodes
+    techTreeData.forEach(level => {
+      level.nodes.forEach(node => {
+        const nodeObj = {
+          id: node.id,
+          name: node.name,
+          description: node.description,
+          completed: node.completed,
+          percentComplete: node.percent_complete,
+          available: node.available,
+          level: level.level,
+          prerequisites: node.prerequisites || []
+        };
+        
+        nodes.push(nodeObj);
+        nodeMap[node.id] = nodeObj;
+      });
+    });
+    
+    // Second pass: Create links
+    nodes.forEach(node => {
+      if (node.prerequisites && node.prerequisites.length > 0) {
+        node.prerequisites.forEach(prereqId => {
+          if (nodeMap[prereqId]) {
+            links.push({
+              source: nodeMap[prereqId],
+              target: node,
+              completed: nodeMap[prereqId].completed
+            });
+          }
+        });
+      }
+    });
+    
+    console.log("Nodes:", nodes);
+    console.log("Links:", links);
+    
+    // Create SVG container
+    const svg = d3.select('#tech-tree-visualization')
+      .append('svg')
+      .attr('width', width)
+      .attr('height', height);
+    
+    // Create tooltip div if it doesn't exist
+    let tooltip = d3.select('.tech-tree-tooltip');
+    if (tooltip.empty()) {
+      tooltip = d3.select('body').append('div')
+        .attr('class', 'tech-tree-tooltip')
+        .style('opacity', 0);
+    }
+    
+    // Create arrow marker definition
+    svg.append('defs').append('marker')
+      .attr('id', 'arrowhead')
+      .attr('viewBox', '0 -5 10 10')
+      .attr('refX', 30)
+      .attr('refY', 0)
+      .attr('orient', 'auto')
+      .attr('markerWidth', 6)
+      .attr('markerHeight', 6)
+      .attr('xoverflow', 'visible')
+      .append('path')
+      .attr('d', 'M 0,-3 L 8,0 L 0,3')
+      .attr('fill', '#cbd5e0');
+    
+    // Create force simulation
+    const simulation = d3.forceSimulation(nodes)
+      .force('link', d3.forceLink(links).id(d => d.id).distance(150))
+      .force('charge', d3.forceManyBody().strength(-400))
+      .force('center', d3.forceCenter(width / 2, height / 2))
+      .force('y', d3.forceY().y(d => (d.level * 150) - 50).strength(1))
+      .force('collision', d3.forceCollide().radius(50));
+    
+    // Create links
+    const link = svg.append('g')
+      .selectAll('line')
+      .data(links)
+      .enter()
+      .append('line')
+      .attr('class', d => `link ${d.completed ? 'link-completed' : ''}`)
+      .attr('marker-end', 'url(#arrowhead)');
+    
+    // Create node groups
+    const node = svg.append('g')
+      .selectAll('.node')
+      .data(nodes)
+      .enter()
+      .append('g')
+      .attr('class', d => {
+        let classes = 'node';
+        if (d.completed) classes += ' node-completed';
+        else if (d.available) classes += ' node-unlocked';
+        else classes += ' node-locked';
+        return classes;
+      })
+      .call(d3.drag()
+        .on('start', dragstarted)
+        .on('drag', dragged)
+        .on('end', dragended));
+    
+    // Add circles to nodes
+    node.append('circle')
+      .attr('r', 30)
+      .on('mouseover', showTooltip)
+      .on('mouseout', hideTooltip)
+      .on('click', nodeClicked);
+    
+    // Add text labels to nodes
+    node.append('text')
+      .attr('dy', 40)
+      .text(d => d.name)
+      .attr('text-anchor', 'middle');
+    
+    // Add status icons to nodes
+    node.append('text')
+      .attr('class', 'status-icon')
+      .attr('text-anchor', 'middle')
+      .attr('dy', 5)
+      .style('fill', 'white')
+      .style('font-family', 'FontAwesome')
+      .style('font-size', '14px')
+      .text(d => {
+        if (d.completed) return '\uf00c'; // check icon
+        else if (d.available) return '\uf09c'; // unlock icon
+        else return '\uf023'; // lock icon
+      });
+    
+    // Update positions on simulation tick
+    simulation.on('tick', () => {
+      link
+        .attr('x1', d => d.source.x)
+        .attr('y1', d => d.source.y)
+        .attr('x2', d => d.target.x)
+        .attr('y2', d => d.target.y);
+      
+      node
+        .attr('transform', d => `translate(${d.x}, ${d.y})`);
+    });
+    
+    // Drag functions
+    function dragstarted(event, d) {
+      if (!event.active) simulation.alphaTarget(0.3).restart();
+      d.fx = d.x;
+      d.fy = d.y;
+    }
+    
+    function dragged(event, d) {
+      d.fx = event.x;
+      d.fy = event.y;
+    }
+    
+    function dragended(event, d) {
+      if (!event.active) simulation.alphaTarget(0);
+      d.fx = null;
+      d.fy = null;
+    }
+    
+    // Tooltip functions
+    function showTooltip(event, d) {
+      tooltip.transition()
+        .duration(200)
+        .style('opacity', .9);
+        
+      let statusText = d.completed ? 'Completed' : 
+                      (d.available ? 'Unlocked' : 'Locked');
+      
+      let tooltipContent = `
+        <strong>${d.name}</strong><br/>
+        <em>${d.description}</em><br/>
+        <span>Status: ${statusText}</span>
+        ${d.available && !d.completed ? `<br/><span>Progress: ${d.percentComplete}%</span>` : ''}
+      `;
+      
+      tooltip.html(tooltipContent)
+        .style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 28) + 'px');
+    }
+    
+    function hideTooltip() {
+      tooltip.transition()
+        .duration(500)
+        .style('opacity', 0);
+    }
+    
+    function nodeClicked(event, d) {
+      if (d.available || d.completed) {
+        window.location.href = `/game/tech-tree/${d.id}/`;
+      }
+    }
+  });
+</script>
+{% endblock %} 
