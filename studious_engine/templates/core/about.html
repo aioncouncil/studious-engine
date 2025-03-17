@@ -1,0 +1,587 @@
+{% extends "game_base.html" %}
+{% comment %}
+[CLAUDE:OPTIMIZATION_LAYER:START]
+This template is part of the core_user_system component
+See .claude/README.md for more information
+[CLAUDE:OPTIMIZATION_LAYER:END]
+{% endcomment %}
+
+{% load static %}
+
+{% block title %}About AION - The New Academy{% endblock %}
+
+{% block css %}
+{{ block.super }}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
+    
+    :root {
+        /* Atlantis-inspired color palette */
+        --soul-out: #00a8ff; /* Glowing crystal blue for wisdom/thought */
+        --soul-in: #e9c46a;  /* Amber/gold for judgment/review */
+        --body-out: #f72585; /* Vibrant energy pink for creation/production */
+        --body-in: #2ec4b6;  /* Teal/turquoise for resources/implementation */
+        --bg-dark: #0d1b2a;  /* Deep ocean blue background */
+        --bg-light: #f0f4f8; /* Subtle off-white (Apple-like) */
+        --text-light: #f8f9fa; /* Light text */
+        --text-dark: #2b2d42; /* Dark text */
+        --accent: #0466c8; /* Atlantean crystal blue */
+        --accent-glow: rgba(4, 102, 200, 0.4); /* For glowing effects */
+        --apple-light-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        --atlantis-glow: 0 0 20px rgba(0, 168, 255, 0.5);
+    }
+    
+    * {
+        box-sizing: border-box;
+        font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    
+    .about-content {
+        color: var(--text-dark);
+        background-color: var(--bg-light);
+        overflow-x: hidden;
+        padding-bottom: 4rem;
+    }
+    
+    .about-content h1, .about-content h2 {
+        font-family: 'Cinzel', serif;
+        font-weight: 700;
+        letter-spacing: -0.015em;
+    }
+    
+    .about-content h3, .about-content h4 {
+        font-weight: 600;
+        letter-spacing: -0.015em;
+    }
+    
+    .about-content h1 {
+        font-size: 3.5rem;
+        line-height: 1.1;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, var(--soul-out), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .about-content h2 {
+        font-size: 2.5rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+        display: inline-block;
+    }
+    
+    .about-content h2::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        width: 80px;
+        height: 3px;
+        background: linear-gradient(90deg, var(--soul-out), transparent);
+    }
+    
+    .about-content h3 {
+        font-size: 1.75rem;
+        margin-bottom: 1rem;
+    }
+    
+    .about-content p {
+        font-size: 1.125rem;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+        font-weight: 300;
+    }
+    
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+    }
+    
+    section {
+        padding: 6rem 0;
+        position: relative;
+    }
+    
+    /* Atlantean Symbol Decorations */
+    section::before {
+        content: '';
+        position: absolute;
+        width: 60px;
+        height: 60px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none' stroke='%230466c8' stroke-width='2'%3E%3Ccircle cx='50' cy='50' r='40'/%3E%3Ccircle cx='50' cy='50' r='25'/%3E%3Cpath d='M50 10L50 90M10 50L90 50M26 26L74 74M26 74L74 26'/%3E%3C/svg%3E");
+        background-size: contain;
+        background-repeat: no-repeat;
+        opacity: 0.1;
+        z-index: 0;
+    }
+    
+    section:nth-child(odd)::before {
+        top: 40px;
+        left: 40px;
+    }
+    
+    section:nth-child(even)::before {
+        bottom: 40px;
+        right: 40px;
+        transform: rotate(45deg);
+    }
+    
+    .btn {
+        display: inline-block;
+        padding: 0.875rem 1.75rem;
+        font-size: 1rem;
+        font-weight: 500;
+        text-align: center;
+        text-decoration: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        margin-top: 1.5rem;
+    }
+    
+    .btn::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+        transform: scale(0);
+        opacity: 0;
+        transition: transform 0.5s, opacity 0.5s;
+    }
+    
+    .btn:hover::after {
+        opacity: 1;
+        transform: scale(1);
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, var(--accent), var(--soul-out));
+        color: white;
+        box-shadow: var(--apple-light-shadow);
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px var(--accent-glow);
+    }
+    
+    /* Hero Section */
+    .hero-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at 70% 30%, rgba(0, 168, 255, 0.15), transparent 70%), 
+                    radial-gradient(circle at 30% 70%, rgba(247, 37, 133, 0.1), transparent 70%);
+        z-index: 0;
+    }
+    
+    .hero::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 30%;
+        background: linear-gradient(to top, var(--bg-light), transparent);
+        z-index: 0;
+    }
+    
+    .hero-content {
+        max-width: 700px;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .hero-content::after {
+        content: '';
+        position: absolute;
+        top: -30px;
+        right: -80px;
+        width: 150px;
+        height: 150px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none'%3E%3Ccircle cx='50' cy='50' r='45' stroke='%230466c8' stroke-width='1'/%3E%3Ccircle cx='50' cy='50' r='35' stroke='%230466c8' stroke-width='1'/%3E%3Ccircle cx='50' cy='50' r='25' stroke='%230466c8' stroke-width='1'/%3E%3Ccircle cx='50' cy='50' r='15' stroke='%230466c8' stroke-width='1'/%3E%3Cpath d='M50 5L50 95M5 50L95 50M15 15L85 85M15 85L85 15' stroke='%230466c8' stroke-width='1'/%3E%3C/svg%3E");
+        background-size: contain;
+        background-repeat: no-repeat;
+        opacity: 0.15;
+        z-index: 0;
+    }
+    
+    .hero-subtitle {
+        font-family: 'Cinzel', serif;
+        font-size: 1.25rem;
+        color: var(--accent);
+        font-weight: 500;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .hero-subtitle::before {
+        content: '';
+        display: inline-block;
+        width: 40px;
+        height: 1px;
+        background-color: var(--accent);
+        margin-right: 15px;
+    }
+    
+    /* Matrix Section */
+    .matrix {
+        background-color: var(--bg-dark);
+        color: var(--text-light);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .matrix::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+            radial-gradient(circle at 20% 20%, rgba(0, 168, 255, 0.2), transparent 30%),
+            radial-gradient(circle at 80% 80%, rgba(233, 196, 106, 0.2), transparent 30%);
+        z-index: 0;
+    }
+    
+    .matrix > .container {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .matrix h2 {
+        color: var(--text-light);
+    }
+    
+    .matrix h2::after {
+        background: linear-gradient(90deg, var(--soul-out), transparent);
+    }
+    
+    .matrix-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+        gap: 2rem;
+        margin-top: 4rem;
+    }
+    
+    .matrix-card {
+        padding: 2.5rem;
+        border-radius: 1rem;
+        transition: all 0.4s ease;
+        background-color: rgba(2, 10, 15, 0.6);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .matrix-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background: linear-gradient(90deg, currentColor, transparent);
+        opacity: 0.6;
+    }
+    
+    .matrix-card::after {
+        content: '';
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        width: 30px;
+        height: 30px;
+        background-size: contain;
+        background-repeat: no-repeat;
+        opacity: 0.2;
+    }
+    
+    .matrix-card:hover {
+        transform: translateY(-10px) scale(1.03);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+    }
+    
+    .matrix-card h3 {
+        margin-bottom: 1rem;
+        font-family: 'Cinzel', serif;
+        position: relative;
+        display: inline-block;
+        padding-bottom: 10px;
+    }
+    
+    .matrix-card h3::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 40px;
+        height: 2px;
+        background-color: currentColor;
+        opacity: 0.6;
+    }
+    
+    .soul-out {
+        color: var(--soul-out);
+        grid-column: 1;
+        grid-row: 1;
+    }
+    
+    .soul-out::after {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300a8ff' stroke-width='2'%3E%3Cpath d='M12 2L2 22h20L12 2z'/%3E%3C/svg%3E");
+    }
+    
+    .soul-in {
+        color: var(--soul-in);
+        grid-column: 2;
+        grid-row: 1;
+    }
+    
+    .soul-in::after {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e9c46a' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Ccircle cx='12' cy='12' r='4'/%3E%3C/svg%3E");
+    }
+    
+    .body-out {
+        color: var(--body-out);
+        grid-column: 1;
+        grid-row: 2;
+    }
+    
+    .body-out::after {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f72585' stroke-width='2'%3E%3Cpath d='M12 2v20M2 12h20'/%3E%3C/svg%3E");
+    }
+    
+    .body-in {
+        color: var(--body-in);
+        grid-column: 2;
+        grid-row: 2;
+    }
+    
+    .body-in::after {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232ec4b6' stroke-width='2'%3E%3Cpath d='M3 6h18M3 12h18M3 18h18'/%3E%3C/svg%3E");
+    }
+    
+    /* Tech Tree Section */
+    .tech-tree {
+        background-color: var(--bg-dark);
+        color: var(--text-light);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .tech-tree::before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        background-image: radial-gradient(circle at 30% 30%, rgba(0, 168, 255, 0.2), transparent 40%);
+        z-index: 0;
+    }
+    
+    .tech-tree > .container {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .tech-tree h2 {
+        color: var(--text-light);
+    }
+    
+    .tech-tree h2::after {
+        background: linear-gradient(90deg, var(--soul-out), transparent);
+    }
+    
+    .branches {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 2.5rem;
+        margin-top: 4rem;
+    }
+    
+    .branch {
+        flex: 1 1 300px;
+        padding: 2.5rem;
+        border-radius: 1.5rem;
+        background-color: rgba(2, 10, 15, 0.6);
+        backdrop-filter: blur(10px);
+        transition: all 0.4s ease;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .branch::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 5px;
+        height: 100%;
+        background: linear-gradient(to bottom, var(--soul-out), transparent);
+        opacity: 0.6;
+    }
+    
+    .branch::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 80px;
+        height: 80px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none' stroke='%2300a8ff' stroke-width='1'%3E%3Cpath d='M10 50h80M50 10v80M10 10l80 80M90 10L10 90'/%3E%3C/svg%3E");
+        background-size: contain;
+        background-repeat: no-repeat;
+        opacity: 0.05;
+        z-index: 0;
+    }
+    
+    .branch:hover {
+        transform: translateY(-10px) scale(1.03);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+    
+    .branch h3 {
+        font-family: 'Cinzel', serif;
+        color: var(--soul-out);
+        margin-bottom: 1.5rem;
+        position: relative;
+        padding-left: 1rem;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .about-content h1 {
+            font-size: 2.5rem;
+        }
+        
+        .about-content h2 {
+            font-size: 2rem;
+        }
+        
+        .matrix-grid {
+            grid-template-columns: 1fr;
+            grid-template-rows: repeat(4, auto);
+        }
+        
+        .soul-out, .soul-in, .body-out, .body-in {
+            grid-column: 1;
+        }
+        
+        .soul-out {
+            grid-row: 1;
+        }
+        
+        .soul-in {
+            grid-row: 2;
+        }
+        
+        .body-out {
+            grid-row: 3;
+        }
+        
+        .body-in {
+            grid-row: 4;
+        }
+    }
+</style>
+{% endblock css %}
+
+{% block content %}
+<div class="about-content">
+    <section class="hero" id="vision">
+        <div class="hero-bg"></div>
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-subtitle">The world's first</div>
+                <h1>A New Academy for a New Civilization</h1>
+                <p>AION is reimagining Plato's Academy for the technological age—a living campus where philosophy meets advanced technology to create the ideal society. We're building a place where great minds can live, learn, and create the future.</p>
+                <p>We're not just teaching philosophy—we're practicing it by building a self-sustaining civilization where automation handles the mundane so humans can focus on excellence.</p>
+                <a href="{% url 'core:market' %}" class="btn btn-primary">Return to Market</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="matrix" id="matrix">
+        <div class="container">
+            <h2>The Four Forces That Shape Everything</h2>
+            <p>At AION, everything is organized around a simple matrix that balances individual and collective growth across both intellectual and physical domains.</p>
+            
+            <div class="matrix-grid">
+                <div class="matrix-card soul-out">
+                    <h3>Soul Out</h3>
+                    <p>This is where ideas are born. Spaces for contemplation, innovation, and vision. Our Think Tanks operate here, generating the blueprints for a better world.</p>
+                    <p><strong>Example:</strong> Meditative spaces where you can access the combined knowledge of humanity to spark new ideas.</p>
+                </div>
+                
+                <div class="matrix-card soul-in">
+                    <h3>Soul In</h3>
+                    <p>Here we reflect and evaluate. The judgment centers where ideas are tested against wisdom. This is where our governance makes sure we stay true to our values.</p>
+                    <p><strong>Example:</strong> Collaborative review processes that ensure every innovation serves human flourishing.</p>
+                </div>
+                
+                <div class="matrix-card body-out">
+                    <h3>Body Out</h3>
+                    <p>Where creation happens. Our Production Tanks transform ideas into reality through advanced technology and master craftsmanship.</p>
+                    <p><strong>Example:</strong> Automated fabrication labs where your morning's idea becomes afternoon's reality.</p>
+                </div>
+                
+                <div class="matrix-card body-in">
+                    <h3>Body In</h3>
+                    <p>Resources and implementation. Our automated systems ensure every need is met with minimal waste and maximum efficiency.</p>
+                    <p><strong>Example:</strong> Resource distribution networks that ensure you have exactly what you need, when you need it.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="tech-tree" id="tech-tree">
+        <div class="container">
+            <h2>The Tree of Knowledge & Creation</h2>
+            <p>Our innovation engine powers a continuously evolving tech tree that combines ancient wisdom with cutting-edge technology—all accessible to every member of AION.</p>
+            
+            <div class="branches">
+                <div class="branch">
+                    <h3>Living Systems</h3>
+                    <p>From advanced agriculture to synthetic biology, we're creating systems that marry nature's wisdom with human ingenuity.</p>
+                    <p>Current focus: Self-replicating food systems that eliminate scarcity forever.</p>
+                </div>
+                
+                <div class="branch">
+                    <h3>Advanced Manufacturing</h3>
+                    <p>Fully automated production systems that can create anything from quantum computers to renaissance art.</p>
+                    <p>Current focus: Self-replicating machines that can build an entire city from raw materials.</p>
+                </div>
+                
+                <div class="branch">
+                    <h3>Governance & Organization</h3>
+                    <p>Perfected social systems that eliminate bureaucracy while maintaining perfect order and freedom.</p>
+                    <p>Current focus: Implementing the Laws model with rotating governance by wisdom, not power.</p>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 3rem;">
+                <a href="{% url 'core:market' %}" class="btn btn-primary">Return to Market</a>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock content %} 

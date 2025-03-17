@@ -27,6 +27,9 @@ See .claude/README.md for more information
       <a href="#request-form" class="btn btn-eudaimonia me-2">
         <i class="fas fa-plus me-2"></i>Make a Request
       </a>
+      <a href="{% url 'core:about' %}" class="btn btn-outline-secondary me-2">
+        <i class="fas fa-info-circle me-2"></i>About AION
+      </a>
       <a href="{% url 'core:wishlist' %}" class="btn btn-outline-primary position-relative">
         <i class="fas fa-heart me-2"></i>My Wishlist
         {% if wishlist_count > 0 %}

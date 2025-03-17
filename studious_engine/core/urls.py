@@ -29,6 +29,7 @@ urlpatterns = [
     path('nearby/', views.NearbyView.as_view(), name='nearby'),
     path('location/update/', update_player_location, name='update_location'),
     path('market/', views.StoreView.as_view(), name='market'),
+    path('market/about/', views.AboutView.as_view(), name='about'),
     path('market/item/<uuid:item_id>/', views.MarketItemDetailView.as_view(), name='market_item_detail'),
     path('market/purchase/<uuid:item_id>/', views.purchase_item, name='purchase_item'),
     path('zone/', views.ZoneView.as_view(), name='zone'),

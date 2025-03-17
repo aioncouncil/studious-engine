@@ -737,4 +737,9 @@ class MarketItemDetailView(LoginRequiredMixin, DetailView):
             {'id': i, 'name': f'Related Item {i}', 'price': 50 + i * 10}
             for i in range(1, 4)
         ]
-        return context 
+        return context
+
+
+class AboutView(TemplateView):
+    """About page for AION - The New Academy."""
+    template_name = 'core/about.html' 
