@@ -1,53 +1,75 @@
 // EudaimoniaGo Main JavaScript
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('EudaimoniaGo initialized');
-    
-    // Initialize all tooltips
-    initTooltips();
-    
-    // Initialize map if element exists
-    if (document.getElementById('campus-map')) {
-        initCampusMap();
+    try {
+        console.log('EudaimoniaGo initialized');
+        
+        // Initialize all tooltips
+        initTooltips();
+        
+        // Initialize map if element exists
+        if (document.getElementById('campus-map')) {
+            initCampusMap();
+        }
+        
+        // Initialize filter functionality if on zones page
+        if (document.getElementById('zone-type-filter')) {
+            initZoneFilters();
+        }
+        
+        // Initialize filter functionality if on innovations page
+        if (document.getElementById('innovation-stage-filter')) {
+            initInnovationFilters();
+        }
+        
+        // Add pulse animation to new elements
+        highlightNewElements();
+
+        // Initialize performance optimizations
+        optimizeScrollingEvents();
+        
+        // Initialize lazy loading
+        initLazyLoading();
+    } catch (error) {
+        reportError(error, 'initialization');
     }
-    
-    // Initialize filter functionality if on zones page
-    if (document.getElementById('zone-type-filter')) {
-        initZoneFilters();
-    }
-    
-    // Initialize filter functionality if on innovations page
-    if (document.getElementById('innovation-stage-filter')) {
-        initInnovationFilters();
-    }
-    
-    // Add pulse animation to new elements
-    highlightNewElements();
 });
 
 // Initialize Bootstrap tooltips
 function initTooltips() {
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
+    try {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    } catch (error) {
+        console.error('Error initializing tooltips:', error);
+    }
 }
 
 // Campus Map Initialization
 function initCampusMap() {
     console.log('Initializing campus map');
     
-    // Mock map initialization - would be replaced with actual map API implementation
-    const mapElement = document.getElementById('campus-map');
-    
-    // Mock map display with placeholder
-    mapElement.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background-color:#e9ecef;"><p>Campus Map Placeholder<br>Real map would be initialized here with location API</p></div>';
-    
-    // Setup locate me button functionality
-    const locateBtn = document.getElementById('locate-me-btn');
-    if (locateBtn) {
-        locateBtn.addEventListener('click', function() {
-            getUserLocation();
-        });
+    try {
+        // Mock map initialization - would be replaced with actual map API implementation
+        const mapElement = document.getElementById('campus-map');
+        
+        if (!mapElement) {
+            throw new Error('Map element not found');
+        }
+        
+        // Mock map display with placeholder
+        mapElement.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background-color:#e9ecef;"><p>Campus Map Placeholder<br>Real map would be initialized here with location API</p></div>';
+        
+        // Setup locate me button functionality
+        const locateBtn = document.getElementById('locate-me-btn');
+        if (locateBtn) {
+            locateBtn.addEventListener('click', function() {
+                getUserLocation();
+            });
+        }
+    } catch (error) {
+        console.error('Error initializing campus map:', error);
     }
 }
 
@@ -214,4 +236,129 @@ function levelUpAnimation(element) {
     setTimeout(function() {
         element.classList.remove('level-up-animation');
     }, 3000);
+}
+
+// Add performance optimization for scrolling events
+function optimizeScrollingEvents() {
+    let ticking = false;
+    
+    window.addEventListener('scroll', function() {
+        if (!ticking) {
+            window.requestAnimationFrame(function() {
+                // Handle scroll events here
+                
+                ticking = false;
+            });
+            
+            ticking = true;
+        }
+    });
+}
+
+// Debounce utility function to limit function calls
+function debounce(func, wait) {
+    let timeout;
+    return function() {
+        const context = this;
+        const args = arguments;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(context, args), wait);
+    };
+}
+
+// Implement error reporting
+function reportError(error, context) {
+    console.error(`Error in ${context || 'unknown context'}:`, error);
+    
+    // In production, we could send this to a server
+    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        // Mock error reporting service
+        // In a real app, this would send to a service like Sentry
+        const errorData = {
+            message: error.message,
+            stack: error.stack,
+            context: context,
+            url: window.location.href,
+            timestamp: new Date().toISOString()
+        };
+        
+        // Log instead of actually sending in this example
+        console.log('Would report to error service:', errorData);
+        
+        // Actual implementation would be:
+        // fetch('/api/error-reporting', {
+        //    method: 'POST',
+        //    headers: { 'Content-Type': 'application/json' },
+        //    body: JSON.stringify(errorData)
+        // });
+    }
+}
+
+// Add lazy loading for images
+function initLazyLoading() {
+    if ('loading' in HTMLImageElement.prototype) {
+        // Browser supports native lazy loading
+        const images = document.querySelectorAll('img[data-src]');
+        images.forEach(img => {
+            img.src = img.dataset.src;
+            img.setAttribute('loading', 'lazy');
+            img.removeAttribute('data-src');
+        });
+    } else {
+        // Fallback for browsers that don't support native lazy loading
+        const lazyImages = document.querySelectorAll('img[data-src]');
+        
+        if ('IntersectionObserver' in window) {
+            const imageObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const lazyImage = entry.target;
+                        lazyImage.src = lazyImage.dataset.src;
+                        lazyImage.removeAttribute('data-src');
+                        imageObserver.unobserve(lazyImage);
+                    }
+                });
+            });
+            
+            lazyImages.forEach(image => {
+                imageObserver.observe(image);
+            });
+        } else {
+            // Fallback for older browsers without IntersectionObserver
+            let active = false;
+            
+            const lazyLoad = debounce(() => {
+                if (active === false) {
+                    active = true;
+                    
+                    setTimeout(() => {
+                        lazyImages.forEach(lazyImage => {
+                            if ((lazyImage.getBoundingClientRect().top <= window.innerHeight 
+                                && lazyImage.getBoundingClientRect().bottom >= 0) 
+                                && getComputedStyle(lazyImage).display !== 'none') {
+                                
+                                lazyImage.src = lazyImage.dataset.src;
+                                lazyImage.removeAttribute('data-src');
+                                
+                                lazyImages = lazyImages.filter(image => image !== lazyImage);
+                                
+                                if (lazyImages.length === 0) {
+                                    document.removeEventListener('scroll', lazyLoad);
+                                    window.removeEventListener('resize', lazyLoad);
+                                    window.removeEventListener('orientationchange', lazyLoad);
+                                }
+                            }
+                        });
+                        
+                        active = false;
+                    }, 200);
+                }
+            }, 100);
+            
+            document.addEventListener('scroll', lazyLoad);
+            window.addEventListener('resize', lazyLoad);
+            window.addEventListener('orientationchange', lazyLoad);
+            lazyLoad();
+        }
+    }
 }

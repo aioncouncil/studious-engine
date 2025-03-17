@@ -33,6 +33,7 @@
     justify-content: center;
     padding: 0;
     margin: 0;
+    background-color: #0047AB; /* Fallback background color in case image fails to load */
     background-image: url('{% static "images/welcome-background.jpg" %}');
     background-size: cover;
     background-position: center;
@@ -53,100 +54,104 @@
     position: relative;
     z-index: 2;
     text-align: center;
-    max-width: 600px;
-    margin: 0 auto;
+    color: white;
     padding: 2rem;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 10px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    max-width: 800px;
+    animation: fadeIn 1.2s ease-in-out;
   }
   
   .welcome-title {
     font-size: 3.5rem;
     font-weight: 700;
     margin-bottom: 1rem;
-    color: white;
-    letter-spacing: -0.5px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    letter-spacing: -0.02em;
   }
   
   .welcome-subtitle {
     font-size: 1.5rem;
-    font-weight: 300;
-    color: white;
+    font-weight: 400;
     margin-bottom: 2rem;
+    opacity: 0.9;
+    line-height: 1.4;
   }
   
-  .welcome-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin-top: 2rem;
-    align-items: center;
-  }
-  
-  .welcome-btn {
-    padding: 0.8rem 2rem;
-    border-radius: 5px;
-    font-weight: 600;
-    font-size: 1.1rem;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    display: inline-block;
-    min-width: 200px;
-    text-align: center;
-  }
-  
-  .btn-primary {
-    background-color: #3498db;
+  .welcome-button {
+    background: linear-gradient(90deg, #0071e3, #5e5ce6);
     color: white;
     border: none;
+    padding: 1rem 2.5rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-radius: 50px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    display: inline-block;
+    margin-top: 1rem;
   }
   
-  .btn-primary:hover {
-    background-color: #2980b9;
+  .welcome-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
   }
   
-  .btn-secondary {
-    background: transparent;
-    color: white;
-    border: 1px solid white;
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
   }
   
-  .btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.1);
+  /* Add responsive styles */
+  @media (max-width: 768px) {
+    .welcome-title {
+      font-size: 2.5rem;
+    }
+    
+    .welcome-subtitle {
+      font-size: 1.2rem;
+    }
+    
+    .welcome-content {
+      padding: 1.5rem;
+    }
+    
+    .welcome-button {
+      padding: 0.8rem 2rem;
+      font-size: 1.1rem;
+    }
   }
   
-  /* Override the container class to be full width */
-  .container {
-    max-width: 100% !important;
-    width: 100% !important;
-    padding: 0 !important;
-    margin: 0 !important;
+  @media (max-width: 576px) {
+    .welcome-title {
+      font-size: 2rem;
+    }
+    
+    .welcome-subtitle {
+      font-size: 1rem;
+    }
+    
+    .welcome-content {
+      padding: 1rem;
+    }
+    
+    .welcome-button {
+      padding: 0.7rem 1.5rem;
+      font-size: 1rem;
+    }
   }
 </style>
 {% endblock %}
 
-{% block body %}
+{% block content %}
 <div class="welcome-container">
   <div class="welcome-overlay"></div>
-  
   <div class="welcome-content">
-    <h1 class="welcome-title">EudaimoniaGo</h1>
-    <p class="welcome-subtitle">
-      Your campus adventure starts here
-    </p>
-    
-    <div class="welcome-buttons">
-      <a href="{% url 'core:dashboard' %}" class="welcome-btn btn-primary">
-        Continue
-      </a>
-      <a href="#" class="welcome-btn btn-secondary">
-        Referred by someone?
-      </a>
-    </div>
+    <h1 class="welcome-title">Welcome to EudaimoniaGo</h1>
+    <p class="welcome-subtitle">Explore your campus, discover new experiences, and embark on your journey to well-being.</p>
+    <a href="{% url 'core:home' %}" class="welcome-button">
+      Enter the Experience
+    </a>
   </div>
 </div>
-{% endblock %}
+{% endblock content %}

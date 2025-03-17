@@ -507,15 +507,66 @@ h1, h2, h3, h4, h5, h6 {
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .card {
-    border-radius: 14px;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
   }
   
   .btn {
-    border-radius: 10px;
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
   }
   
   .navbar-brand img {
-    max-height: 32px;
+    height: 30px;
+  }
+
+  .page-heading {
+    font-size: 1.75rem;
+  }
+
+  .mastery-card, .tech-tree-card, .timeline {
+    margin-bottom: 1rem;
+  }
+
+  .mastery-stats {
+    flex-direction: column;
+  }
+
+  .mastery-stat {
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* Add small device optimizations */
+@media (max-width: 576px) {
+  .container {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  .card {
+    padding: 0.5rem;
+  }
+
+  .display-4 {
+    font-size: 1.5rem;
+  }
+
+  .page-heading {
+    font-size: 1.5rem;
+  }
+
+  .lead {
+    font-size: 1rem;
+  }
+
+  .timeline-item {
+    padding-left: 1.5rem;
+  }
+
+  .timeline-item-marker {
+    width: 24px;
+    height: 24px;
+    left: -12px;
   }
 }

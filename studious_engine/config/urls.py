@@ -74,3 +74,6 @@ if settings.DEBUG:
         import debug_toolbar
 
         urlpatterns = [path("__debug__/", include(debug_toolbar.urls))] + urlpatterns
+
+    # Explicitly add static file serving for development
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
