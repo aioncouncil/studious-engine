@@ -57,7 +57,7 @@ def create_background(size=(800, 600), color="darkblue"):
 
 if __name__ == "__main__":
     # Ensure the images directory exists
-    os.makedirs("static/images", exist_ok=True)
+    os.makedirs("studious_engine/static/images", exist_ok=True)
     
     # Create power icons
     power_icons = {
@@ -69,12 +69,12 @@ if __name__ == "__main__":
     
     for power_name, (color, filename) in power_icons.items():
         img = create_power_icon(power_name, color)
-        img.save(f"static/images/{filename}")
+        img.save(f"studious_engine/static/images/{filename}")
         print(f"Created {filename}")
     
     # Create welcome background
     bg = create_background()
-    bg.save("static/images/welcome-background.jpg")
+    bg.save("studious_engine/static/images/welcome-background.jpg")
     print("Created welcome-background.jpg")
     
     print("All placeholder images have been created successfully.") 
