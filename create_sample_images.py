@@ -56,8 +56,9 @@ def create_background(size=(800, 600), color="darkblue"):
     return img
 
 if __name__ == "__main__":
-    # Ensure the images directory exists
-    os.makedirs("static/images", exist_ok=True)
+    # Ensure all the image directories exist
+    os.makedirs("static/images", exist_ok=True)  # For development server
+    os.makedirs("staticfiles/images", exist_ok=True)  # For collectstatic
     
     # Create power icons
     power_icons = {
@@ -69,12 +70,16 @@ if __name__ == "__main__":
     
     for power_name, (color, filename) in power_icons.items():
         img = create_power_icon(power_name, color)
+        # Save to multiple locations to ensure it's available in all configurations
         img.save(f"static/images/{filename}")
+        img.save(f"staticfiles/images/{filename}")
         print(f"Created {filename}")
     
     # Create welcome background
     bg = create_background()
+    # Save to multiple locations to ensure it's available in all configurations
     bg.save("static/images/welcome-background.jpg")
+    bg.save("staticfiles/images/welcome-background.jpg")
     print("Created welcome-background.jpg")
     
     print("All placeholder images have been created successfully.") 
