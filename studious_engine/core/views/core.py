@@ -148,7 +148,7 @@ class PlayerProfileView(LoginRequiredMixin, DetailView):
 
 class MapView(LoginRequiredMixin, TemplateView):
     """Main map view for the game, showing nearby zones and experiences."""
-    template_name = 'core/map.html'
+    template_name = 'core/atlantis_map.html'  # Now using the Atlantis map as default
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -165,6 +165,29 @@ class MapView(LoginRequiredMixin, TemplateView):
             })
         except Exception as e:
             # Fallback if there's an error
+            context.update({
+                'player_latitude': 0,
+                'player_longitude': 0,
+                'error': str(e)
+            })
+        return context
+
+
+class LegacyMapView(LoginRequiredMixin, TemplateView):
+    """Legacy version of the map view for backwards compatibility."""
+    template_name = 'core/map_legacy.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        try:
+            player, created = PlayerProfile.objects.get_or_create(user=self.request.user)
+            
+            context.update({
+                'player': player,
+                'player_latitude': player.latitude or 0,
+                'player_longitude': player.longitude or 0,
+            })
+        except Exception as e:
             context.update({
                 'player_latitude': 0,
                 'player_longitude': 0,
@@ -755,4 +778,11 @@ class PublicStoreView(TemplateView):
 
 class AboutView(TemplateView):
     """About page for AION - The New Academy."""
-    template_name = 'core/about.html' 
+    template_name = 'core/about.html'
+
+
+class AboutView(TemplateView):
+    """About page for AION - The New Academy."""
+    template_name = 'core/about.html'
+
+# AtlantisMapView removed since MapView now uses the Atlantis map template 

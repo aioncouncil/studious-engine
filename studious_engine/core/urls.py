@@ -5,7 +5,7 @@ from django.views.generic import TemplateView
 from django.contrib.auth.decorators import login_required
 
 from . import views
-from .views.core import toggle_wishlist, view_wishlist, update_player_location
+from .views.core import toggle_wishlist, view_wishlist, update_player_location, LegacyMapView
 from .api.router import core_router
 from .views.art import (
 
@@ -26,6 +26,7 @@ urlpatterns = [
     path('', views.PublicStoreView.as_view(), name='dashboard'),
     path('profile/', login_required(views.PlayerProfileView.as_view()), name='player_profile'),
     path('map/', views.MapView.as_view(), name='map'),
+    path('legacy-map/', LegacyMapView.as_view(), name='legacy_map'),
     path('nearby/', views.NearbyView.as_view(), name='nearby'),
     path('location/update/', update_player_location, name='update_location'),
     path('market/', views.StoreView.as_view(), name='market'),

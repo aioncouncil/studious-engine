@@ -1538,17 +1538,17 @@ See .claude/debug/patterns/zone_geo.md for common issues and solutions
   <div id="map-container">
     <div id="map"></div>
     
+    <!-- Link to the new map experience -->
+    <a href="{% url 'core:map' %}" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 12px 20px; background-color: #1a5276; color: white; font-weight: bold; font-size: 16px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.3), 0 0 15px rgba(41, 128, 185, 0.6); z-index: 9999; display: flex; align-items: center; cursor: pointer; text-decoration: none; border: 1px solid #73c0f4;">
+      <i class="fas fa-map-marked-alt" style="margin-right: 8px; font-size: 18px;"></i>
+      <span>RETURN TO NEW MAP</span>
+    </a>
+    
     <!-- Add a very visible contribute button at the top of the page -->
     <div id="contribute-button-new" style="position: fixed; top: 60px; left: 50%; transform: translateX(-50%); padding: 12px 20px; background-color: #8c43ff; color: white; font-weight: bold; font-size: 16px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); z-index: 9999; display: flex; align-items: center; cursor: pointer;">
       <i class="fas fa-plus" style="margin-right: 8px; font-size: 18px;"></i>
       <span>CONTRIBUTE</span>
     </div>
-    
-    <!-- Link to try the new Atlantis Map -->
-    <a href="{% url 'core:atlantis_map' %}" style="position: fixed; top: 120px; left: 50%; transform: translateX(-50%); padding: 12px 20px; background-color: #1a5276; color: white; font-weight: bold; font-size: 16px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.3), 0 0 15px rgba(41, 128, 185, 0.6); z-index: 9999; display: flex; align-items: center; cursor: pointer; text-decoration: none; border: 1px solid #73c0f4;">
-      <i class="fas fa-map-marked-alt" style="margin-right: 8px; font-size: 18px;"></i>
-      <span>TRY ATLANTIS MAP</span>
-    </a>
     
     <!-- Atlantis Go Overlays -->
     <div class="matrix-phase">

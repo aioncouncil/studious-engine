@@ -1,0 +1,1279 @@
+{% load static %}
+
+{# 
+===============================================================
+ATLANTIS GO - WORLD MAP (APPLE-INSPIRED DESIGN)
+===============================================================
+
+This template implements the map view for Atlantis Go with a focus on:
+1. Clean, minimalist Apple-inspired aesthetics
+2. Ancient-yet-advanced Atlantis mystical theme
+3. Improved performance over the original map implementation
+4. Enhanced user experience with smoother transitions and animations
+
+Structure:
+- HTML head with metadata and essential scripts
+- CSS variables and styling
+- Map container and base layers
+- UI controls (compass, avatar, action buttons) 
+- Modals and menus
+- Core JavaScript for map functionality
+- User location handling
+- Zone and point-of-interest markers
+- Debug functions (to be removed in production)
+
+This implementation uses Leaflet.js for the map with custom styling
+to create the mystical Atlantis aesthetic.
+#}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Basic page metadata -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  
+  <!-- Page title -->
+  <title>Atlantis Go - World Map</title>
+  
+  <!-- Essential stylesheets -->
+  <link rel="stylesheet" href="{% static 'css/project.css' %}">
+  <link rel="stylesheet" href="{% static 'css/eudaimonia.css' %}">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin=""/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    /* ================ ATLANTIS THEME VARIABLES ================ */
+    :root {
+      /* Color Palette */
+      --atlantis-primary: #1a5276;      /* Deep blue */
+      --atlantis-secondary: #2980b9;    /* Medium blue */
+      --atlantis-tertiary: #3498db;     /* Light blue */
+      --atlantis-accent: #73c0f4;       /* Crystal blue highlight */
+      --atlantis-glow: rgba(41, 128, 185, 0.6); /* Blue glow */
+      
+      /* UI Colors */
+      --ui-background: rgba(9, 24, 39, 0.85);
+      --ui-dark-background: rgba(5, 15, 25, 0.9);  
+      --ui-text: rgba(255, 255, 255, 0.9);
+      --ui-text-light: rgba(255, 255, 255, 0.7);
+      --ui-text-dark: rgba(0, 0, 0, 0.8);
+      --ui-border: rgba(255, 255, 255, 0.15);
+      
+      /* Shadows & Effects */
+      --mystic-glow-effect: 0 0 15px var(--atlantis-glow);
+      --glass-panel-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      
+      /* Typography */
+      --font-size-xs: 12px;
+      --font-size-sm: 14px;
+      --font-size-md: 16px;
+      --font-size-lg: 18px;
+      --font-size-xl: 24px;
+      
+      /* UI Elements */
+      --border-radius-sm: 8px;
+      --border-radius-md: 12px;
+      --border-radius-lg: 16px;
+      --border-radius-circle: 50%;
+      
+      /* Controls & Buttons */
+      --button-size-sm: 36px;
+      --button-size-md: 48px;
+      --button-size-lg: 64px;
+      --avatar-size: 48px;
+      
+      /* Animation Timing */
+      --transition-fast: 0.2s ease;
+      --transition-medium: 0.3s ease;
+      --transition-slow: 0.5s ease;
+      
+      /* Z-index Layers */
+      --z-index-map: 100;
+      --z-index-controls: 500;
+      --z-index-popups: 800;
+      --z-index-modal: 1000;
+    }
+    
+    /* ================ GENERAL STYLING ================ */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      overflow: hidden;
+      color: var(--ui-text);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    
+    #map-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: var(--z-index-map);
+    }
+    
+    #map {
+      height: 100%;
+      width: 100%;
+    }
+    
+    /* ================ GLASS PANEL EFFECT ================ */
+    .glass-panel {
+      background-color: var(--ui-background);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: var(--border-radius-md);
+      box-shadow: var(--glass-panel-shadow);
+      border: 1px solid var(--ui-border);
+    }
+    
+    /* ================ CONTROLS & BUTTONS ================ */
+    .control-button {
+      width: var(--button-size-sm);
+      height: var(--button-size-sm);
+      background-color: var(--ui-background);
+      border: 1px solid var(--ui-border);
+      border-radius: var(--border-radius-circle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: var(--glass-panel-shadow);
+      transition: all var(--transition-fast);
+    }
+    
+    .control-button:hover {
+      transform: scale(1.05);
+      border-color: var(--atlantis-accent);
+      box-shadow: var(--mystic-glow-effect);
+    }
+    
+    .control-button i {
+      color: var(--ui-text);
+      font-size: var(--font-size-sm);
+    }
+    
+    /* ================ TOAST NOTIFICATIONS ================ */
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 10px 20px;
+      background-color: var(--ui-background);
+      color: var(--ui-text);
+      border-radius: var(--border-radius-md);
+      box-shadow: var(--glass-panel-shadow);
+      z-index: var(--z-index-popups);
+      font-size: var(--font-size-sm);
+      border: 1px solid var(--ui-border);
+      opacity: 0;
+      transition: opacity var(--transition-medium);
+      display: none;
+    }
+    
+    .toast-success {
+      border-left: 4px solid #27ae60;
+    }
+    
+    .toast-info {
+      border-left: 4px solid var(--atlantis-tertiary);
+    }
+    
+    .toast-warning {
+      border-left: 4px solid #f39c12;
+    }
+    
+    .toast-error {
+      border-left: 4px solid #e74c3c;
+    }
+    
+    /* ================ SEARCH STYLES ================ */
+    #search-results {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .search-result-item {
+      padding: 10px;
+      border-bottom: 1px solid var(--ui-border);
+      cursor: pointer;
+      transition: background-color var(--transition-fast);
+    }
+    
+    .search-result-item:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+    
+    .result-name {
+      font-weight: 500;
+      color: var(--ui-text);
+    }
+    
+    .result-type {
+      font-size: var(--font-size-xs);
+      color: var(--ui-text-light);
+      margin-top: 4px;
+    }
+    
+    /* ================ FILTER STYLES ================ */
+    .filter-checkbox {
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .filter-checkbox input {
+      margin-right: 8px;
+    }
+    
+    /* ================ MAP MARKER STYLES ================ */
+    /* Zone markers */
+    .zone-marker-container {
+      width: 20px;
+      height: 20px;
+      border: 2px solid;
+      border-radius: 2px;
+      position: relative;
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+    }
+    
+    .zone-marker-inner {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 14px;
+      height: 14px;
+      opacity: 0.7;
+    }
+    
+    .zone-label {
+      position: absolute;
+      bottom: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      font-size: var(--font-size-xs);
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 2px 6px;
+      border-radius: 4px;
+      opacity: 0.9;
+    }
+    
+    /* Art markers */
+    .art-marker-container {
+      position: relative;
+      width: 16px;
+      height: 16px;
+    }
+    
+    .art-marker-inner {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, var(--atlantis-secondary) 0%, var(--atlantis-tertiary) 100%);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--atlantis-glow);
+    }
+    
+    .art-marker-pulse {
+      position: absolute;
+      top: -4px;
+      left: -4px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid var(--atlantis-tertiary);
+      animation: art-pulse 3s infinite;
+      opacity: 0.6;
+    }
+    
+    @keyframes art-pulse {
+      0% {
+        transform: scale(0.5);
+        opacity: 0.6;
+      }
+      50% {
+        transform: scale(1);
+        opacity: 0.2;
+      }
+      100% {
+        transform: scale(0.5);
+        opacity: 0.6;
+      }
+    }
+    
+    .art-label {
+      position: absolute;
+      bottom: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      font-size: var(--font-size-xs);
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 2px 6px;
+      border-radius: 4px;
+      opacity: 0.9;
+    }
+    
+    /* Experience markers */
+    .exp-marker-container {
+      position: relative;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .exp-marker-container i {
+      color: #f1c40f;
+      font-size: 18px;
+      filter: drop-shadow(0 0 5px rgba(241, 196, 15, 0.7));
+    }
+    
+    .exp-label {
+      position: absolute;
+      bottom: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      font-size: var(--font-size-xs);
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 2px 6px;
+      border-radius: 4px;
+      opacity: 0.9;
+    }
+    
+    /* ================ ANIMATIONS ================ */
+    .pulse-animation {
+      animation: button-pulse 0.5s ease;
+    }
+    
+    @keyframes button-pulse {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.1);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+    
+    .compass-pulse {
+      animation: compass-pulse 0.5s ease;
+    }
+    
+    @keyframes compass-pulse {
+      0% {
+        transform: translateY(0);
+        filter: drop-shadow(0 0 0 rgba(115, 192, 244, 0));
+      }
+      50% {
+        transform: translateY(-5px);
+        filter: drop-shadow(0 0 8px rgba(115, 192, 244, 0.8));
+      }
+      100% {
+        transform: translateY(0);
+        filter: drop-shadow(0 0 0 rgba(115, 192, 244, 0));
+      }
+    }
+    
+    /* ================ RESPONSIVE ADJUSTMENTS ================ */
+    @media (max-width: 768px) {
+      .top-right-controls, .bottom-right-controls {
+        right: 10px;
+      }
+      
+      #search-container {
+        left: 10px;
+        width: calc(100% - 80px);
+      }
+      
+      #player-avatar-container {
+        left: 10px;
+      }
+      
+      #main-action-button {
+        bottom: 20px;
+      }
+    }
+  </style>
+  
+  <!-- Essential script initialization -->
+  <script>
+    // Create dummy objects to ensure references exist before they're used
+    window.map = window.map || {};
+    window.userMarker = window.userMarker || {};
+    
+    // Helper function for smooth animations using requestAnimationFrame
+    const smoothAnimation = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        function(callback) { window.setTimeout(callback, 1000 / 60); };
+    })();
+  </script>
+</head>
+
+<body>
+  <!-- Map container with Leaflet map -->
+  <div id="map-container">
+    <div id="map"></div>
+  </div>
+  
+  <!-- Top-left controls: search bar -->
+  <div id="search-container" class="glass-panel" style="position: fixed; top: 20px; left: 20px; padding: 10px; z-index: var(--z-index-controls); width: 260px; display: flex; align-items: center;">
+    <i class="fas fa-search" style="margin-right: 10px; color: var(--atlantis-tertiary);"></i>
+    <input type="text" id="search-input" placeholder="Search zones, arts, experiences..." style="border: none; background: transparent; outline: none; width: 100%; color: var(--ui-text);">
+    <div id="search-clear" style="cursor: pointer; display: none;">
+      <i class="fas fa-times-circle" style="color: var(--atlantis-tertiary);"></i>
+    </div>
+  </div>
+  
+  <!-- Search results container -->
+  <div id="search-results" class="glass-panel" style="position: fixed; top: 70px; left: 20px; z-index: var(--z-index-controls); width: 260px; max-height: 300px; overflow-y: auto; display: none; padding: 10px;">
+    <!-- Search results will be populated here via JavaScript -->
+  </div>
+  
+  <!-- Top-right controls: settings, filters -->
+  <div class="top-right-controls" style="position: fixed; top: 20px; right: 20px; z-index: var(--z-index-controls); display: flex; flex-direction: column; gap: 12px;">
+    <div id="filter-button" class="control-button" title="Filter Map Elements">
+      <i class="fas fa-filter"></i>
+    </div>
+    <div id="settings-button" class="control-button" title="Settings">
+      <i class="fas fa-cog"></i>
+    </div>
+  </div>
+  
+  <!-- Center-top notification toast -->
+  <div id="toast" class="toast"></div>
+  
+  <!-- Bottom-left: player avatar & level -->
+  <div id="player-avatar-container" style="position: fixed; bottom: 20px; left: 20px; z-index: var(--z-index-controls);">
+    <a href="{% url 'core:player_profile' %}" style="text-decoration: none;">
+      <div id="player-avatar" class="glass-panel" style="width: var(--button-size-lg); height: var(--button-size-lg); border-radius: var(--border-radius-circle); display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; border: 2px solid var(--atlantis-accent); overflow: visible;">
+        <div class="avatar-bg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, var(--atlantis-secondary) 0%, var(--atlantis-tertiary) 100%); border-radius: 50%; overflow: hidden;"></div>
+        {% if request.user.profile.avatar %}
+          <img src="{{ request.user.profile.avatar.url }}" alt="Player Avatar" id="avatar-image" style="width: 90%; height: 90%; border-radius: var(--border-radius-circle); position: relative; z-index: 1; object-fit: cover;">
+        {% else %}
+          <i class="fas fa-user-graduate" style="color: white; font-size: 32px; position: relative; z-index: 1;"></i>
+        {% endif %}
+        <div id="player-name" class="glass-panel" style="position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); white-space: nowrap; padding: 4px 12px; border-radius: 12px; font-size: var(--font-size-sm); font-weight: 500; z-index: 2; background-color: var(--ui-dark-background); color: white; border: 1px solid var(--atlantis-accent);">
+          {{ request.user.username|default:"Explorer" }}
+        </div>
+        <div id="player-level" style="position: absolute; bottom: 15px; right: -8px; width: 28px; height: 28px; background-color: var(--ui-dark-background); border: 2px solid var(--atlantis-accent); color: var(--ui-text-light); border-radius: var(--border-radius-circle); font-size: var(--font-size-xs); display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 3; box-shadow: var(--glass-panel-shadow);">
+          {{ request.user.profile.level|default:"1" }}
+        </div>
+      </div>
+    </a>
+  </div>
+  
+  <!-- Center-bottom: main action button with Atlantis symbol -->
+  <div id="main-action-button" style="position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: var(--z-index-controls); width: var(--button-size-lg); height: var(--button-size-lg); cursor: pointer;">
+    <div class="atlantis-symbol" style="width: 100%; height: 100%; border-radius: var(--border-radius-circle); display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--atlantis-secondary) 0%, var(--atlantis-tertiary) 100%); border: 2px solid var(--atlantis-accent); box-shadow: var(--mystic-glow-effect); position: relative; overflow: hidden;">
+      <i class="fas fa-compass" style="font-size: 24px; color: white; position: relative; z-index: 2;"></i>
+      <div class="inner-glow" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, transparent 70%);"></div>
+    </div>
+    <div class="action-label glass-panel" style="position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); padding: 2px 10px; border-radius: 10px; font-size: var(--font-size-xs); font-weight: 500;">
+      Explore
+    </div>
+  </div>
+  
+  <!-- Bottom-right: compass, zoom controls -->
+  <div class="bottom-right-controls" style="position: fixed; bottom: 20px; right: 20px; z-index: var(--z-index-controls); display: flex; flex-direction: column; gap: 12px;">
+    <div id="zoom-in" class="control-button" title="Zoom In">
+      <i class="fas fa-plus"></i>
+    </div>
+    <div id="zoom-out" class="control-button" title="Zoom Out">
+      <i class="fas fa-minus"></i>
+    </div>
+    <div id="compass-button" class="control-button" title="Center Map">
+      <i class="fas fa-location-arrow"></i>
+    </div>
+  </div>
+  
+  <!-- Menu overlay (darkened background when menu is open) -->
+  <div id="menu-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 20, 40, 0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: calc(var(--z-index-modal) - 1); opacity: 0; transition: opacity var(--transition-medium); pointer-events: none;"></div>
+  
+  <!-- Main contribution/action menu -->
+  <div id="contribution-menu" class="glass-panel" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 300px; max-width: 90%; padding: 25px; z-index: var(--z-index-modal); opacity: 0; transition: all var(--transition-medium); pointer-events: none; border: 1px solid var(--atlantis-accent);">
+    <h2 style="text-align: center; margin-top: 0; margin-bottom: 20px; color: var(--atlantis-tertiary); font-weight: 600; font-size: 20px; border-bottom: 1px solid var(--ui-border); padding-bottom: 10px;">
+      Explore Atlantis
+    </h2>
+    
+    <div class="menu-options" style="display: flex; flex-direction: column; gap: 12px;">
+      <a href="{% url 'core:arts_pokedex' %}" class="menu-option glass-panel" style="padding: 14px; display: flex; align-items: center; cursor: pointer; transition: transform var(--transition-fast); border: 1px solid var(--ui-border); text-decoration: none; color: inherit;">
+        <i class="fas fa-book" style="width: 24px; margin-right: 15px; color: var(--atlantis-tertiary);"></i>
+        <span style="font-weight: 500;">Art Collection (Lexicon)</span>
+      </a>
+      
+      <a href="{% url 'core:art_mastery_dashboard' %}" class="menu-option glass-panel" style="padding: 14px; display: flex; align-items: center; cursor: pointer; transition: transform var(--transition-fast); border: 1px solid var(--ui-border); text-decoration: none; color: inherit;">
+        <i class="fas fa-palette" style="width: 24px; margin-right: 15px; color: var(--atlantis-tertiary);"></i>
+        <span style="font-weight: 500;">Current Arts</span>
+      </a>
+      
+      <a href="{% url 'core:tech_tree' %}" class="menu-option glass-panel" style="padding: 14px; display: flex; align-items: center; cursor: pointer; transition: transform var(--transition-fast); border: 1px solid var(--ui-border); text-decoration: none; color: inherit;">
+        <i class="fas fa-star" style="width: 24px; margin-right: 15px; color: var(--atlantis-tertiary);"></i>
+        <span style="font-weight: 500;">Experience Engine</span>
+      </a>
+      
+      <a href="{% url 'core:nearby' %}" class="menu-option glass-panel" style="padding: 14px; display: flex; align-items: center; cursor: pointer; transition: transform var(--transition-fast); border: 1px solid var(--ui-border); text-decoration: none; color: inherit;">
+        <i class="fas fa-users" style="width: 24px; margin-right: 15px; color: var(--atlantis-tertiary);"></i>
+        <span style="font-weight: 500;">Teams & Social</span>
+      </a>
+      
+      <a href="{% url 'core:market' %}" class="menu-option glass-panel" style="padding: 14px; display: flex; align-items: center; cursor: pointer; transition: transform var(--transition-fast); border: 1px solid var(--ui-border); text-decoration: none; color: inherit;">
+        <i class="fas fa-store" style="width: 24px; margin-right: 15px; color: var(--atlantis-tertiary);"></i>
+        <span style="font-weight: 500;">Shop/Store</span>
+      </a>
+      
+      <a href="{% url 'core:virtues' %}" class="menu-option glass-panel" style="padding: 14px; display: flex; align-items: center; cursor: pointer; transition: transform var(--transition-fast); border: 1px solid var(--ui-border); text-decoration: none; color: inherit;">
+        <i class="fas fa-sliders-h" style="width: 24px; margin-right: 15px; color: var(--atlantis-tertiary);"></i>
+        <span style="font-weight: 500;">Settings</span>
+      </a>
+    </div>
+    
+    <div id="menu-close" style="margin-top: 20px; padding: 12px; text-align: center; background: linear-gradient(135deg, var(--atlantis-primary) 0%, var(--atlantis-tertiary) 100%); color: white; border-radius: var(--border-radius-sm); cursor: pointer; font-weight: 500; transition: all var(--transition-fast);">
+      Close
+    </div>
+  </div>
+  
+  <!-- Filter menu -->
+  <div id="filter-menu" class="glass-panel" style="position: fixed; top: 80px; right: 20px; width: 240px; padding: 15px; z-index: var(--z-index-modal); display: none;">
+    <h3 style="margin-top: 0; margin-bottom: 15px; font-size: 16px; color: var(--atlantis-tertiary);">Filter Map Elements</h3>
+    
+    <div class="filter-section" style="margin-bottom: 15px;">
+      <div class="filter-heading" style="font-weight: 500; margin-bottom: 8px;">Zones</div>
+      <div class="filter-options" style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <div class="filter-checkbox">
+          <input type="checkbox" id="filter-zone-think" checked>
+          <label for="filter-zone-think">Think</label>
+        </div>
+        <div class="filter-checkbox">
+          <input type="checkbox" id="filter-zone-production" checked>
+          <label for="filter-zone-production">Production</label>
+        </div>
+        <div class="filter-checkbox">
+          <input type="checkbox" id="filter-zone-market" checked>
+          <label for="filter-zone-market">Market</label>
+        </div>
+        <div class="filter-checkbox">
+          <input type="checkbox" id="filter-zone-creative" checked>
+          <label for="filter-zone-creative">Creative</label>
+        </div>
+        <div class="filter-checkbox">
+          <input type="checkbox" id="filter-zone-social" checked>
+          <label for="filter-zone-social">Social</label>
+        </div>
+      </div>
+    </div>
+    
+    <div class="filter-section" style="margin-bottom: 15px;">
+      <div class="filter-heading" style="font-weight: 500; margin-bottom: 8px;">Arts</div>
+      <div class="filter-options" style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <div class="filter-checkbox">
+          <input type="checkbox" id="filter-art-liberal" checked>
+          <label for="filter-art-liberal">Liberal</label>
+        </div>
+        <div class="filter-checkbox">
+          <input type="checkbox" id="filter-art-mechanical" checked>
+          <label for="filter-art-mechanical">Mechanical</label>
+        </div>
+        <div class="filter-checkbox">
+          <input type="checkbox" id="filter-art-fine" checked>
+          <label for="filter-art-fine">Fine</label>
+        </div>
+        <div class="filter-checkbox">
+          <input type="checkbox" id="filter-art-social" checked>
+          <label for="filter-art-social">Social</label>
+        </div>
+      </div>
+    </div>
+    
+    <div class="filter-section">
+      <div class="filter-heading" style="font-weight: 500; margin-bottom: 8px;">Experiences</div>
+      <div class="filter-options" style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <div class="filter-checkbox">
+          <input type="checkbox" id="filter-exp-quest" checked>
+          <label for="filter-exp-quest">Quests</label>
+        </div>
+        <div class="filter-checkbox">
+          <input type="checkbox" id="filter-exp-challenge" checked>
+          <label for="filter-exp-challenge">Challenges</label>
+        </div>
+        <div class="filter-checkbox">
+          <input type="checkbox" id="filter-exp-collab" checked>
+          <label for="filter-exp-collab">Collaborations</label>
+        </div>
+      </div>
+    </div>
+    
+    <div style="display: flex; justify-content: space-between; margin-top: 15px;">
+      <button id="filter-reset" class="glass-panel" style="padding: 8px 12px; cursor: pointer; border: none; background-color: rgba(255,255,255,0.5); border-radius: var(--border-radius-sm); font-weight: 500;">Reset</button>
+      <button id="filter-apply" style="padding: 8px 12px; cursor: pointer; border: none; background: linear-gradient(135deg, var(--atlantis-primary) 0%, var(--atlantis-tertiary) 100%); color: white; border-radius: var(--border-radius-sm); font-weight: 500;">Apply</button>
+    </div>
+  </div>
+  
+  <!-- Map initialization script -->
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
+  
+  <script>
+    // ====================== CONFIGURATION ======================
+    const CONFIG = {
+      map: {
+        defaultCenter: [37.8, -122.4], // Default center coordinates
+        defaultZoom: 13,               // Default zoom level
+        minZoom: 10,                   // Minimum zoom level
+        maxZoom: 18,                   // Maximum zoom level
+        tileLayer: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' // Dark tile layer for mystical effect
+      },
+      customStyles: {
+        thinkZoneColor: '#3498db',     // Blue for Think zones
+        productionZoneColor: '#27ae60', // Green for Production zones
+        marketZoneColor: '#f39c12',    // Orange for Market zones
+        creativeZoneColor: '#9b59b6',  // Purple for Creative zones
+        socialZoneColor: '#e74c3c',    // Red for Social zones
+        pulseAnimationDuration: 1500   // Duration for pulse animations in ms
+      },
+      endpoints: {
+        mapData: '/api/map/elements/',  // Endpoint to fetch map elements
+        userLocation: '/api/user/location/' // Endpoint to update user location
+      }
+    };
+    
+    // Atlantis color overlays
+    const ATLANTIS_OVERLAY = {
+      color: 'rgba(41, 128, 185, 0.3)', // Light blue overlay for Atlantean mystical effect
+      fillOpacity: 0.2,
+      weight: 1
+    };
+
+    // ====================== MAP INITIALIZATION ======================
+    let map, userMarker, userCircle;
+    let mapElements = []; // Will store all loaded map elements
+    let currentFilters = {}; // Tracks active filters
+    
+    // Initialize map and UI when DOM is fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      initMap();
+      initUI();
+      getUserLocation();
+      fetchMapElements();
+    });
+    
+    // Initialize the Leaflet map with Atlantis styling
+    function initMap() {
+      // Create Leaflet map instance
+      map = L.map('map', {
+        center: CONFIG.map.defaultCenter,
+        zoom: CONFIG.map.defaultZoom,
+        zoomControl: false, // We'll add custom zoom controls
+        attributionControl: false // Remove attribution text
+      });
+      
+      // Add custom styled tile layer
+      L.tileLayer(CONFIG.map.tileLayer, {
+        maxZoom: CONFIG.map.maxZoom,
+        minZoom: CONFIG.map.minZoom
+      }).addTo(map);
+      
+      // Apply custom Atlantis styling to the map
+      customizeMapStyle();
+      
+      // Add map event listeners
+      map.on('click', onMapClick);
+      map.on('moveend', onMapMoveEnd);
+      map.on('zoomend', onMapZoomEnd);
+    }
+    
+    // Apply custom styling to map
+    function customizeMapStyle() {
+      // Add a semi-transparent gradient overlay for the mystical effect
+      const mapContainer = document.getElementById('map');
+      mapContainer.style.position = 'relative';
+      
+      // Add subtle blue glow to map
+      const overlay = document.createElement('div');
+      overlay.style.position = 'absolute';
+      overlay.style.top = 0;
+      overlay.style.left = 0;
+      overlay.style.width = '100%';
+      overlay.style.height = '100%';
+      overlay.style.background = 'radial-gradient(circle at center, rgba(41, 128, 185, 0.1) 0%, rgba(0, 20, 40, 0.4) 100%)';
+      overlay.style.pointerEvents = 'none'; // Allow clicks to pass through
+      overlay.style.zIndex = 400; // Above tiles but below markers
+      mapContainer.appendChild(overlay);
+    }
+    
+    // Initialize UI elements and event listeners
+    function initUI() {
+      // Main action button
+      document.getElementById('main-action-button').addEventListener('click', toggleMainMenu);
+      
+      // Menu close button
+      document.getElementById('menu-close').addEventListener('click', closeMainMenu);
+      document.getElementById('menu-overlay').addEventListener('click', closeMainMenu);
+      
+      // Menu options event listeners - add hover effects to links
+      const menuOptions = document.querySelectorAll('.menu-option');
+      menuOptions.forEach(option => {
+        // Add hover effect
+        option.addEventListener('mouseenter', function() {
+          this.style.transform = 'scale(1.03)';
+          this.style.borderColor = 'var(--atlantis-accent)';
+        });
+        
+        option.addEventListener('mouseleave', function() {
+          this.style.transform = 'scale(1)';
+          this.style.borderColor = 'var(--ui-border)';
+        });
+      });
+      
+      // Filter button
+      document.getElementById('filter-button').addEventListener('click', toggleFilterMenu);
+      document.getElementById('filter-apply').addEventListener('click', applyFilters);
+      document.getElementById('filter-reset').addEventListener('click', resetFilters);
+      
+      // Map controls
+      document.getElementById('zoom-in').addEventListener('click', () => map.zoomIn());
+      document.getElementById('zoom-out').addEventListener('click', () => map.zoomOut());
+      document.getElementById('compass-button').addEventListener('click', centerOnUser);
+      
+      // Search functionality
+      const searchInput = document.getElementById('search-input');
+      const searchClear = document.getElementById('search-clear');
+      
+      searchInput.addEventListener('input', function() {
+        if (this.value.length > 0) {
+          searchClear.style.display = 'block';
+          performSearch(this.value);
+        } else {
+          searchClear.style.display = 'none';
+          hideSearchResults();
+        }
+      });
+      
+      searchClear.addEventListener('click', function() {
+        searchInput.value = '';
+        this.style.display = 'none';
+        hideSearchResults();
+      });
+    }
+    
+    // ====================== USER LOCATION ======================
+    // Get user's current location
+    function getUserLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          position => {
+            const { latitude, longitude } = position.coords;
+            updateUserLocation(latitude, longitude);
+            
+            // Center map on user's location
+            map.setView([latitude, longitude], CONFIG.map.defaultZoom);
+            
+            // Add user marker with Atlantean styling
+            addUserMarker(latitude, longitude);
+          },
+          error => {
+            showToast('Unable to get your location. Using default location.', 'warning');
+            console.error('Geolocation error:', error);
+          },
+          { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+        );
+        
+        // Watch user position for updates
+        navigator.geolocation.watchPosition(
+          position => {
+            const { latitude, longitude } = position.coords;
+            updateUserLocation(latitude, longitude);
+            updateUserMarker(latitude, longitude);
+          },
+          error => {
+            console.error('Geolocation watching error:', error);
+          },
+          { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+        );
+      } else {
+        showToast('Geolocation is not supported by your browser.', 'error');
+      }
+    }
+    
+    // Add user marker to map
+    function addUserMarker(lat, lng) {
+      // Create marker with custom icon
+      const userIcon = L.divIcon({
+        className: 'user-location-marker',
+        html: `
+          <div class="user-marker-container">
+            <div class="pulse-ring"></div>
+            <div class="user-marker-inner"></div>
+          </div>
+        `,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+      });
+      
+      // Add marker to map
+      userMarker = L.marker([lat, lng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map);
+      
+      // Add accuracy circle
+      userCircle = L.circle([lat, lng], {
+        radius: 50,
+        color: 'rgba(41, 128, 185, 0.4)',
+        fillColor: 'rgba(41, 128, 185, 0.1)',
+        fillOpacity: 0.4,
+        weight: 1
+      }).addTo(map);
+      
+      // Add CSS for user marker
+      const style = document.createElement('style');
+      style.textContent = `
+        .user-marker-container {
+          position: relative;
+          width: 24px;
+          height: 24px;
+        }
+        .user-marker-inner {
+          position: absolute;
+          top: 25%;
+          left: 25%;
+          width: 50%;
+          height: 50%;
+          background: linear-gradient(135deg, var(--atlantis-secondary) 0%, var(--atlantis-tertiary) 100%);
+          border-radius: 50%;
+          border: 2px solid white;
+          box-shadow: 0 0 10px rgba(41, 128, 185, 0.8);
+        }
+        .pulse-ring {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          background-color: transparent;
+          border: 2px solid var(--atlantis-accent);
+          opacity: 0.7;
+          animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+          0% {
+            transform: scale(0.5);
+            opacity: 0.7;
+          }
+          70% {
+            transform: scale(1.5);
+            opacity: 0;
+          }
+          100% {
+            transform: scale(0.5);
+            opacity: 0;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+    
+    // Update user marker position
+    function updateUserMarker(lat, lng) {
+      if (userMarker && userCircle) {
+        userMarker.setLatLng([lat, lng]);
+        userCircle.setLatLng([lat, lng]);
+      }
+    }
+    
+    // Send updated user location to server
+    function updateUserLocation(lat, lng) {
+      // TODO: Implement API call to update server with user location
+      console.log('User location updated:', lat, lng);
+    }
+    
+    // Center map on user's location
+    function centerOnUser() {
+      if (userMarker) {
+        map.setView(userMarker.getLatLng(), CONFIG.map.defaultZoom);
+        pulseElement(document.getElementById('compass-button'));
+      } else {
+        showToast('User location not available', 'warning');
+      }
+    }
+    
+    // ====================== MAP MARKERS ======================
+    // Fetch map elements from server
+    function fetchMapElements() {
+      // TODO: Replace with actual API call
+      // Placeholder data for testing
+      const dummyData = [
+        { id: 1, type: 'zone', subtype: 'think', name: 'Innovation Hub', lat: 37.804, lng: -122.41, description: 'A space for intellectual exploration' },
+        { id: 2, type: 'zone', subtype: 'production', name: 'Maker Space', lat: 37.798, lng: -122.395, description: 'Build and create physical objects' },
+        { id: 3, type: 'zone', subtype: 'market', name: 'Digital Bazaar', lat: 37.792, lng: -122.405, description: 'Exchange goods and services' },
+        { id: 4, type: 'zone', subtype: 'creative', name: 'Design Studio', lat: 37.788, lng: -122.415, description: 'Express your creativity' },
+        { id: 5, type: 'zone', subtype: 'social', name: 'Community Center', lat: 37.795, lng: -122.425, description: 'Connect with others' },
+        { id: 6, type: 'art', subtype: 'liberal', name: 'Philosophy Discourse', lat: 37.802, lng: -122.417, description: 'Explore the foundations of knowledge' },
+        { id: 7, type: 'art', subtype: 'mechanical', name: 'Engineering Workshop', lat: 37.8, lng: -122.41, description: 'Learn practical skills' },
+        { id: 8, type: 'experience', subtype: 'quest', name: 'The Lost Library', lat: 37.785, lng: -122.42, description: 'Uncover ancient knowledge' }
+      ];
+      
+      // Process and add markers
+      mapElements = dummyData;
+      renderMapElements();
+    }
+    
+    // Render map elements based on current filters
+    function renderMapElements() {
+      // Clear existing markers
+      clearMapMarkers();
+      
+      // Add markers for each element based on type
+      mapElements.forEach(element => {
+        if (shouldShowElement(element)) {
+          addMapMarker(element);
+        }
+      });
+    }
+    
+    // Clear all markers from map
+    function clearMapMarkers() {
+      map.eachLayer(layer => {
+        if (layer instanceof L.Marker && layer !== userMarker) {
+          map.removeLayer(layer);
+        }
+      });
+    }
+    
+    // Add a map marker based on element type
+    function addMapMarker(element) {
+      let marker;
+      const { lat, lng, type, subtype, name } = element;
+      
+      switch (type) {
+        case 'zone':
+          marker = createZoneMarker(element);
+          break;
+        case 'art':
+          marker = createArtMarker(element);
+          break;
+        case 'experience':
+          marker = createExperienceMarker(element);
+          break;
+        default:
+          marker = createDefaultMarker(element);
+      }
+      
+      marker.on('click', () => {
+        openElementDetails(element);
+      });
+      
+      marker.addTo(map);
+    }
+    
+    // Create a zone marker (square with glowing edges)
+    function createZoneMarker(element) {
+      const { lat, lng, subtype, name } = element;
+      
+      // Determine color based on zone subtype
+      let color;
+      switch (subtype) {
+        case 'think': color = CONFIG.customStyles.thinkZoneColor; break;
+        case 'production': color = CONFIG.customStyles.productionZoneColor; break;
+        case 'market': color = CONFIG.customStyles.marketZoneColor; break;
+        case 'creative': color = CONFIG.customStyles.creativeZoneColor; break;
+        case 'social': color = CONFIG.customStyles.socialZoneColor; break;
+        default: color = '#3498db';
+      }
+      
+      // Create custom icon for zone
+      const zoneIcon = L.divIcon({
+        className: `zone-marker zone-${subtype}`,
+        html: `
+          <div class="zone-marker-container" style="border-color: ${color};">
+            <div class="zone-marker-inner" style="background-color: ${color};"></div>
+            <div class="zone-label">${name}</div>
+          </div>
+        `,
+        iconSize: [36, 36],
+        iconAnchor: [18, 18]
+      });
+      
+      return L.marker([lat, lng], { icon: zoneIcon });
+    }
+    
+    // Create an art marker (circular with pulse)
+    function createArtMarker(element) {
+      const { lat, lng, name } = element;
+      
+      // Create custom icon for art
+      const artIcon = L.divIcon({
+        className: `art-marker art-${element.subtype}`,
+        html: `
+          <div class="art-marker-container">
+            <div class="art-marker-pulse"></div>
+            <div class="art-marker-inner"></div>
+            <div class="art-label">${name}</div>
+          </div>
+        `,
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
+      });
+      
+      return L.marker([lat, lng], { icon: artIcon });
+    }
+    
+    // Create an experience marker (star-shaped)
+    function createExperienceMarker(element) {
+      const { lat, lng, name } = element;
+      
+      // Create custom icon for experience
+      const expIcon = L.divIcon({
+        className: `exp-marker exp-${element.subtype}`,
+        html: `
+          <div class="exp-marker-container">
+            <i class="fas fa-star"></i>
+            <div class="exp-label">${name}</div>
+          </div>
+        `,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+      });
+      
+      return L.marker([lat, lng], { icon: expIcon });
+    }
+    
+    // Create default marker for unknown types
+    function createDefaultMarker(element) {
+      const { lat, lng, name } = element;
+      
+      return L.marker([lat, lng]).bindTooltip(name);
+    }
+    
+    // ====================== MENU FUNCTIONALITY ======================
+    // Toggle main menu visibility
+    function toggleMainMenu() {
+      const menu = document.getElementById('contribution-menu');
+      const overlay = document.getElementById('menu-overlay');
+      const compassIcon = document.querySelector('#main-action-button .fas.fa-compass');
+      
+      if (menu.style.opacity === '0' || menu.style.opacity === '') {
+        // Open menu
+        menu.style.opacity = '1';
+        menu.style.pointerEvents = 'all';
+        overlay.style.opacity = '1';
+        overlay.style.pointerEvents = 'all';
+        
+        // Add pulse effect to compass icon only
+        compassIcon.classList.add('compass-pulse');
+        setTimeout(() => {
+          compassIcon.classList.remove('compass-pulse');
+        }, CONFIG.customStyles.pulseAnimationDuration);
+      } else {
+        closeMainMenu();
+      }
+    }
+    
+    // Close main menu
+    function closeMainMenu() {
+      const menu = document.getElementById('contribution-menu');
+      const overlay = document.getElementById('menu-overlay');
+      
+      menu.style.opacity = '0';
+      menu.style.pointerEvents = 'none';
+      overlay.style.opacity = '0';
+      overlay.style.pointerEvents = 'none';
+    }
+    
+    // Toggle filter menu visibility
+    function toggleFilterMenu() {
+      const filterMenu = document.getElementById('filter-menu');
+      
+      if (filterMenu.style.display === 'none' || filterMenu.style.display === '') {
+        filterMenu.style.display = 'block';
+      } else {
+        filterMenu.style.display = 'none';
+      }
+    }
+    
+    // ====================== INTERACTIONS ======================
+    // Handle map click events
+    function onMapClick(e) {
+      // For debugging - can be removed in production
+      console.log('Map clicked at:', e.latlng);
+    }
+    
+    // Handle map move end events
+    function onMapMoveEnd(e) {
+      // TODO: Potentially load new elements based on viewport
+    }
+    
+    // Handle map zoom end events
+    function onMapZoomEnd(e) {
+      // TODO: Potentially adjust marker sizes based on zoom level
+    }
+    
+    // Open element details panel/modal
+    function openElementDetails(element) {
+      const { type, id, name } = element;
+      
+      // Navigate to the appropriate page based on element type
+      switch (type) {
+        case 'zone':
+          window.location.href = `{% url 'core:zone' %}?id=${id}`;
+          break;
+        case 'art':
+          window.location.href = `{% url 'core:art_detail' art_id='00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', id);
+          break;
+        case 'experience':
+          window.location.href = `{% url 'core:tech_tree_detail' tech_tree_id='00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', id);
+          break;
+        default:
+          showToast(`Selected: ${name}`, 'info');
+      }
+    }
+    
+    // Search functionality
+    function performSearch(query) {
+      // Filter map elements based on search query
+      const results = mapElements.filter(element => 
+        element.name.toLowerCase().includes(query.toLowerCase()) ||
+        element.description.toLowerCase().includes(query.toLowerCase())
+      );
+      
+      // Display search results
+      showSearchResults(results);
+    }
+    
+    // Display search results
+    function showSearchResults(results) {
+      const resultsContainer = document.getElementById('search-results');
+      
+      if (results.length === 0) {
+        resultsContainer.innerHTML = '<div class="no-results">No results found</div>';
+      } else {
+        resultsContainer.innerHTML = '';
+        
+        results.forEach(result => {
+          const resultItem = document.createElement('div');
+          resultItem.className = 'search-result-item';
+          resultItem.innerHTML = `
+            <div class="result-name">${result.name}</div>
+            <div class="result-type">${result.type} - ${result.subtype}</div>
+          `;
+          
+          resultItem.addEventListener('click', () => {
+            map.setView([result.lat, result.lng], CONFIG.map.defaultZoom + 1);
+            openElementDetails(result);
+            hideSearchResults();
+            document.getElementById('search-input').value = '';
+            document.getElementById('search-clear').style.display = 'none';
+          });
+          
+          resultsContainer.appendChild(resultItem);
+        });
+      }
+      
+      resultsContainer.style.display = 'block';
+    }
+    
+    // Hide search results
+    function hideSearchResults() {
+      document.getElementById('search-results').style.display = 'none';
+    }
+    
+    // Apply selected filters
+    function applyFilters() {
+      // Gather filter values
+      const filterCheckboxes = document.querySelectorAll('.filter-checkbox input');
+      currentFilters = {};
+      
+      filterCheckboxes.forEach(checkbox => {
+        const [, filterType, filterValue] = checkbox.id.split('-');
+        
+        if (!currentFilters[filterType]) {
+          currentFilters[filterType] = {};
+        }
+        
+        currentFilters[filterType][filterValue] = checkbox.checked;
+      });
+      
+      // Rerender map elements with new filters
+      renderMapElements();
+      
+      // Hide filter menu
+      document.getElementById('filter-menu').style.display = 'none';
+      
+      showToast('Filters applied', 'success');
+    }
+    
+    // Reset all filters to default (all checked)
+    function resetFilters() {
+      const filterCheckboxes = document.querySelectorAll('.filter-checkbox input');
+      
+      filterCheckboxes.forEach(checkbox => {
+        checkbox.checked = true;
+      });
+      
+      // Apply the reset filters
+      applyFilters();
+    }
+    
+    // Check if element should be shown based on current filters
+    function shouldShowElement(element) {
+      // If no filters are set, show all
+      if (Object.keys(currentFilters).length === 0) {
+        return true;
+      }
+      
+      const { type, subtype } = element;
+      
+      // Check if element type is filtered
+      if (currentFilters[type] && currentFilters[type][subtype] !== undefined) {
+        return currentFilters[type][subtype];
+      }
+      
+      return true;
+    }
+    
+    // ====================== ANIMATIONS ======================
+    // Create pulse effect on element
+    function pulseElement(element) {
+      element.classList.add('pulse-animation');
+      
+      setTimeout(() => {
+        element.classList.remove('pulse-animation');
+      }, CONFIG.customStyles.pulseAnimationDuration);
+    }
+    
+    // ====================== UTILITY FUNCTIONS ======================
+    // Show toast notification
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      
+      // Set message and type
+      toast.textContent = message;
+      toast.className = `toast toast-${type}`;
+      
+      // Show toast
+      toast.style.display = 'block';
+      toast.style.opacity = '1';
+      
+      // Hide after timeout
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => {
+          toast.style.display = 'none';
+        }, 300);
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
+
