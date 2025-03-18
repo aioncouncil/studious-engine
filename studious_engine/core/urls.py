@@ -1,8 +1,9 @@
 # studious_engine/core/urls.py
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, RedirectView
 from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 
 from . import views
 from .views.core import toggle_wishlist, view_wishlist, update_player_location, LegacyMapView
@@ -21,10 +22,23 @@ from .views.art import (
     ArtMasteryDashboardView
 )
 
+# Create a new view for the Atlantis profile
+class AtlantisProfileView(views.PlayerProfileView):
+    """Custom view for the new Atlantis-themed profile page"""
+    template_name = 'core/new_profile.html'
+    
+    def get_context_data(self, **kwargs):
+        """Add additional context specific to the Atlantis profile"""
+        context = super().get_context_data(**kwargs)
+        # Add any additional context needed for the Atlantis profile
+        return context
+
 app_name = "core"
 urlpatterns = [
     path('', views.PublicStoreView.as_view(), name='dashboard'),
-    path('profile/', login_required(views.PlayerProfileView.as_view()), name='player_profile'),
+    # Redirect old profile page to the new one
+    path('profile/', login_required(RedirectView.as_view(pattern_name='core:new_profile', permanent=False)), name='player_profile'),
+    path('new-profile/', login_required(AtlantisProfileView.as_view()), name='new_profile'),
     path('map/', views.MapView.as_view(), name='map'),
     path('legacy-map/', LegacyMapView.as_view(), name='legacy_map'),
     path('nearby/', views.NearbyView.as_view(), name='nearby'),

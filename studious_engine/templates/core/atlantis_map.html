@@ -459,7 +459,7 @@ to create the mystical Atlantis aesthetic.
   
   <!-- Bottom-left: player avatar & level -->
   <div id="player-avatar-container" style="position: fixed; bottom: 20px; left: 20px; z-index: var(--z-index-controls);">
-    <a href="{% url 'core:player_profile' %}" style="text-decoration: none;">
+    <a href="{% url 'core:new_profile' %}" style="text-decoration: none;">
       <div id="player-avatar" class="glass-panel" style="width: var(--button-size-lg); height: var(--button-size-lg); border-radius: var(--border-radius-circle); display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; border: 2px solid var(--atlantis-accent); overflow: visible;">
         <div class="avatar-bg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, var(--atlantis-secondary) 0%, var(--atlantis-tertiary) 100%); border-radius: 50%; overflow: hidden;"></div>
         {% if request.user.profile.avatar %}

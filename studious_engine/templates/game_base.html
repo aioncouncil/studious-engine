@@ -167,7 +167,7 @@
               {{ request.user.username }}
             </button>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-              <li><a class="dropdown-item" href="{% url 'core:player_profile' %}"><i class="fas fa-user me-2"></i>My Profile</a></li>
+              <li><a class="dropdown-item" href="{% url 'core:new_profile' %}"><i class="fas fa-user me-2"></i>My Profile</a></li>
               <li><a class="dropdown-item" href="{% url 'users:detail' request.user.username %}"><i class="fas fa-cog me-2"></i>Account Settings</a></li>
               <li><hr class="dropdown-divider"></li>
               <li><a class="dropdown-item" href="{% url 'account_logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Sign Out</a></li>
