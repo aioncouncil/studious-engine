@@ -23,7 +23,7 @@ from .views.art import (
 
 app_name = "core"
 urlpatterns = [
-    path('', login_required(views.GameDashboardView.as_view()), name='dashboard'),
+    path('', views.PublicStoreView.as_view(), name='dashboard'),
     path('profile/', login_required(views.PlayerProfileView.as_view()), name='player_profile'),
     path('map/', views.MapView.as_view(), name='map'),
     path('nearby/', views.NearbyView.as_view(), name='nearby'),

@@ -2,7 +2,8 @@
 from .core import (
     GameDashboardView, PlayerProfileView, MapView, NearbyView, 
     StoreView, MarketItemDetailView, purchase_item, AboutView,
-    ZoneView, NotificationsView, toggle_wishlist, view_wishlist, VirtuesView
+    ZoneView, NotificationsView, toggle_wishlist, view_wishlist, VirtuesView,
+    PublicStoreView
 )
 
 from .art import (
@@ -21,5 +22,6 @@ __all__ = [
     'StoreView', 'MarketItemDetailView', 'purchase_item', 'AboutView',
     'ZoneView', 'NotificationsView', 'toggle_wishlist', 'view_wishlist', 'VirtuesView',
     'ArtPokedexView', 'ArtDetailView', 'ArtDiscoverView', 'LogPracticeView',
-    'TechTreeView', 'TechTreeDetailView', 'ArtMasteryDetailView', 'ArtMasteryStatsView'
+    'TechTreeView', 'TechTreeDetailView', 'ArtMasteryDetailView', 'ArtMasteryStatsView',
+    'PublicStoreView'
 ]
