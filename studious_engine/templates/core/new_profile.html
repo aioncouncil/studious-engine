@@ -1,0 +1,2882 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atlantis Profile - AtlantisGo</title>
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  
+  <style>
+  /* 
+  =================================
+  DESIGN SYSTEM & VARIABLES
+  =================================
+  */
+  :root {
+    /* Core colors - matching the Atlantis map exactly */
+    --atlantis-primary: #1a5276;      /* Deep blue primary */
+    --atlantis-secondary: #2980b9;    /* Medium blue */
+    --atlantis-tertiary: #3498db;     /* Light blue */
+    --atlantis-accent: #73c0f4;       /* Crystal blue highlight */
+    --atlantis-glow: rgba(41, 128, 185, 0.6); /* Blue glow */
+    --atlantis-dark: #091827;         /* Dark blue (UI background) */
+    --atlantis-light: #F0F7F4;        /* Off-white with slight blue tint */
+    
+    /* UI element colors - matching map */
+    --ui-surface: rgba(255, 255, 255, 0.85);    /* Frosted glass effect */
+    --ui-surface-dark: rgba(5, 15, 25, 0.9);    /* Dark frosted glass */
+    --ui-border: rgba(255, 255, 255, 0.15);     /* Subtle borders */
+    --ui-shadow: rgba(0, 0, 0, 0.2);            /* Subtle shadows */
+    
+    /* Typography */
+    --font-primary: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-secondary: 'Trajan Pro', 'Palatino', serif;
+    
+    /* Gradient backgrounds */
+    --gradient-primary: linear-gradient(135deg, #1a5276 0%, #3498db 100%);
+    --gradient-accent: linear-gradient(135deg, #73c0f4 0%, #2980b9 100%);
+    --gradient-light: linear-gradient(135deg, #F0F7F4 0%, #E0EBE8 100%);
+    --gradient-glass: linear-gradient(135deg, 
+                     rgba(255, 255, 255, 0.9) 0%, 
+                     rgba(240, 247, 244, 0.8) 100%);
+    
+    /* Animation speeds */
+    --transition-fast: 0.2s;
+    --transition-medium: 0.4s;
+    --transition-slow: 0.8s;
+    
+    /* Border radius */
+    --radius-small: 8px;
+    --radius-medium: 12px;
+    --radius-large: 20px;
+    --radius-circle: 50%;
+    
+    /* Spacing */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-xxl: 48px;
+  }
+
+  /* 
+  =================================
+  BASE PAGE STYLING
+  =================================
+  */
+  body {
+    font-family: var(--font-primary);
+    color: var(--atlantis-light);
+    background-color: var(--atlantis-dark);
+    background-image: linear-gradient(135deg, 
+                     rgba(9, 24, 39, 0.97) 0%, 
+                     rgba(26, 82, 118, 0.97) 100%);
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
+  }
+  
+  h1, h2, h3, h4 {
+    font-family: var(--font-secondary);
+    letter-spacing: 0.5px;
+  }
+  
+  /* Special title styling for Atlantis aesthetic */
+  .atlantis-title {
+    font-family: var(--font-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    position: relative;
+  }
+  
+  /* 
+  =================================
+  PROFILE HEADER SECTION
+  =================================
+  */
+  .profile-header {
+    padding: var(--space-xl) var(--space-lg);
+    position: relative;
+    text-align: center;
+    margin-bottom: var(--space-xl);
+  }
+  
+  .avatar-section {
+    position: relative;
+    width: 220px;
+    height: 300px;
+    margin: 0 auto;
+  }
+  
+  .avatar-background-circle {
+    position: absolute;
+    width: 220px;
+    height: 220px;
+    background: radial-gradient(circle, rgba(41, 128, 185, 0.15) 0%, rgba(41, 128, 185, 0.05) 70%, transparent 100%);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -60%);
+    z-index: 0;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 15px var(--atlantis-glow);
+  }
+  
+  .avatar-container {
+    position: relative;
+    z-index: 1;
+    width: 180px;
+    height: 250px;
+    margin: 0 auto;
+    background-color: rgba(230, 230, 230, 0.2);
+    border-radius: var(--radius-medium);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+  }
+  
+  .avatar-container img {
+    max-width: 100%;
+    max-height: 100%;
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 5px 10px rgba(0,0,0,0.1));
+    border-radius: var(--radius-medium);
+  }
+  
+  .level-indicator {
+    position: absolute;
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--gradient-primary);
+    color: white;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 95, 96, 0.3);
+    z-index: 2;
+  }
+  
+  .profile-identity {
+    margin-top: var(--space-lg);
+    margin-bottom: var(--space-lg);
+  }
+  
+  .profile-name {
+    font-family: var(--font-secondary);
+    font-size: 28px;
+    margin-bottom: 4px;
+    color: #ffffff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+  
+  .profile-title {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    margin-bottom: var(--space-sm);
+  }
+  
+  .profile-rank {
+    display: inline-block;
+    margin-top: var(--space-sm);
+    background: var(--gradient-accent);
+    color: white;
+    border-radius: var(--radius-small);
+    padding: 4px 12px;
+    font-size: 14px;
+    font-weight: 600;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  .key-stats {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-xl);
+    margin-top: var(--space-xl);
+  }
+  
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .stat-value {
+    font-size: 24px;
+    font-weight: 600;
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+  
+  .stat-label {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  /* 
+  =================================
+  VIRTUE METRICS VISUALIZATION
+  =================================
+  */
+  .atlantis-virtue-section {
+    margin: var(--space-xl) auto;
+    max-width: 700px;
+    padding: var(--space-lg);
+    position: relative;
+  }
+  
+  .virtue-dashboard {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .virtue-column {
+    flex: 1;
+    text-align: center;
+  }
+  
+  .virtue-column-title {
+    font-family: var(--font-secondary);
+    text-align: center;
+    margin-bottom: var(--space-lg);
+    color: #ffffff;
+    font-size: 22px;
+    letter-spacing: 1px;
+  }
+  
+  .virtue-list {
+    margin-bottom: var(--space-lg);
+  }
+  
+  .virtue-bar-container {
+    margin-bottom: var(--space-md);
+  }
+  
+  .virtue-bar-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 4px;
+  }
+  
+  .virtue-icon {
+    margin-right: 4px;
+  }
+  
+  .virtue-bar-track {
+    width: 100%;
+    height: 20px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  
+  .virtue-bar {
+    height: 100%;
+    background: var(--gradient-primary);
+    border-radius: 10px;
+  }
+  
+  .virtue-bar-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+  
+  .happiness-container {
+    margin-top: var(--space-lg);
+  }
+  
+  .happiness-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(26, 82, 118, 0.05) 0%, rgba(26, 82, 118, 0.02) 70%, transparent 100%);
+    border: 1px solid rgba(26, 82, 118, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .happiness-value {
+    font-size: 28px;
+    font-weight: 600;
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+  
+  .happiness-label {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .balance-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+  }
+  
+  .balance-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .balance-label {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .balance-slider {
+    width: 100%;
+    height: 8px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .balance-indicator {
+    height: 100%;
+    background: var(--gradient-primary);
+    border-radius: 4px;
+  }
+  
+  /* 
+  =================================
+  PROFILE CONTENT SECTIONS
+  =================================
+  */
+  .profile-section {
+    margin: var(--space-xxl) auto;
+    padding: 0 var(--space-lg);
+    max-width: 1000px;
+  }
+  
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-lg);
+  }
+  
+  .section-title {
+    font-family: var(--font-secondary);
+    font-size: 22px;
+    color: #ffffff;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    position: relative;
+    display: inline-block;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+  
+  .section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 40%;
+    height: 2px;
+    background: var(--gradient-accent);
+  }
+  
+  .section-controls {
+    display: flex;
+    gap: var(--space-sm);
+  }
+  
+  .section-controls button {
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border);
+    color: var(--atlantis-secondary);
+    border-radius: var(--radius-small);
+    padding: var(--space-xs) var(--space-sm);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all var(--transition-fast) ease;
+  }
+  
+  .section-controls button:hover {
+    background: var(--atlantis-light);
+    color: var(--atlantis-primary);
+  }
+  
+  /* 
+  =================================
+  CARD COMPONENTS
+  =================================
+  */
+  .atlantis-card {
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: var(--radius-medium);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-lg);
+    transition: all var(--transition-fast) ease;
+    position: relative;
+    overflow: hidden;
+    color: var(--atlantis-dark);
+  }
+  
+  .atlantis-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--gradient-primary);
+  }
+  
+  .atlantis-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .atlantis-card-title {
+    font-family: var(--font-secondary);
+    font-size: 18px;
+    margin-bottom: var(--space-sm);
+    color: var(--atlantis-dark);
+  }
+  
+  .atlantis-card-subtitle {
+    color: var(--atlantis-secondary);
+    opacity: 0.8;
+    font-size: 14px;
+    margin-bottom: var(--space-md);
+  }
+  
+  /* Grid layout for cards */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-lg);
+  }
+  
+  /* 
+  =================================
+  ARTIFACT GALLERY
+  =================================
+  */
+  .artifact-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--space-md);
+  }
+  
+  .artifact-item {
+    background: var(--ui-surface);
+    border-radius: var(--radius-medium);
+    overflow: hidden;
+    border: 1px solid var(--ui-border);
+    box-shadow: 0 2px 8px var(--ui-shadow);
+    transition: all var(--transition-fast) ease;
+  }
+  
+  .artifact-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .artifact-image {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+  }
+  
+  .artifact-details {
+    padding: var(--space-sm);
+  }
+  
+  .artifact-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  
+  .artifact-date {
+    font-size: 12px;
+    color: var(--atlantis-secondary);
+    opacity: 0.8;
+  }
+  
+  /* 
+  =================================
+  ACHIEVEMENTS & BADGES
+  =================================
+  */
+  .achievements {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+    justify-content: center;
+  }
+  
+  .achievement-badge {
+    width: 100px;
+    height: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--ui-surface);
+    border-radius: var(--radius-circle);
+    border: 1px solid var(--ui-border);
+    box-shadow: 0 2px 8px var(--ui-shadow);
+    transition: all var(--transition-fast) ease;
+    cursor: pointer;
+  }
+  
+  .achievement-badge:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  }
+  
+  .achievement-icon {
+    font-size: 32px;
+    margin-bottom: 5px;
+    color: var(--atlantis-primary);
+  }
+  
+  .achievement-name {
+    font-size: 12px;
+    text-align: center;
+    font-weight: 600;
+  }
+  
+  /* 
+  =================================
+  ACTIVITY TIMELINE
+  =================================
+  */
+  .activity-timeline {
+    position: relative;
+    padding: var(--space-lg) 0;
+  }
+  
+  .activity-timeline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 20px;
+    width: 2px;
+    background: linear-gradient(to bottom, 
+                              transparent 0%,
+                              var(--atlantis-primary) 5%,
+                              var(--atlantis-primary) 95%,
+                              transparent 100%);
+  }
+  
+  .timeline-item {
+    position: relative;
+    padding-left: 50px;
+    margin-bottom: var(--space-lg);
+  }
+  
+  .timeline-icon {
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-circle);
+    background: var(--gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 2px 8px rgba(0, 95, 96, 0.3);
+    z-index: 1;
+  }
+  
+  .timeline-content {
+    width: 100%;
+  }
+  
+  .activity-reward {
+    display: inline-block;
+    background: var(--gradient-accent);
+    color: var(--atlantis-dark);
+    border-radius: var(--radius-small);
+    padding: 4px 8px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: var(--space-sm);
+  }
+  
+  /* 
+  =================================
+  ZONE VISUALIZATION
+  =================================
+  */
+  .zone-visualization {
+    margin-top: var(--space-lg);
+  }
+  
+  .campus-map-container {
+    margin-bottom: var(--space-lg);
+  }
+  
+  .zone-stats {
+    margin-top: var(--space-lg);
+  }
+  
+  .zone-contribution-level {
+    margin: var(--space-md) 0;
+  }
+  
+  .contribution-label {
+    font-size: 14px;
+    margin-bottom: var(--space-xs);
+    color: var(--atlantis-dark);
+  }
+  
+  .progress {
+    height: 8px;
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.05);
+    margin-bottom: 4px;
+    overflow: hidden;
+  }
+  
+  .progress-bar {
+    height: 100%;
+    background: var(--gradient-primary);
+    border-radius: 4px;
+  }
+  
+  .contribution-percentage {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--atlantis-primary);
+  }
+  
+  .zone-last-activity {
+    font-size: 14px;
+    color: var(--atlantis-secondary);
+    opacity: 0.8;
+  }
+  
+  /* 
+  =================================
+  ECONOMIC LAYER STYLES
+  =================================
+  */
+  .economic-visualization {
+    margin-top: var(--space-lg);
+  }
+  
+  .economic-status {
+    margin-bottom: var(--space-lg);
+  }
+  
+  .economic-progress {
+    margin-bottom: var(--space-lg);
+  }
+  
+  .layer-progression {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: var(--space-lg) 0;
+    padding: 0 var(--space-lg);
+  }
+  
+  .layer-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0.5;
+    transition: all var(--transition-fast) ease;
+  }
+  
+  .layer-step.active {
+    opacity: 1;
+  }
+  
+  .step-indicator {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-circle);
+    background: var(--atlantis-light);
+    border: 2px solid var(--atlantis-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    margin-bottom: var(--space-xs);
+    color: var(--atlantis-secondary);
+  }
+  
+  .layer-step.active .step-indicator {
+    background: var(--gradient-primary);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 2px 8px rgba(0, 95, 96, 0.3);
+  }
+  
+  .layer-step-connector {
+    flex-grow: 1;
+    height: 2px;
+    background: linear-gradient(to right, var(--atlantis-primary), var(--atlantis-secondary));
+    opacity: 0.3;
+    margin: 0 var(--space-sm);
+  }
+  
+  .step-label {
+    font-size: 14px;
+    font-weight: 600;
+  }
+  
+  .economic-benefits {
+    margin-top: var(--space-lg);
+  }
+  
+  .economic-benefits h4 {
+    font-family: var(--font-secondary);
+    margin-bottom: var(--space-sm);
+    color: var(--atlantis-secondary);
+  }
+  
+  .benefits-list {
+    padding-left: 20px;
+  }
+  
+  .benefits-list li {
+    margin-bottom: var(--space-xs);
+    color: var(--atlantis-dark);
+  }
+  
+  .resource-inventory {
+    margin-top: var(--space-xl);
+  }
+  
+  .resource-card {
+    text-align: center;
+  }
+  
+  .resource-quantity {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--atlantis-primary);
+    margin-top: var(--space-md);
+  }
+  
+  .art-mastery-level {
+    margin: var(--space-md) 0;
+  }
+  
+  .mastery-percentage {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--atlantis-primary);
+    display: block;
+    margin-top: 4px;
+  }
+  
+  .art-last-practiced {
+    font-size: 14px;
+    color: var(--atlantis-secondary);
+    opacity: 0.8;
+  }
+  
+  .atlantis-button {
+    display: inline-block;
+    background-color: var(--atlantis-primary);
+    color: white;
+    border-radius: var(--radius-small);
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    margin-top: var(--space-md);
+    transition: all var(--transition-fast) ease;
+    border: 1px solid var(--atlantis-accent);
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .atlantis-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 15px var(--atlantis-glow);
+    text-decoration: none;
+    color: white;
+  }
+  
+  /* 
+  =================================
+  RESPONSIVE ADJUSTMENTS
+  =================================
+  */
+  @media (max-width: 768px) {
+    .profile-header {
+      padding: var(--space-md) var(--space-sm);
+    }
+    
+    .key-stats {
+      flex-wrap: wrap;
+      gap: var(--space-md);
+    }
+    
+    .virtue-dashboard {
+      flex-direction: column;
+    }
+    
+    .avatar-section {
+      width: 180px;
+      height: 250px;
+    }
+    
+    .avatar-container {
+      width: 150px;
+      height: 210px;
+    }
+    
+    .section-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .section-controls {
+      margin-top: var(--space-sm);
+      width: 100%;
+      justify-content: space-between;
+    }
+    
+    .atlantis-container {
+      padding: 15px;
+    }
+  }
+
+  /* Add these CSS classes to the style section */
+  .progress-bar-25 { width: 25%; }
+  .progress-bar-50 { width: 50%; }
+  .progress-bar-65 { width: 65%; }
+  .progress-bar-75 { width: 75%; }
+  .progress-bar-85 { width: 85%; }
+  .progress-bar-100 { width: 100%; }
+
+  /* Dynamic progress bar classes - add at end of style block */
+  /* Add specific classes for common percentages */
+  .progress-bar-15 { width: 15%; }
+  .progress-bar-25 { width: 25%; }
+  .progress-bar-30 { width: 30%; }
+  .progress-bar-35 { width: 35%; }
+  .progress-bar-40 { width: 40%; }
+  .progress-bar-42 { width: 42%; }
+  .progress-bar-45 { width: 45%; }
+  .progress-bar-50 { width: 50%; }
+  .progress-bar-55 { width: 55%; }
+  .progress-bar-60 { width: 60%; }
+  .progress-bar-65 { width: 65%; }
+  .progress-bar-70 { width: 70%; }
+  .progress-bar-75 { width: 75%; }
+  .progress-bar-80 { width: 80%; }
+  .progress-bar-85 { width: 85%; }
+  .progress-bar-90 { width: 90%; }
+  .progress-bar-95 { width: 95%; }
+  .progress-bar-100 { width: 100%; }
+
+  /* Generic dynamic styling using CSS custom properties */
+  /* Use this in combination with the data-progress attribute */
+  .progress-bar-dynamic {
+    width: var(--progress-width);
+  }
+
+  /* Loading overlay */
+  .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #091827 0%, #1a5276 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease-out;
+  }
+
+  .loading-logo {
+    width: 120px;
+    height: 120px;
+    margin-bottom: 20px;
+    position: relative;
+  }
+
+  /* Create a more map-like loading animation */
+  @keyframes pulse-glow {
+    0% { transform: scale(1); box-shadow: 0 0 15px var(--atlantis-glow); }
+    50% { transform: scale(1.1); box-shadow: 0 0 30px var(--atlantis-glow); }
+    100% { transform: scale(1); box-shadow: 0 0 15px var(--atlantis-glow); }
+  }
+
+  @keyframes rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* Replace the Atlantis motif with a CSS-only solution */
+  .atlantis-container::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at center, 
+                                rgba(115, 192, 244, 0.07) 0%, 
+                                rgba(115, 192, 244, 0.03) 30%, 
+                                rgba(115, 192, 244, 0.01) 50%, 
+                                transparent 70%);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /* Add this CSS for the enhanced header */
+  .atlantis-logo-text {
+    font-family: var(--font-secondary);
+    color: var(--atlantis-primary);
+    position: relative;
+    padding-bottom: 8px;
+  }
+
+  .atlantis-logo-underline {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60%;
+    height: 3px;
+    background: var(--gradient-accent);
+    border-radius: 2px;
+  }
+
+  .atlantis-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Add this CSS for the ME/Friends navigation menu */
+  .profile-nav-container {
+    width: 100%;
+    margin-bottom: 30px;
+    position: relative;
+  }
+
+  .profile-nav {
+    display: flex;
+    justify-content: center;
+    background: var(--ui-surface);
+    border-radius: var(--radius-medium);
+    border: 1px solid var(--ui-border);
+    box-shadow: 0 4px 12px var(--ui-shadow);
+    padding: 5px;
+    width: 250px;
+    margin: 0 auto;
+  }
+
+  .nav-tab {
+    flex: 1;
+    text-align: center;
+    padding: 12px 15px;
+    cursor: pointer;
+    border-radius: var(--radius-small);
+    transition: all var(--transition-fast);
+    font-weight: 600;
+    color: var(--atlantis-dark);
+    position: relative;
+  }
+
+  .nav-tab.active {
+    background: var(--gradient-primary);
+    color: white;
+  }
+
+  .me-tab-content,
+  .friends-tab-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .friends-tab-content {
+    position: relative;
+  }
+
+  .friend-count {
+    font-size: 12px;
+    opacity: 0.8;
+  }
+
+  .friend-notification {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 10px;
+    height: 10px;
+    background-color: #ff3b30;
+    border-radius: 50%;
+  }
+
+  /* Add a pulse animation to the virtue center */
+  @keyframes virtue-pulse {
+    0% {
+      box-shadow: 0 0 15px var(--atlantis-glow);
+    }
+    50% {
+      box-shadow: 0 0 25px var(--atlantis-glow);
+    }
+    100% {
+      box-shadow: 0 0 15px var(--atlantis-glow);
+    }
+  }
+
+  .virtue-center {
+    animation: virtue-pulse 3s infinite;
+  }
+
+  /* Enhanced Title Section Styling */
+  .profile-title-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 2rem 0 3rem;
+    position: relative;
+    padding: 1.5rem 0;
+  }
+  
+  .title-decoration {
+    position: relative;
+    height: 2px;
+    background: linear-gradient(to var(--direction, right), transparent, var(--atlantis-accent));
+    flex: 1;
+  }
+  
+  .title-decoration.left {
+    --direction: right;
+    margin-right: 1.5rem;
+  }
+  
+  .title-decoration.right {
+    --direction: left;
+    margin-left: 1.5rem;
+  }
+  
+  .title-decoration::before, 
+  .title-decoration::after {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--atlantis-accent);
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  
+  .title-decoration.left::after {
+    right: 0;
+  }
+  
+  .title-decoration.right::before {
+    left: 0;
+  }
+  
+  .title-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 2rem;
+    position: relative;
+  }
+  
+  .title-icon {
+    font-size: 2.5rem;
+    color: var(--atlantis-primary);
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, var(--atlantis-primary), var(--atlantis-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .atlantis-title-text {
+    font-family: var(--font-secondary);
+    font-size: 2.5rem;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    background: linear-gradient(135deg, var(--atlantis-primary), var(--atlantis-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    position: relative;
+  }
+  
+  .title-subtitle {
+    font-family: var(--font-secondary);
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: 2px;
+  }
+  
+  /* Enhanced Profile Navigation Styling */
+  .enhanced-profile-nav-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 3rem;
+  }
+  
+  .enhanced-profile-nav {
+    display: flex;
+    background: rgba(9, 24, 39, 0.7);
+    border-radius: var(--radius-large);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(115, 192, 244, 0.3);
+    width: 400px;
+  }
+  
+  .enhanced-nav-tab {
+    flex: 1;
+    padding: 1.2rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    cursor: pointer;
+    transition: all var(--transition-medium);
+    text-align: center;
+    overflow: hidden;
+    color: rgba(255, 255, 255, 0.85);
+  }
+  
+  .enhanced-nav-tab:hover {
+    background-color: rgba(41, 128, 185, 0.3);
+  }
+  
+  .enhanced-nav-tab.active {
+    background-color: rgba(41, 128, 185, 0.5);
+  }
+  
+  .tab-text {
+    font-family: var(--font-secondary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+  
+  .enhanced-nav-tab.active .tab-text {
+    color: #ffffff;
+  }
+  
+  .tab-count {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 0.3rem;
+  }
+  
+  .tab-notification {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: #ff3b30;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    width: 1.25rem;
+    height: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px white;
+  }
+  
+  @media (max-width: 768px) {
+    .enhanced-profile-nav {
+      width: 100%;
+    }
+    
+    .atlantis-title-text {
+      font-size: 2rem;
+    }
+    
+    .title-decoration {
+      width: 30px;
+    }
+  }
+
+  /* Add subtle pattern overlay for depth */
+  .atlantis-container::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231a5276' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.3;
+  }
+
+  /* Light text for dark backgrounds */
+  .section-subtitle {
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  /* Make control buttons pop against dark background */
+  .control-btn {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .control-btn:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+  }
+
+  .control-btn.active {
+    background-color: var(--atlantis-primary);
+    color: white;
+    font-weight: 500;
+  }
+
+  /* Enhance tab navigation contrast */
+  .enhanced-nav-tab {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .enhanced-nav-tab:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .enhanced-nav-tab.active {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .tab-text {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .enhanced-nav-tab.active .tab-text {
+    color: #ffffff;
+  }
+
+  .tab-icon {
+    font-size: 1.5rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 0.4rem;
+  }
+
+  .enhanced-nav-tab.active .tab-icon {
+    color: var(--atlantis-accent);
+  }
+
+  /* Adjust atlantis button for dark theme */
+  .atlantis-button {
+    background-color: var(--atlantis-primary);
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .atlantis-button:hover {
+    background-color: var(--atlantis-accent);
+  }
+
+  /* Make section headers more visible */
+  .virtue-section-title, 
+  .profile-header-title,
+  .profile-info-title {
+    color: #ffffff;
+  }
+
+  /* Styled virtue action buttons */
+  .virtue-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .virtue-action-btn {
+    background: rgba(41, 128, 185, 0.2);
+    border: 1px solid rgba(41, 128, 185, 0.4);
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .virtue-action-btn:hover {
+    background: rgba(41, 128, 185, 0.5);
+    box-shadow: 0 0 15px rgba(41, 128, 185, 0.4);
+    transform: translateY(-2px);
+  }
+
+  /* Enhanced happiness circle */
+  .happiness-circle {
+    width: 140px;
+    height: 140px;
+    margin: 0 auto;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1a5276 0%, #3498db 100%);
+    box-shadow: 0 0 20px rgba(41, 128, 185, 0.4);
+    border: 1px solid rgba(115, 192, 244, 0.4);
+    animation: virtue-pulse 3s infinite;
+  }
+
+  /* Unique colors for each virtue bar */
+  .wisdom-bar {
+    background: linear-gradient(90deg, #3498db, #9b59b6);
+  }
+
+  .courage-bar {
+    background: linear-gradient(90deg, #e74c3c, #f39c12);
+  }
+
+  .temperance-bar {
+    background: linear-gradient(90deg, #2ecc71, #1abc9c);
+  }
+
+  .justice-bar {
+    background: linear-gradient(90deg, #9b59b6, #8e44ad);
+  }
+
+  .strength-bar {
+    background: linear-gradient(90deg, #d35400, #e74c3c);
+  }
+
+  .health-bar {
+    background: linear-gradient(90deg, #27ae60, #2ecc71);
+  }
+
+  .beauty-bar {
+    background: linear-gradient(90deg, #f1c40f, #f39c12);
+  }
+
+  .endurance-bar {
+    background: linear-gradient(90deg, #2980b9, #3498db);
+  }
+
+  /* Icons for virtues */
+  .wisdom-icon {
+    color: #9b59b6;
+  }
+
+  .courage-icon {
+    color: #f39c12;
+  }
+
+  .temperance-icon {
+    color: #1abc9c;
+  }
+
+  .justice-icon {
+    color: #8e44ad;
+  }
+
+  .strength-icon {
+    color: #e74c3c;
+  }
+
+  .health-icon {
+    color: #2ecc71;
+  }
+
+  .beauty-icon {
+    color: #f39c12;
+  }
+
+  .endurance-icon {
+    color: #3498db;
+  }
+
+  /* Responsive styling for virtue section */
+  @media (max-width: 991px) {
+    .virtue-dashboard {
+      flex-direction: column;
+      gap: 2rem;
+    }
+    
+    .virtue-column {
+      width: 100%;
+    }
+    
+    .happiness-circle {
+      margin-bottom: 1.5rem;
+    }
+    
+    .balance-controls {
+      width: 80%;
+      margin: 0 auto;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .virtue-actions {
+      flex-direction: column;
+      width: 80%;
+      margin: 2rem auto 0;
+    }
+    
+    .virtue-action-btn {
+      width: 100%;
+      justify-content: center;
+    }
+    
+    .balance-controls {
+      width: 90%;
+    }
+    
+    .happiness-circle {
+      width: 120px;
+      height: 120px;
+    }
+    
+    .happiness-value {
+      font-size: 24px;
+    }
+    
+    .happiness-label {
+      font-size: 12px;
+    }
+  }
+
+  .virtue-section-title {
+    font-family: var(--font-secondary);
+    text-align: center;
+    margin-bottom: var(--space-lg);
+    color: #ffffff;
+    font-size: 22px;
+    letter-spacing: 1px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    position: relative;
+    padding-bottom: 15px;
+    display: block;
+    width: 100%;
+    text-transform: uppercase;
+  }
+
+  .virtue-section-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 2px;
+    background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.8), rgba(255,255,255,0));
+  }
+
+  /* Add this CSS to the style section */
+  .map-return-button {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1a5276 0%, #3498db 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 20px rgba(41, 128, 185, 0.4);
+    border: 1px solid rgba(115, 192, 244, 0.4);
+    transition: all 0.3s ease;
+    z-index: 1000;
+  }
+
+  .map-return-button:hover {
+    transform: translateX(-50%) scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 30px rgba(41, 128, 185, 0.6);
+    background: linear-gradient(135deg, #2980b9 0%, #3498db 100%);
+  }
+
+  /* Find and replace the Resources and Transactions tabs in the Economic section with these updated versions */
+  .nav-pill {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+  }
+
+  .nav-pill-option {
+    flex: 1;
+    padding: 10px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: border-bottom 0.3s;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 600;
+  }
+
+  .nav-pill-option.active {
+    border-bottom: 2px solid var(--atlantis-accent);
+    color: #ffffff;
+  }
+
+  /* Add the corresponding content sections with onclick events */
+  .economic-tab-content {
+    display: none;
+    padding: 15px 0;
+  }
+
+  .economic-tab-content.active {
+    display: block;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 30px 20px;
+  }
+
+  .empty-icon {
+    font-size: 3rem;
+    color: rgba(255, 255, 255, 0.3);
+    margin-bottom: 15px;
+  }
+
+  .empty-title {
+    color: #ffffff;
+    margin-bottom: 10px;
+  }
+
+  .empty-message {
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 20px;
+  }
+
+  .resource-category {
+    margin-bottom: 20px;
+  }
+
+  .resource-category h4 {
+    color: #ffffff;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+  }
+
+  .resource-category h4 i {
+    margin-right: 10px;
+  }
+
+  .resource-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+  }
+
+  .resource-item {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .resource-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 10px;
+    color: #ffffff;
+  }
+
+  .athens-icon {
+    background: linear-gradient(135deg, #3498db, #9b59b6);
+  }
+
+  .sparta-icon {
+    background: linear-gradient(135deg, #e74c3c, #f39c12);
+  }
+
+  .olive-icon {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+  }
+
+  .clay-icon {
+    background: linear-gradient(135deg, #d35400, #e67e22);
+  }
+
+  .resource-details {
+    flex: 1;
+  }
+
+  .resource-name {
+    color: #ffffff;
+    font-size: 0.9rem;
+  }
+
+  .resource-count {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.8rem;
+  }
+
+  .resource-info {
+    background: rgba(41, 128, 185, 0.2);
+    border-radius: 8px;
+    padding: 10px;
+    margin-top: 20px;
+    border: 1px solid rgba(41, 128, 185, 0.3);
+  }
+
+  .transaction-filters {
+    margin-bottom: 15px;
+  }
+
+  .transaction-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .transaction-item {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .transaction-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+  }
+
+  .transaction-icon.received {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+  }
+
+  .transaction-icon.spent {
+    background: linear-gradient(135deg, #e74c3c, #f39c12);
+  }
+
+  .transaction-details {
+    flex: 1;
+  }
+
+  .transaction-title {
+    color: #ffffff;
+    font-size: 0.9rem;
+  }
+
+  .transaction-date {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.8rem;
+  }
+
+  .transaction-amount {
+    font-weight: bold;
+  }
+
+  .transaction-amount.received {
+    color: #2ecc71;
+  }
+
+  .transaction-amount.spent {
+    color: #e74c3c;
+  }
+
+  .transaction-empty {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+    padding: 10px;
+  }
+  </style>
+
+  <!-- Add this JavaScript for the tabs -->
+  <script>
+  function showEconomicTab(tabName) {
+    // Hide all tab content
+    const tabContents = document.querySelectorAll('.economic-tab-content');
+    tabContents.forEach(content => {
+      content.classList.remove('active');
+    });
+    
+    // Show the selected tab content
+    document.getElementById(tabName + 'Content').classList.add('active');
+    
+    // Update active state on buttons
+    const tabButtons = document.querySelectorAll('.nav-pill-option');
+    tabButtons.forEach(button => {
+      if (button.dataset.tab === tabName) {
+        button.classList.add('active');
+      } else {
+        button.classList.remove('active');
+      }
+    });
+  }
+  </script>
+  </style>
+</head>
+<body>
+  <!-- Add this near the top of the body, after the opening body tag -->
+  <a href="{% url 'core:map' %}" class="map-return-button">
+    <i class="fas fa-times"></i>
+  </a>
+
+  <!-- Loading Overlay with perfectly centered compass -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-logo">
+      <!-- Pulsing circle -->
+      <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; border: 3px solid var(--atlantis-accent); animation: pulse-glow 2s infinite;"></div>
+      
+      <!-- Absolutely centered compass -->
+      <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+        <i class="fas fa-compass" style="font-size: 60px; color: var(--atlantis-accent); animation: rotate 3s infinite linear; transform-origin: center;"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="atlantis-container">
+    <!-- Enhanced Header with decorative elements -->
+    <div class="profile-title-section">
+      <div class="title-decoration left"></div>
+      <div class="title-content">
+        <div class="title-icon">
+          <i class="fas fa-atlas"></i>
+        </div>
+        <h1 class="atlantis-title-text">Atlantis Profile</h1>
+        <div class="title-subtitle">Journey of Wisdom</div>
+      </div>
+      <div class="title-decoration right"></div>
+    </div>
+    
+    <!-- Enhanced ME/Friends Navigation Tabs -->
+    <div class="enhanced-profile-nav-container">
+      <div class="enhanced-profile-nav">
+        <div class="enhanced-nav-tab active" data-tab="me">
+          <div class="tab-icon"><i class="fas fa-user"></i></div>
+          <div class="tab-text">MY JOURNEY</div>
+        </div>
+        <div class="enhanced-nav-tab" data-tab="friends">
+          <div class="tab-icon"><i class="fas fa-users"></i></div>
+          <div class="tab-text">COMPANIONS</div>
+          <div class="tab-count">{{ friends_count|default:0 }}</div>
+          {% if friend_requests_count > 0 %}
+          <div class="tab-notification">{{ friend_requests_count }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    
+    <!-- Now wrap all the profile content in the ME tab content container -->
+    <div class="profile-container">
+      <!-- Content containers for tab switching -->
+      <div id="meContent" style="display: block;">
+        <!-- Profile Header Area
+        Contains avatar, name, level, and key stats
+        -->
+        <div class="profile-header">
+          <!-- Avatar Section -->
+          <div class="avatar-section">
+            <div class="avatar-background-circle"></div>
+            <div class="avatar-container">
+              {% if player_profile.avatar %}
+                <img src="{{ player_profile.avatar.url }}" alt="Profile Avatar">
+              {% else %}
+                <img src="https://via.placeholder.com/180x250?text=Avatar" alt="Default Avatar">
+              {% endif %}
+            </div>
+            <div class="level-indicator">Level {{ player_profile.level|default:1 }}</div>
+          </div>
+          
+          <!-- Profile Identity -->
+          <div class="profile-identity">
+            <h1 class="profile-name">{{ player_profile.user.username }}</h1>
+            <div class="profile-title">{{ player_profile.title|default:"Campus Explorer" }}</div>
+            <div class="profile-rank">Rank {{ player_profile.rank|default:1 }} • {{ player_profile.economic_layer|default:"Port"|title }} Layer</div>
+          </div>
+          
+          <!-- Key Stats -->
+          <div class="key-stats">
+            <div class="stat-item">
+              <div class="stat-value">{{ powers_count|default:0 }}</div>
+              <div class="stat-label">Powers</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">{{ player_profile.experience_points|default:0 }}</div>
+              <div class="stat-label">XP</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">{{ completed_experiences|default:0 }}</div>
+              <div class="stat-label">Experiences</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 
+        Virtue Metrics Visualization
+        An elegant, circular visualization of the user's virtue metrics
+        -->
+        <div class="atlantis-virtue-section">
+          <h2 class="virtue-section-title">VIRTUE DEVELOPMENT</h2>
+          
+          <!-- Main virtue visualization with interactive elements -->
+          <div class="virtue-dashboard">
+            
+            <!-- Left column: Soul Virtues -->
+            <div class="virtue-column soul-virtues">
+              <h3 class="virtue-column-title">Soul Virtues</h3>
+              <div class="virtue-list">
+                <!-- Soul Virtue: Wisdom -->
+                <div class="virtue-bar-container">
+                  <div class="virtue-bar-label">
+                    <div class="virtue-icon wisdom-icon">
+                      <i class="fas fa-brain"></i>
+                    </div>
+                    <span>Wisdom</span>
+                  </div>
+                  <div class="virtue-bar-track">
+                    <div class="virtue-bar wisdom-bar" style="width: {{ good_virtues.0.progress|default:75 }}%"></div>
+                    <span class="virtue-bar-value">{{ good_virtues.0.progress|default:75 }}</span>
+                  </div>
+                </div>
+                
+                <!-- Soul Virtue: Courage -->
+                <div class="virtue-bar-container">
+                  <div class="virtue-bar-label">
+                    <div class="virtue-icon courage-icon">
+                      <i class="fas fa-fire"></i>
+                    </div>
+                    <span>Courage</span>
+                  </div>
+                  <div class="virtue-bar-track">
+                    <div class="virtue-bar courage-bar" style="width: {{ good_virtues.1.progress|default:80 }}%"></div>
+                    <span class="virtue-bar-value">{{ good_virtues.1.progress|default:80 }}</span>
+                  </div>
+                </div>
+                
+                <!-- Soul Virtue: Temperance -->
+                <div class="virtue-bar-container">
+                  <div class="virtue-bar-label">
+                    <div class="virtue-icon temperance-icon">
+                      <i class="fas fa-balance-scale"></i>
+                    </div>
+                    <span>Temperance</span>
+                  </div>
+                  <div class="virtue-bar-track">
+                    <div class="virtue-bar temperance-bar" style="width: {{ good_virtues.2.progress|default:65 }}%"></div>
+                    <span class="virtue-bar-value">{{ good_virtues.2.progress|default:65 }}</span>
+                  </div>
+                </div>
+                
+                <!-- Soul Virtue: Justice -->
+                <div class="virtue-bar-container">
+                  <div class="virtue-bar-label">
+                    <div class="virtue-icon justice-icon">
+                      <i class="fas fa-gavel"></i>
+                    </div>
+                    <span>Justice</span>
+                  </div>
+                  <div class="virtue-bar-track">
+                    <div class="virtue-bar justice-bar" style="width: {{ good_virtues.3.progress|default:60 }}%"></div>
+                    <span class="virtue-bar-value">{{ good_virtues.3.progress|default:60 }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Center column: Happiness Score -->
+            <div class="virtue-column happiness-score">
+              <div class="happiness-container">
+                <div class="happiness-circle">
+                  <div class="happiness-value">{{ happiness_score|default:75 }}</div>
+                  <div class="happiness-label">HAPPINESS</div>
+                </div>
+                <div class="balance-controls">
+                  <div class="balance-item">
+                    <span class="balance-label">Present</span>
+                    <div class="balance-slider">
+                      <div class="balance-indicator" style="left: 60%"></div>
+                    </div>
+                    <span class="balance-label">Future</span>
+                  </div>
+                  <div class="balance-item">
+                    <span class="balance-label">Individual</span>
+                    <div class="balance-slider">
+                      <div class="balance-indicator" style="left: 40%"></div>
+                    </div>
+                    <span class="balance-label">Social</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Right column: Body Virtues -->
+            <div class="virtue-column body-virtues">
+              <h3 class="virtue-column-title">Body Virtues</h3>
+              <div class="virtue-list">
+                <!-- Body Virtue: Strength -->
+                <div class="virtue-bar-container">
+                  <div class="virtue-bar-label">
+                    <div class="virtue-icon strength-icon">
+                      <i class="fas fa-dumbbell"></i>
+                    </div>
+                    <span>Strength</span>
+                  </div>
+                  <div class="virtue-bar-track">
+                    <div class="virtue-bar strength-bar" style="width: {{ fortune_virtues.1.progress|default:75 }}%"></div>
+                    <span class="virtue-bar-value">{{ fortune_virtues.1.progress|default:75 }}</span>
+                  </div>
+                </div>
+                
+                <!-- Body Virtue: Health -->
+                <div class="virtue-bar-container">
+                  <div class="virtue-bar-label">
+                    <div class="virtue-icon health-icon">
+                      <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <span>Health</span>
+                  </div>
+                  <div class="virtue-bar-track">
+                    <div class="virtue-bar health-bar" style="width: {{ fortune_virtues.0.progress|default:70 }}%"></div>
+                    <span class="virtue-bar-value">{{ fortune_virtues.0.progress|default:70 }}</span>
+                  </div>
+                </div>
+                
+                <!-- Body Virtue: Beauty -->
+                <div class="virtue-bar-container">
+                  <div class="virtue-bar-label">
+                    <div class="virtue-icon beauty-icon">
+                      <i class="fas fa-star"></i>
+                    </div>
+                    <span>Beauty</span>
+                  </div>
+                  <div class="virtue-bar-track">
+                    <div class="virtue-bar beauty-bar" style="width: {{ fortune_virtues.2.progress|default:65 }}%"></div>
+                    <span class="virtue-bar-value">{{ fortune_virtues.2.progress|default:65 }}</span>
+                  </div>
+                </div>
+                
+                <!-- Body Virtue: Endurance -->
+                <div class="virtue-bar-container">
+                  <div class="virtue-bar-label">
+                    <div class="virtue-icon endurance-icon">
+                      <i class="fas fa-bolt"></i>
+                    </div>
+                    <span>Endurance</span>
+                  </div>
+                  <div class="virtue-bar-track">
+                    <div class="virtue-bar endurance-bar" style="width: {{ fortune_virtues.3.progress|default:60 }}%"></div>
+                    <span class="virtue-bar-value">{{ fortune_virtues.3.progress|default:60 }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 
+        Action buttons
+        -->
+        <div class="virtue-actions">
+          <button class="atlantis-button virtue-action-btn" onclick="showModal('improveVirtuesModal')">
+            <i class="fas fa-arrow-trend-up"></i> Improve My Virtues
+          </button>
+          <button class="atlantis-button virtue-action-btn" onclick="showModal('virtueHistoryModal')">
+            <i class="fas fa-history"></i> View History
+          </button>
+          <button class="atlantis-button virtue-action-btn" onclick="showModal('customMetricModal')">
+            <i class="fas fa-plus"></i> Add Custom Metric
+          </button>
+        </div>
+
+        <!-- 
+        Art Collection
+        Showcasing the user's collected and mastered arts
+        -->
+        <div class="profile-section" id="artCollection">
+          <!-- Section header -->
+          <div class="section-header">
+            <h2 class="section-title">Arts Collection</h2>
+            <div class="section-controls">
+              <button class="control-btn active" data-filter="all">All</button>
+              <button class="control-btn" data-filter="favorite">Favorites</button>
+              <button class="control-btn" data-filter="recent">Recent</button>
+            </div>
+          </div>
+          
+          <!-- Art gallery grid -->
+          <div class="card-grid">
+            {% if user_arts %}
+              {% for art in user_arts %}
+                <div class="atlantis-card" data-category="{{ art.taxonomy.category }}" data-favorite="{{ art.favorite }}" data-recent="{{ art.recent }}">
+                  <h3 class="atlantis-card-title">{{ art.name }}</h3>
+                  <div class="atlantis-card-subtitle">{{ art.taxonomy.category }}</div>
+                  <div class="art-mastery-level">
+                    <div class="progress">
+                      {% if art.mastery_level %}
+                        <div class="progress-bar progress-bar-dynamic" style="width: {{ art.mastery_level }}%;"></div>
+                      {% else %}
+                        <div class="progress-bar progress-bar-65"></div>
+                      {% endif %}
+                    </div>
+                    <span class="mastery-percentage">{{ art.mastery_level|default:65 }}% Mastery</span>
+                  </div>
+                  <div class="art-last-practiced">
+                    Last practiced: {{ art.last_practiced|default:"Never" }}
+                  </div>
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="atlantis-card">
+                <h3 class="atlantis-card-title">No Arts Collected Yet</h3>
+                <div class="atlantis-card-subtitle">Start exploring the campus to discover arts</div>
+                <a href="{% url 'core:map' %}" class="atlantis-button">Start Exploring</a>
+              </div>
+              <!-- Demo placeholder cards -->
+              <div class="atlantis-card" data-category="logic" data-favorite="false" data-recent="true">
+                <h3 class="atlantis-card-title">Critical Thinking</h3>
+                <div class="atlantis-card-subtitle">Logic</div>
+                <div class="art-mastery-level">
+                  <div class="progress">
+                    <div class="progress-bar progress-bar-65"></div>
+                  </div>
+                  <span class="mastery-percentage">65% Mastery</span>
+                </div>
+                <div class="art-last-practiced">
+                  Last practiced: 2 days ago
+                </div>
+              </div>
+              <div class="atlantis-card" data-category="communication" data-favorite="true" data-recent="false">
+                <h3 class="atlantis-card-title">Public Speaking</h3>
+                <div class="atlantis-card-subtitle">Communication</div>
+                <div class="art-mastery-level">
+                  <div class="progress">
+                    <div class="progress-bar progress-bar-42"></div>
+                  </div>
+                  <span class="mastery-percentage">42% Mastery</span>
+                </div>
+                <div class="art-last-practiced">
+                  Last practiced: 1 week ago
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- 
+        Recent Activity
+        Timeline of recent user activity and achievements
+        -->
+        <div class="profile-section" id="recentActivity">
+          <!-- Section header -->
+          <div class="section-header">
+            <h2 class="section-title">Recent Activity</h2>
+            <div class="section-controls">
+              <button class="control-btn active" data-filter="all">All</button>
+              <button class="control-btn" data-filter="experience">Experiences</button>
+              <button class="control-btn" data-filter="achievement">Achievements</button>
+            </div>
+          </div>
+          
+          <!-- Activity timeline -->
+          <div class="activity-timeline">
+            {% if player.recent_activities %}
+              {% for activity in player.recent_activities %}
+                <div class="timeline-item" data-category="{{ activity.category }}">
+                  <div class="timeline-icon">
+                    <i class="fas fa-star"></i>
+                  </div>
+                  <div class="timeline-content atlantis-card">
+                    <h3 class="atlantis-card-title">{{ activity.title }}</h3>
+                    <div class="atlantis-card-subtitle">{{ activity.date }}</div>
+                    <p>{{ activity.description }}</p>
+                    {% if activity.xp %}
+                      <div class="activity-reward">+{{ activity.xp }} XP</div>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endfor %}
+            {% else %}
+              <!-- Placeholder activities -->
+              <div class="timeline-item" data-category="achievement">
+                <div class="timeline-icon">
+                  <i class="fas fa-trophy"></i>
+                </div>
+                <div class="timeline-content atlantis-card">
+                  <h3 class="atlantis-card-title">Completed First Experience</h3>
+                  <div class="atlantis-card-subtitle">Today</div>
+                  <p>You completed your first campus experience. Keep exploring to discover more!</p>
+                  <div class="activity-reward">+50 XP</div>
+                  <a href="{% url 'core:map' %}" class="atlantis-button mt-2">Find More Experiences</a>
+                </div>
+              </div>
+              <div class="timeline-item" data-category="experience">
+                <div class="timeline-icon">
+                  <i class="fas fa-book"></i>
+                </div>
+                <div class="timeline-content atlantis-card">
+                  <h3 class="atlantis-card-title">Discovered New Art</h3>
+                  <div class="atlantis-card-subtitle">Yesterday</div>
+                  <p>You discovered the art of Critical Thinking in the Library zone.</p>
+                  <div class="activity-reward">+20 XP</div>
+                </div>
+              </div>
+              <div class="timeline-item" data-category="experience">
+                <div class="timeline-icon">
+                  <i class="fas fa-users"></i>
+                </div>
+                <div class="timeline-content atlantis-card">
+                  <h3 class="atlantis-card-title">Joined Campus Center Zone</h3>
+                  <div class="atlantis-card-subtitle">3 days ago</div>
+                  <p>You joined the Campus Center zone. You can now participate in zone activities.</p>
+                  <div class="activity-reward">+15 XP</div>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- 
+        Zone Contributions
+        Map and metrics of user's zone activity
+        -->
+        <div class="profile-section" id="zoneContributions">
+          <!-- Section header -->
+          <div class="section-header">
+            <h2 class="section-title">Zone Contributions</h2>
+            <div class="section-controls">
+              <button class="control-btn">Active Zones</button>
+              <button class="control-btn">All Zones</button>
+            </div>
+          </div>
+          
+          <!-- Zone map and metrics -->
+          <div class="zone-visualization">
+            <!-- Zone map would go here - for now just a placeholder -->
+            <div class="campus-map-container atlantis-card">
+              <div id="campus-map" style="height: 300px; background-color: #e9ecef; display: flex; align-items: center; justify-content: center;">
+                <p>Campus Map Placeholder<br>Map showing zones where user is active</p>
+                <a href="{% url 'core:map' %}" class="atlantis-button mt-3">View Full Map</a>
+              </div>
+            </div>
+            
+            <div class="zone-stats card-grid">
+              {% if zone_contributions %}
+                {% for zone in zone_contributions %}
+                  <div class="atlantis-card">
+                    <h3 class="atlantis-card-title">{{ zone.name }}</h3>
+                    <div class="atlantis-card-subtitle">{{ zone.role }}</div>
+                    <div class="zone-contribution-level">
+                      <div class="contribution-label">Contribution Level</div>
+                      <div class="progress">
+                        {% if zone.contribution_level %}
+                          <div class="progress-bar progress-bar-dynamic" style="width: {{ zone.contribution_level }}%;"></div>
+                        {% else %}
+                          <div class="progress-bar progress-bar-50"></div>
+                        {% endif %}
+                      </div>
+                      <span class="contribution-percentage">{{ zone.contribution_level|default:50 }}%</span>
+                    </div>
+                    <div class="zone-last-activity">
+                      Last active: {{ zone.last_activity|default:"Never" }}
+                    </div>
+                  </div>
+                {% endfor %}
+              {% else %}
+                <!-- Placeholder zone -->
+                <div class="atlantis-card">
+                  <h3 class="atlantis-card-title">Campus Center</h3>
+                  <div class="atlantis-card-subtitle">Member</div>
+                  <div class="zone-contribution-level">
+                    <div class="contribution-label">Contribution Level</div>
+                    <div class="progress">
+                      <div class="progress-bar progress-bar-50"></div>
+                    </div>
+                    <span class="contribution-percentage">50%</span>
+                  </div>
+                  <div class="zone-last-activity">
+                    Last active: Today
+                  </div>
+                </div>
+                <!-- Placeholder zone -->
+                <div class="atlantis-card">
+                  <h3 class="atlantis-card-title">Library</h3>
+                  <div class="atlantis-card-subtitle">Visitor</div>
+                  <div class="zone-contribution-level">
+                    <div class="contribution-label">Contribution Level</div>
+                    <div class="progress">
+                      <div class="progress-bar progress-bar-15"></div>
+                    </div>
+                    <span class="contribution-percentage">15%</span>
+                  </div>
+                  <div class="zone-last-activity">
+                    Last active: 1 week ago
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- 
+        Economic Layer
+        User's economic status, resources, and marketplace activity
+        -->
+        <div class="profile-section" id="economicLayer">
+          <!-- Section header -->
+          <div class="section-header">
+            <h2 class="section-title">Economic Status</h2>
+            <div class="section-controls">
+              <div class="nav-pill">
+                <button class="nav-pill-option active" data-tab="resources" onclick="showEconomicTab('resources')">Resources</button>
+                <button class="nav-pill-option" data-tab="transactions" onclick="showEconomicTab('transactions')">Transactions</button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Economic visualization -->
+          <div class="economic-visualization">
+            <div class="economic-status atlantis-card">
+              <h3 class="atlantis-card-title">{{ player_profile.economic_layer|default:"Port"|title }} Layer</h3>
+              <div class="atlantis-card-subtitle">Economic Access Level</div>
+              
+              <div class="economic-progress">
+                <div class="layer-progression">
+                  <div class="layer-step {% if player_profile.economic_layer == 'port' or player_profile.economic_layer == 'laws' or player_profile.economic_layer == 'republic' %}active{% endif %}">
+                    <div class="step-indicator">1</div>
+                    <div class="step-label">Port</div>
+                  </div>
+                  <div class="layer-step-connector"></div>
+                  <div class="layer-step {% if player_profile.economic_layer == 'laws' or player_profile.economic_layer == 'republic' %}active{% endif %}">
+                    <div class="step-indicator">2</div>
+                    <div class="step-label">Laws</div>
+                  </div>
+                  <div class="layer-step-connector"></div>
+                  <div class="layer-step {% if player_profile.economic_layer == 'republic' %}active{% endif %}">
+                    <div class="step-indicator">3</div>
+                    <div class="step-label">Republic</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="economic-benefits">
+                <h4>Current Benefits</h4>
+                <ul class="benefits-list">
+                  <li>Access to marketplace transactions</li>
+                  <li>Personal resource storage ({{ resources_total|default:150 }} units)</li>
+                  {% if player_profile.economic_layer == 'laws' or player_profile.economic_layer == 'republic' %}
+                  <li>Zone governance rights</li>
+                  <li>Resource redistribution authority</li>
+                  {% endif %}
+                  {% if player_profile.economic_layer == 'republic' %}
+                  <li>Common resource management</li>
+                  <li>Policy creation rights</li>
+                  {% endif %}
+                </ul>
+              </div>
+            </div>
+            
+            <div class="resource-inventory card-grid">
+              {% if player_resources %}
+                {% for resource in player_resources %}
+                  <div class="atlantis-card resource-card">
+                    <h3 class="atlantis-card-title">{{ resource.name }}</h3>
+                    <div class="atlantis-card-subtitle">{{ resource.category }}</div>
+                    <div class="resource-quantity">{{ resource.quantity }}</div>
+                  </div>
+                {% endfor %}
+              {% else %}
+                <!-- Placeholder resources -->
+                <div class="atlantis-card resource-card">
+                  <h3 class="atlantis-card-title">Knowledge</h3>
+                  <div class="atlantis-card-subtitle">Intellectual</div>
+                  <div class="resource-quantity">75</div>
+                </div>
+                <div class="atlantis-card resource-card">
+                  <h3 class="atlantis-card-title">Social</h3>
+                  <div class="atlantis-card-subtitle">Relational</div>
+                  <div class="resource-quantity">42</div>
+                </div>
+                <div class="atlantis-card resource-card">
+                  <h3 class="atlantis-card-title">Creativity</h3>
+                  <div class="atlantis-card-subtitle">Artistic</div>
+                  <div class="resource-quantity">28</div>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Friends tab content -->
+      <div id="friendsContent" style="display: none;">
+        <div class="atlantis-card">
+          <h3 class="atlantis-card-title">Your Friends</h3>
+          <div class="atlantis-card-subtitle">Connect with others in Atlantis</div>
+          
+          {% if friends_list %}
+            <div class="friends-list">
+              {% for friend in friends_list %}
+                <div class="friend-item d-flex align-items-center p-2 border-bottom">
+                  <div class="friend-avatar me-3">
+                    {% if friend.avatar %}
+                      <img src="{{ friend.avatar.url }}" alt="{{ friend.username }}" style="width: 50px; height: 50px; border-radius: 50%;">
+                    {% else %}
+                      <i class="fas fa-user-circle" style="font-size: 50px; color: var(--atlantis-primary);"></i>
+                    {% endif %}
+                  </div>
+                  <div class="friend-info flex-grow-1">
+                    <div class="friend-name fw-bold">{{ friend.username }}</div>
+                    <div class="friend-level text-muted">Level {{ friend.level|default:1 }}</div>
+                  </div>
+                  <a href="{% url 'core:map' %}" class="friend-action btn btn-sm" style="background: var(--gradient-primary); color: white;"><i class="fas fa-compass me-1"></i> Find</a>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="p-4 text-center">
+              <i class="fas fa-users mb-3" style="font-size: 48px; color: var(--atlantis-secondary); opacity: 0.5;"></i>
+              <p>You haven't connected with any friends yet.</p>
+              <a href="{% url 'core:map' %}" class="atlantis-button">Explore to Find Friends</a>
+            </div>
+          {% endif %}
+          
+          {% if friend_requests_count > 0 %}
+            <div class="friend-requests mt-4">
+              <h4 class="mb-3">Friend Requests ({{ friend_requests_count }})</h4>
+              <!-- Friend requests would be listed here -->
+              <div class="friend-request-item d-flex align-items-center p-2 border-bottom">
+                <div class="friend-avatar me-3">
+                  <i class="fas fa-user-circle" style="font-size: 50px; color: var(--atlantis-primary);"></i>
+                </div>
+                <div class="friend-info flex-grow-1">
+                  <div class="friend-name fw-bold">New Friend Request</div>
+                  <div class="friend-level text-muted">Level 3</div>
+                </div>
+                <div class="friend-actions">
+                  <button class="btn btn-sm btn-success me-1"><i class="fas fa-check"></i></button>
+                  <button class="btn btn-sm btn-danger"><i class="fas fa-times"></i></button>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div><!-- end .atlantis-container -->
+  
+  <!-- Bootstrap JS Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- JavaScript for profile page interactivity -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Tab switching functionality with enhanced selectors
+      const tabs = document.querySelectorAll('.enhanced-nav-tab');
+      const meContent = document.getElementById('meContent');
+      const friendsContent = document.getElementById('friendsContent');
+      
+      tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          // Remove active class from all tabs
+          tabs.forEach(t => t.classList.remove('active'));
+          
+          // Add active class to clicked tab
+          this.classList.add('active');
+          
+          // Actually switch the content
+          const tabId = this.dataset.tab;
+          if (tabId === 'me') {
+            meContent.style.display = 'block';
+            friendsContent.style.display = 'none';
+          } else if (tabId === 'friends') {
+            meContent.style.display = 'none';
+            friendsContent.style.display = 'block';
+          }
+        });
+      });
+      
+      // Activate all control buttons with actual filtering
+      const controlButtons = document.querySelectorAll('.control-btn');
+      controlButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          // Get the parent container
+          const sectionControls = this.closest('.section-controls');
+          if (!sectionControls) return;
+          
+          // Get the filter value
+          const filter = this.dataset.filter;
+          
+          // Get all siblings
+          const siblings = Array.from(sectionControls.children);
+          
+          // Remove active class from all siblings
+          siblings.forEach(sib => sib.classList.remove('active'));
+          
+          // Add active class to clicked button
+          this.classList.add('active');
+          
+          // Determine which section we're in
+          let itemsToFilter;
+          if (this.closest('#artCollection')) {
+            // We're in the Arts Collection section
+            itemsToFilter = document.querySelectorAll('#artCollection .card-grid .atlantis-card');
+          } else if (this.closest('#recentActivity')) {
+            // We're in the Recent Activity section
+            itemsToFilter = document.querySelectorAll('#recentActivity .timeline-item');
+          } else if (this.closest('#zoneContributions')) {
+            // We're in the Zone Contributions section
+            itemsToFilter = document.querySelectorAll('#zoneContributions .zone-stats .atlantis-card');
+          } else if (this.closest('#economicLayer')) {
+            // We're in the Economic Layer section
+            itemsToFilter = document.querySelectorAll('#economicLayer .resource-inventory .atlantis-card');
+          }
+          
+          // Apply the filter
+          if (itemsToFilter) {
+            itemsToFilter.forEach(item => {
+              if (filter === 'all') {
+                item.style.display = '';
+              } else if (item.dataset.category === filter) {
+                item.style.display = '';
+              } else if (filter === 'favorite' && item.dataset.favorite === 'true') {
+                item.style.display = '';
+              } else if (filter === 'recent' && item.dataset.recent === 'true') {
+                item.style.display = '';
+              } else if (filter === 'experience' && item.dataset.category === 'experience') {
+                item.style.display = '';
+              } else if (filter === 'achievement' && item.dataset.category === 'achievement') {
+                item.style.display = '';
+              } else {
+                item.style.display = 'none';
+              }
+            });
+          }
+        });
+      });
+      
+      // Activate all section links 
+      document.querySelectorAll('.atlantis-button').forEach(button => {
+        // Make sure buttons without hrefs go to the map
+        if (!button.getAttribute('href') || button.getAttribute('href') === '#') {
+          button.setAttribute('href', '/map/');
+        }
+      });
+    });
+
+    // Hide loading overlay after content loads
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        const overlay = document.getElementById('loadingOverlay');
+        overlay.style.opacity = '0';
+        setTimeout(function() {
+          overlay.style.display = 'none';
+        }, 500);
+      }, 800); // Show loading screen for at least 800ms for better UX
+    });
+  </script>
+
+  <!-- Add modals for each button -->
+  <div id="improveVirtuesModal" class="atlantis-modal">
+    <div class="atlantis-modal-content">
+      <div class="atlantis-modal-header">
+        <h3>Improve Your Virtues</h3>
+        <span class="atlantis-modal-close" onclick="hideModal('improveVirtuesModal')">&times;</span>
+      </div>
+      <div class="atlantis-modal-body">
+        <p>Here are personalized recommendations to improve your virtues:</p>
+        <div class="virtue-recommendation">
+          <div class="virtue-recommendation-header">
+            <i class="fas fa-brain virtue-icon wisdom-icon"></i>
+            <h4>Wisdom</h4>
+          </div>
+          <p>Practice the "Dialectic Reasoning" art daily to improve your wisdom virtue.</p>
+          <a href="{% url 'core:map' %}" class="atlantis-button sm-button">Find Experiences</a>
+        </div>
+        <div class="virtue-recommendation">
+          <div class="virtue-recommendation-header">
+            <i class="fas fa-fire virtue-icon courage-icon"></i>
+            <h4>Courage</h4>
+          </div>
+          <p>Visit the Gymnasium Zone to participate in courage-building activities.</p>
+          <a href="{% url 'core:map' %}" class="atlantis-button sm-button">Go to Zone</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="virtueHistoryModal" class="atlantis-modal">
+    <div class="atlantis-modal-content">
+      <div class="atlantis-modal-header">
+        <h3>Virtue History</h3>
+        <span class="atlantis-modal-close" onclick="hideModal('virtueHistoryModal')">&times;</span>
+      </div>
+      <div class="atlantis-modal-body">
+        <div class="virtue-history-chart">
+          <img src="https://via.placeholder.com/600x300?text=Virtue+History+Chart" alt="Virtue History Chart" style="width: 100%; height: auto; border-radius: 8px;">
+        </div>
+        <div class="virtue-history-legend">
+          <div class="virtue-history-item">
+            <div class="legend-color wisdom-bar"></div>
+            <span>Wisdom</span>
+          </div>
+          <div class="virtue-history-item">
+            <div class="legend-color courage-bar"></div>
+            <span>Courage</span>
+          </div>
+          <div class="virtue-history-item">
+            <div class="legend-color temperance-bar"></div>
+            <span>Temperance</span>
+          </div>
+          <div class="virtue-history-item">
+            <div class="legend-color justice-bar"></div>
+            <span>Justice</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="customMetricModal" class="atlantis-modal">
+    <div class="atlantis-modal-content">
+      <div class="atlantis-modal-header">
+        <h3>Add Custom Metric</h3>
+        <span class="atlantis-modal-close" onclick="hideModal('customMetricModal')">&times;</span>
+      </div>
+      <div class="atlantis-modal-body">
+        <form class="custom-metric-form">
+          <div class="form-group">
+            <label for="metricName">Metric Name</label>
+            <input type="text" id="metricName" class="atlantis-input" placeholder="e.g., Daily Meditation">
+          </div>
+          <div class="form-group">
+            <label for="parentVirtue">Parent Virtue</label>
+            <select id="parentVirtue" class="atlantis-select">
+              <option value="wisdom">Wisdom</option>
+              <option value="courage">Courage</option>
+              <option value="temperance">Temperance</option>
+              <option value="justice">Justice</option>
+              <option value="strength">Strength</option>
+              <option value="health">Health</option>
+              <option value="beauty">Beauty</option>
+              <option value="endurance">Endurance</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="targetValue">Target Value</label>
+            <input type="number" id="targetValue" class="atlantis-input" min="1" max="100" value="75">
+          </div>
+          <div class="form-actions">
+            <button type="button" class="atlantis-button" onclick="hideModal('customMetricModal')">Cancel</button>
+            <button type="button" class="atlantis-button" onclick="saveCustomMetric()">Save Metric</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add CSS for modals -->
+  <style>
+  .atlantis-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .atlantis-modal-content {
+    background: linear-gradient(135deg, rgba(9, 24, 39, 0.95) 0%, rgba(26, 82, 118, 0.95) 100%);
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    border: 1px solid rgba(115, 192, 244, 0.4);
+  }
+
+  .atlantis-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid rgba(115, 192, 244, 0.2);
+  }
+
+  .atlantis-modal-header h3 {
+    color: #ffffff;
+    margin: 0;
+    font-family: var(--font-secondary);
+    font-size: 1.5rem;
+  }
+
+  .atlantis-modal-close {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 24px;
+    cursor: pointer;
+    transition: color 0.3s;
+  }
+
+  .atlantis-modal-close:hover {
+    color: #ffffff;
+  }
+
+  .atlantis-modal-body {
+    padding: 20px;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .virtue-recommendation {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .virtue-recommendation-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .virtue-recommendation-header i {
+    margin-right: 10px;
+    font-size: 1.2rem;
+  }
+
+  .virtue-recommendation-header h4 {
+    margin: 0;
+    color: #ffffff;
+  }
+
+  .virtue-history-legend {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 15px;
+  }
+
+  .virtue-history-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .legend-color {
+    width: 15px;
+    height: 15px;
+    border-radius: 4px;
+    margin-right: 5px;
+  }
+
+  .sm-button {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+  }
+
+  .atlantis-input, .atlantis-select {
+    width: 100%;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(115, 192, 244, 0.3);
+    border-radius: 4px;
+    color: #ffffff;
+    margin-top: 5px;
+  }
+
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  </style>
+
+  <!-- Add JavaScript for modals -->
+  <script>
+  function showModal(modalId) {
+    document.getElementById(modalId).style.display = 'flex';
+  }
+
+  function hideModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+  }
+
+  function saveCustomMetric() {
+    // In a real implementation, this would save data to the backend
+    alert('Custom metric saved!');
+    hideModal('customMetricModal');
+  }
+
+  // Close modals when clicking outside the content
+  window.onclick = function(event) {
+    const modals = document.getElementsByClassName('atlantis-modal');
+    for (let i = 0; i < modals.length; i++) {
+      if (event.target === modals[i]) {
+        modals[i].style.display = 'none';
+      }
+    }
+  }
+  </script>
+
+  <!-- Add these modals at the bottom of the page, before the closing body tag -->
+  <!-- Resources Modal -->
+  <div id="resourcesModal" class="atlantis-modal">
+    <div class="atlantis-modal-content">
+      <div class="atlantis-modal-header">
+        <h3>Your Resources</h3>
+        <span class="atlantis-modal-close" onclick="hideModal('resourcesModal')">&times;</span>
+      </div>
+      <div class="atlantis-modal-body">
+        <div class="resource-category">
+          <h4><i class="fas fa-gem"></i> Rare Resources</h4>
+          <div class="resource-list">
+            <div class="resource-item">
+              <div class="resource-icon athens-icon">A</div>
+              <div class="resource-details">
+                <div class="resource-name">Athenian Silver</div>
+                <div class="resource-count">0</div>
+              </div>
+            </div>
+            <div class="resource-item">
+              <div class="resource-icon sparta-icon">S</div>
+              <div class="resource-details">
+                <div class="resource-name">Spartan Iron</div>
+                <div class="resource-count">0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="resource-category">
+          <h4><i class="fas fa-boxes"></i> Common Resources</h4>
+          <div class="resource-list">
+            <div class="resource-item">
+              <div class="resource-icon olive-icon"><i class="fas fa-seedling"></i></div>
+              <div class="resource-details">
+                <div class="resource-name">Olive Oil</div>
+                <div class="resource-count">5</div>
+              </div>
+            </div>
+            <div class="resource-item">
+              <div class="resource-icon clay-icon"><i class="fas fa-vase"></i></div>
+              <div class="resource-details">
+                <div class="resource-name">Clay</div>
+                <div class="resource-count">3</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="resource-info">
+          <p><i class="fas fa-info-circle"></i> Resources are earned through experiences and can be used to unlock advanced features.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transactions Modal -->
+  <div id="transactionsModal" class="atlantis-modal">
+    <div class="atlantis-modal-content">
+      <div class="atlantis-modal-header">
+        <h3>Transaction History</h3>
+        <span class="atlantis-modal-close" onclick="hideModal('transactionsModal')">&times;</span>
+      </div>
+      <div class="atlantis-modal-body">
+        <div class="transaction-filters">
+          <select class="atlantis-select">
+            <option>All Transactions</option>
+            <option>Received</option>
+            <option>Spent</option>
+          </select>
+        </div>
+        
+        <div class="transaction-list">
+          <div class="transaction-item">
+            <div class="transaction-icon received">
+              <i class="fas fa-arrow-down"></i>
+            </div>
+            <div class="transaction-details">
+              <div class="transaction-title">Welcome Bonus</div>
+              <div class="transaction-date">Today</div>
+            </div>
+            <div class="transaction-amount received">+5 Olive Oil</div>
+          </div>
+          
+          <div class="transaction-item">
+            <div class="transaction-icon received">
+              <i class="fas fa-arrow-down"></i>
+            </div>
+            <div class="transaction-details">
+              <div class="transaction-title">Academy Experience</div>
+              <div class="transaction-date">Today</div>
+            </div>
+            <div class="transaction-amount received">+3 Clay</div>
+          </div>
+          
+          <div class="transaction-empty">
+            <p>More transactions will appear as you interact with the economy.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </body>
+</html> 
