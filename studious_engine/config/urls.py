@@ -12,7 +12,7 @@ from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
     # path("", TemplateView.as_view(template_name="welcome.html"), name="welcome"),
-    path("", include("core.urls")),  # No namespace here to avoid conflict
+    path("", include("core.urls", namespace="core_main")),  # Changed namespace
     path(
         "about/",
         TemplateView.as_view(template_name="pages/about.html"),
